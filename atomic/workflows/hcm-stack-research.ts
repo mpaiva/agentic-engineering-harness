@@ -5,15 +5,15 @@
  * product, synthesizes a single recommendation with trade-offs, and STOPS at a human
  * gate for approval. Nothing is built until the stack is approved.
  *
- * Reads the project contract at product/PROJECT.md and the domain graph at
- * product/domain-graph.md. Writes artifacts under product/research/.
+ * Reads the project contract at examples/hcm-graph/PROJECT.md and the domain graph at
+ * examples/hcm-graph/domain-graph.md. Writes artifacts under examples/hcm-graph/research/.
  *
  * Verified against Atomic 0.9.12 — see atomic/README.md for the API.
  */
 import { workflow } from "@bastani/workflows";
 import { Type } from "typebox";
 
-const DIR = "product/research";
+const DIR = "examples/hcm-graph/research";
 
 export default workflow({
   name: "hcm-stack-research",
@@ -38,7 +38,7 @@ export default workflow({
   run: async (ctx) => {
     const priorities = String(ctx.inputs.priorities);
     const contract =
-      "Read product/PROJECT.md (the contract) and product/domain-graph.md (the model) first. " +
+      "Read examples/hcm-graph/PROJECT.md (the contract) and examples/hcm-graph/domain-graph.md (the model) first. " +
       "Ground every claim in those. Optimize for: " + priorities;
 
     // ── Fan out the four independent stack decisions ────────────────────────────
@@ -129,7 +129,7 @@ export default workflow({
 
     return {
       status: "completed" as const,
-      summary: "Stack approved. Ready for Phase 1 (domain model) — see product/PROJECT.md.",
+      summary: "Stack approved. Ready for Phase 1 (domain model) — see examples/hcm-graph/PROJECT.md.",
       recommendation_artifact: recPath,
     };
   },

@@ -10,7 +10,7 @@ import {
 /**
  * Contract-drift guard for the Cypher seam.
  *
- * product/design/schema.md is the FROZEN query contract: §3 DDL, §4 write-path
+ * examples/hcm-graph/design/schema.md is the FROZEN query contract: §3 DDL, §4 write-path
  * guards, §5 marquee traversals, §6 validation queries. cypher.ts is meant to be
  * a literal transcript of those sections. This suite pins the invariant-bearing
  * clauses of every guard/traversal/validation so any silent edit that would

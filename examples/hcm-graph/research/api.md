@@ -6,7 +6,7 @@ Both documents are clear. This is a focused architecture decision I can make dir
 
 **Recommendation: a thin, typed RPC layer (tRPC), with traversals modeled as explicit named operations backed by graph-DB queries.** REST + OpenAPI is the designated fallback if a language-agnostic API becomes a requirement. **GraphQL is not recommended for this slice.**
 
-Grounded in `product/PROJECT.md` (the contract) and `product/domain-graph.md` (the model).
+Grounded in `examples/hcm-graph/PROJECT.md` (the contract) and `examples/hcm-graph/domain-graph.md` (the model).
 
 ## What the API actually has to do (from the model)
 

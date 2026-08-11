@@ -67,7 +67,7 @@ SVG/canvas org-chart drawing libraries (`d3-org-chart`, React Flow) are **inadmi
 docker-compose.yml
   ├─ neo4j:5-community        # Bolt :7687, Browser :7474, seeded on init
   └─ (app runs on host)
-app/
+examples/hcm-graph/app/
   ├─ server/  tRPC router + Neo4j repository (Cypher lives here only)
   ├─ web/     React Router 7 + Vite, loaders call tRPC
   └─ test/    Neo4j Testcontainers → invariant + traversal integration tests

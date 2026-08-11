@@ -1,12 +1,12 @@
 # The agent team — graph engineering, orchestrated by Atomic
 
-The specialized agents that build HCM Graph, and how Atomic wires them into an **engineering graph**. Agents are named by **responsibility**, not model (the model is an implementation detail — see [agent naming](../herdr/workspace-conventions.md#name-agents-by-responsibility-not-by-model)). Each gets a **small context** and returns a **concise artifact**; Atomic carries the larger picture.
+The specialized agents that build HCM Graph, and how Atomic wires them into an **engineering graph**. Agents are named by **responsibility**, not model (the model is an implementation detail — see [agent naming](../../herdr/workspace-conventions.md#name-agents-by-responsibility-not-by-model)). Each gets a **small context** and returns a **concise artifact**; Atomic carries the larger picture.
 
 ## The specialists
 
 | Agent | Owns | Returns |
 |-------|------|---------|
-| **graph-modeler** | The domain graph: nodes, edges, constraints, temporal shape. | `product/design/schema.md` |
+| **graph-modeler** | The domain graph: nodes, edges, constraints, temporal shape. | `examples/hcm-graph/design/schema.md` |
 | **db-engineer** | The graph database: schema, constraints/indexes, migrations, seed generation. | migrations + seed + a run log |
 | **query-specialist** | Graph traversals: reporting chain, span of control, org rollup, reorg impact. | tested query modules |
 | **api-engineer** | The API over the graph (paradigm chosen in Phase 0). | endpoints/schema + contract tests |
@@ -47,15 +47,15 @@ Phase 3  Verify ─ parallel ─┬─ invariants (no cycles · one holder · on
 
 Two rules from the harness shape this graph:
 
-- **Independent verification.** The agents that wrote the graph, queries, and UI do not get to declare them correct. A fresh-context **verifier** re-derives correctness from evidence (real seed data, real queries, real a11y runs). See [verification-and-gates.md](../docs/verification-and-gates.md).
+- **Independent verification.** The agents that wrote the graph, queries, and UI do not get to declare them correct. A fresh-context **verifier** re-derives correctness from evidence (real seed data, real queries, real a11y runs). See [verification-and-gates.md](../../docs/verification-and-gates.md).
 - **Bounded loops.** Repair runs at most 3 cycles, then escalates to a human with evidence. No open-ended "keep fixing until it works."
 
 ## Where the agents run
 
-Each phase is an Atomic stage; Atomic fans out its own sub-agents inside one run (on your Claude subscription). Herdr keeps that run organized and alive; you follow progress with `/workflow status` and the run ledger. (Herdr's colored status does not yet read Atomic — a known gap, see [herdr/atomic-integration.md](../herdr/atomic-integration.md).)
+Each phase is an Atomic stage; Atomic fans out its own sub-agents inside one run (on your Claude subscription). Herdr keeps that run organized and alive; you follow progress with `/workflow status` and the run ledger. (Herdr's colored status does not yet read Atomic — a known gap, see [herdr/atomic-integration.md](../../herdr/atomic-integration.md).)
 
 ## Mapping to workflows
 
-- **Phase 0** → [`atomic/workflows/hcm-stack-research.ts`](../atomic/workflows/hcm-stack-research.ts) — run, stack **approved**.
-- **Phase 1** → [`atomic/workflows/hcm-model-design.ts`](../atomic/workflows/hcm-model-design.ts) — run, model **approved** ([schema.md](design/schema.md)).
-- **Phases 2–3** → [`atomic/workflows/hcm-feature-build.ts`](../atomic/workflows/hcm-feature-build.ts) — authored now the stack is approved, so its stages name the real tools (Neo4j 5 CE · tRPC/zod · React Router 7 + Vite · React Aria `Tree` · Testcontainers · axe + Playwright). **Run-time prerequisite:** the integration + e2e evidence needs a container runtime (Docker) for a real Neo4j; see [artifacts/phase-2-run-notes.md](artifacts/phase-2-run-notes.md).
+- **Phase 0** → [`atomic/workflows/hcm-stack-research.ts`](../../atomic/workflows/hcm-stack-research.ts) — run, stack **approved**.
+- **Phase 1** → [`atomic/workflows/hcm-model-design.ts`](../../atomic/workflows/hcm-model-design.ts) — run, model **approved** ([schema.md](design/schema.md)).
+- **Phases 2–3** → [`atomic/workflows/hcm-feature-build.ts`](../../atomic/workflows/hcm-feature-build.ts) — authored now the stack is approved, so its stages name the real tools (Neo4j 5 CE · tRPC/zod · React Router 7 + Vite · React Aria `Tree` · Testcontainers · axe + Playwright). **Run-time prerequisite:** the integration + e2e evidence needs a container runtime (Docker) for a real Neo4j; see [artifacts/phase-2-run-notes.md](artifacts/phase-2-run-notes.md).

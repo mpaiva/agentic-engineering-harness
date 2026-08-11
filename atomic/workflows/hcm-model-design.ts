@@ -5,12 +5,12 @@
  * relationship types + properties, the Neo4j 5 Community constraints/indexes that
  * carry the five invariants, resolutions for the three open questions
  * (temporal model, matrix/dotted-line reporting, IDs), and a seed-data plan for
- * a realistic ~200-person company. It writes ONE artifact, product/design/schema.md,
+ * a realistic ~200-person company. It writes ONE artifact, examples/hcm-graph/design/schema.md,
  * challenges it with a fresh independent verifier through a bounded review→repair
  * loop, and STOPS at the "Approve model" human gate before any build begins.
  *
- * Grounds every decision in the Phase-0 approval: product/PROJECT.md (the contract),
- * product/domain-graph.md (the model), and product/research/stack-recommendation.md
+ * Grounds every decision in the Phase-0 approval: examples/hcm-graph/PROJECT.md (the contract),
+ * examples/hcm-graph/domain-graph.md (the model), and examples/hcm-graph/research/stack-recommendation.md
  * (the approved stack — Neo4j Community · tRPC · React Router 7 · ARIA tree).
  *
  * DAG-safe: the repair loop is UNROLLED (review-1 / repair-1 / review-2 / …); the
@@ -21,7 +21,7 @@
 import { workflow } from "@bastani/workflows";
 import { Type } from "typebox";
 
-const SCHEMA_PATH = "product/design/schema.md";
+const SCHEMA_PATH = "examples/hcm-graph/design/schema.md";
 
 export default workflow({
   name: "hcm-model-design",
@@ -56,8 +56,8 @@ export default workflow({
 
     const grounding =
       "Read these first and ground every decision in them: " +
-      "product/PROJECT.md (the contract), product/domain-graph.md (the node/edge model and the five invariants), " +
-      "and product/research/stack-recommendation.md (the APPROVED stack — Neo4j Community 5.x, tRPC, " +
+      "examples/hcm-graph/PROJECT.md (the contract), examples/hcm-graph/domain-graph.md (the node/edge model and the five invariants), " +
+      "and examples/hcm-graph/research/stack-recommendation.md (the APPROVED stack — Neo4j Community 5.x, tRPC, " +
       "React Router 7 + Vite, and an ARIA `tree` org chart). The concrete DB is Neo4j 5 Community: write " +
       "Cypher-specific DDL and be explicit about which invariants Community can enforce DECLARATIVELY " +
       "(existence/uniqueness/node-key) versus which fall to write-path logic + Testcontainers integration " +
@@ -65,9 +65,9 @@ export default workflow({
       "Cypher behind a repository seam in prose so the documented Apache AGE fallback stays cheap; note for " +
       "each invariant what AGE (Postgres constraints) would gain.";
     const grounds = [
-      "product/PROJECT.md",
-      "product/domain-graph.md",
-      "product/research/stack-recommendation.md",
+      "examples/hcm-graph/PROJECT.md",
+      "examples/hcm-graph/domain-graph.md",
+      "examples/hcm-graph/research/stack-recommendation.md",
     ];
 
     // ── Phase 1a: Draft the finalized schema artifact ───────────────────────────────
@@ -102,7 +102,7 @@ export default workflow({
       const verdict = await ctx.task(`review-${i}`, {
         prompt:
           `You are an INDEPENDENT graph-model reviewer with no knowledge of the author's reasoning. ` +
-          `Derive acceptance checks from product/PROJECT.md and product/domain-graph.md FIRST, then judge ` +
+          `Derive acceptance checks from examples/hcm-graph/PROJECT.md and examples/hcm-graph/domain-graph.md FIRST, then judge ` +
           `${SCHEMA_PATH} against them. Check, with specific evidence:\n` +
           `- All FIVE invariants are addressed, each correctly classified as CE-declarable vs write-path+test, ` +
           `with a plausible mechanism (e.g. a real Neo4j 5 constraint form, or a guarded MERGE + test).\n` +
@@ -115,7 +115,7 @@ export default workflow({
           `- Internal consistency with domain-graph.md (no contradicted node/edge).\n` +
           `A P0 or P1 finding is blocking. An author claiming "done" is not evidence.`,
         context: "fresh",
-        reads: [SCHEMA_PATH, "product/PROJECT.md", "product/domain-graph.md"],
+        reads: [SCHEMA_PATH, "examples/hcm-graph/PROJECT.md", "examples/hcm-graph/domain-graph.md"],
         schema: Type.Object({
           passed: Type.Boolean(),
           blocking_findings: Type.Array(
@@ -155,9 +155,9 @@ export default workflow({
           `Blocking findings:\n${JSON.stringify(blocking, null, 2)}\n` +
           `Rationale: ${result.rationale}\n\n` +
           `Repair ONLY these findings in ${SCHEMA_PATH}. Keep the rest of the model stable; do not expand scope. ` +
-          `Preserve internal consistency with product/domain-graph.md.`,
+          `Preserve internal consistency with examples/hcm-graph/domain-graph.md.`,
         context: "fork",
-        reads: [SCHEMA_PATH, "product/domain-graph.md"],
+        reads: [SCHEMA_PATH, "examples/hcm-graph/domain-graph.md"],
         output: SCHEMA_PATH,
         outputMode: "file-only",
       });
@@ -198,7 +198,7 @@ export default workflow({
 
     return {
       status: "completed" as const,
-      summary: "Graph model approved. Ready for Phase 2 (build) — see product/PROJECT.md.",
+      summary: "Graph model approved. Ready for Phase 2 (build) — see examples/hcm-graph/PROJECT.md.",
       schema_artifact: SCHEMA_PATH,
       review_cycles_used: cyclesUsed,
     };

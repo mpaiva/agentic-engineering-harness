@@ -62,7 +62,8 @@ agentic-engineering-harness/
 ├── atomic/
 │   ├── README.md                 ← how workflows are defined and run
 │   └── workflows/
-│       └── feature-development.ts← the reference feature workflow (process spec)
+│       ├── feature-development.ts← the reference feature workflow (process spec)
+│       └── hcm-*.ts              ← the HCM Graph build workflows (stack-research · model-design · feature-build)
 ├── herdr/
 │   ├── setup.md                  ← install, integrations, HERDR_ENV
 │   ├── workspace-conventions.md  ← one outcome = one workspace; agent naming
@@ -71,10 +72,12 @@ agentic-engineering-harness/
 │   ├── recommended-config.md     ← rationale for the config
 │   └── config                    ← drop-in Ghostty config
 ├── examples/
-│   └── feature-development/       ← a real, runnable end-to-end example
+│   ├── feature-development/       ← a small, runnable end-to-end example
+│   └── hcm-graph/                 ← the big example: a product built by multi-agent workflows
 └── scripts/
     ├── new-workspace.sh          ← create a Herdr workspace for an outcome
     ├── launch-feature.sh         ← launch the feature-development run
+    ├── sync-workflows.sh         ← make repo workflows discoverable by Atomic
     └── status.sh                 ← roll up agent states (supervision by exception)
 ```
 
@@ -113,6 +116,8 @@ Atomic is the orchestration/verification engine, and the highest-leverage thing 
 2. **[atomic/workflows/feature-development.ts](atomic/workflows/feature-development.ts)** — an annotated reference workflow: fan-out research → plan → gate → implement → verify → **bounded, DAG-unrolled repair** → gate → PR.
 3. **[examples/feature-development/atomic-goal-run.md](examples/feature-development/atomic-goal-run.md)** — a **real, recorded `goal` run**: live agents implemented a utility test-first, three independent reviewers re-ran the checks, and they **caught a real edge-case bug the author's passing tests missed**. This is the payoff of the whole model, on tape. Raw evidence (ledger, receipt, reviewer verdicts) is in [examples/feature-development/atomic-run/](examples/feature-development/atomic-run/).
 
+4. **[examples/hcm-graph/README.md](examples/hcm-graph/README.md)** — the same model at full scale: a graph-native HCM product built from scratch across **four multi-agent phases** (research → model → build → verify), each an Atomic workflow with a human gate, verified against a real Neo4j database. This is where the multi-agent, multi-phase shape pays off.
+
 The one-line lesson: **describe the outcome and its acceptance criteria, bound the turns, and let independent verifiers — not the author — decide "done."**
 
 ## Design principles
@@ -133,4 +138,4 @@ The one-line lesson: **describe the outcome and its acceptance criteria, bound t
 - **Verified working, not just written:** the reference workflow is discovered and schema-validated by Atomic; the Herdr example runs end-to-end over a real headless session; and a **real Atomic `goal` run** was executed and recorded (see the [case study](examples/feature-development/atomic-goal-run.md)).
 - A first-class **Atomic ↔ Herdr adapter** (a single command surface that projects Atomic workflow state into the Herdr sidebar) does **not** yet exist in either tool. It is documented as a target in [herdr/atomic-integration.md](herdr/atomic-integration.md) and is not implemented here. The example wires the two layers with scripts today.
 - No remote is configured — this repo is local by default. Clone it, read the [reading order](#start-here--a-reading-order) above, and run the example.
-- **The harness is being pointed at a real product:** [`product/`](product/README.md) — **HCM Graph**, a graph-native Human Capital Management product built from scratch by specialized agents that Atomic orchestrates as an engineering graph. See [product/PROJECT.md](product/PROJECT.md) for the contract and roadmap.
+- **The harness is being pointed at a real product:** [`examples/hcm-graph/`](examples/hcm-graph/README.md) — **HCM Graph**, a graph-native Human Capital Management product built from scratch by specialized agents that Atomic orchestrates as an engineering graph. See [examples/hcm-graph/PROJECT.md](examples/hcm-graph/PROJECT.md) for the contract and roadmap.

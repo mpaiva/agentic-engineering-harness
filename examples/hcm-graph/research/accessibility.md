@@ -1,6 +1,6 @@
 # The accessible-org-chart pattern (Phase 0 research artifact)
 
-*Grounded in [product/PROJECT.md](product/PROJECT.md) and [product/domain-graph.md](product/domain-graph.md). Verified against the W3C WAI-ARIA Authoring Practices Guide (APG) Tree View and Treegrid patterns and the MDN `tree`/`treegrid` role references.*
+*Grounded in [examples/hcm-graph/PROJECT.md](../PROJECT.md) and [examples/hcm-graph/domain-graph.md](../domain-graph.md). Verified against the W3C WAI-ARIA Authoring Practices Guide (APG) Tree View and Treegrid patterns and the MDN `tree`/`treegrid` role references.*
 
 This defines the one UI pattern the slice must get right. PROJECT.md makes it a first-class, gated requirement: *"the org chart must be fully keyboard-navigable and screen-reader-sensible (org charts are notoriously inaccessible)."* The Goal is that a user can *"Open an org chart and navigate reporting lines up and down, by keyboard"* (PROJECT.md §Goal.2). The pattern below turns that sentence into a concrete ARIA contract and, in doing so, constrains which UI libraries are admissible.
 
@@ -163,7 +163,7 @@ This pattern is the deciding input for the "UI + org-chart lib" recommendation i
 
 The pattern is only "done" with evidence, not claims (verification-and-gates.md). This pattern makes each check concrete:
 
-- **Automated axe pass**: tree has an accessible name; every `treeitem` has a name; `aria-expanded` present on and only on parents; `aria-level`/`setsize`/`posinset` consistent; no `role="tree"` without `treeitem` children. Recorded under `product/artifacts/`.
+- **Automated axe pass**: tree has an accessible name; every `treeitem` has a name; `aria-expanded` present on and only on parents; `aria-level`/`setsize`/`posinset` consistent; no `role="tree"` without `treeitem` children. Recorded under `examples/hcm-graph/artifacts/`.
 - **Scripted keyboard walkthrough** (Playwright, per verification-and-gates.md §evidence): `Tab` into tree → `↓/↑` traverse peers → `→` expand and land correctly → `←` collapse then step to manager → `Enter` opens panel and focus moves → `Escape` restores focus to the origin node → `Home`/`End`. Each assertion checks focus location and the announced accessible name/state.
 - **Screen-reader semantics** (human a11y gate — verification-and-gates.md §Human review gates): reporting relationship, span of control, and org unit are spoken; matrix/dotted-line is announced without duplicating nodes; level and position-in-set are correct. This is the gated human sign-off PROJECT.md §Approval requires for accessibility.
 - These map straight onto the invariant tests: the tree's `aria-setsize` values are the span-of-control counts, and the absence of any cycle in the rendered hierarchy is the UI-side reflection of invariant 1 (no cycles in `REPORTS_TO`).

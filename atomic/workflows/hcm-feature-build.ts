@@ -2,22 +2,22 @@
  * hcm-feature-build — Phases 2–3 of the HCM Graph product.
  *
  * The specialization of the reference `feature-development` shape with the named
- * specialists from product/agent-team.md, authored AFTER Phase 0 (stack) and Phase 1
+ * specialists from examples/hcm-graph/agent-team.md, authored AFTER Phase 0 (stack) and Phase 1
  * (model) were approved so every stage can name the REAL tools:
  *   Neo4j 5 Community · tRPC + zod (Hono) · React Router 7 + Vite · React Aria `Tree`
  *   org chart · Neo4j Testcontainers · axe + Playwright · vitest + tsc.
  *
- * Shape (mirrors product/agent-team.md's engineering graph):
+ * Shape (mirrors examples/hcm-graph/agent-team.md's engineering graph):
  *   Phase 2  Implement (parallel specialists) → integrate
  *   Phase 3  Verify (automated evidence) → fresh independent verifier
  *            → bounded repair (UNROLLED, max N, DAG-safe)
  *            → HUMAN GATE: final review (diff · evidence · risks)
  *            → optional local commit/PR (only if authorized)
  *
- * Grounds every stage in the approved artifacts: product/PROJECT.md (contract),
- * product/design/schema.md (finalized model — labels, CE constraints, write-path
- * guards, marquee traversals, seed plan), product/research/stack-recommendation.md
- * (approved stack), and product/domain-graph.md (the five invariants).
+ * Grounds every stage in the approved artifacts: examples/hcm-graph/PROJECT.md (contract),
+ * examples/hcm-graph/design/schema.md (finalized model — labels, CE constraints, write-path
+ * guards, marquee traversals, seed plan), examples/hcm-graph/research/stack-recommendation.md
+ * (approved stack), and examples/hcm-graph/domain-graph.md (the five invariants).
  *
  * ── RUN-TIME PREREQUISITE ───────────────────────────────────────────────────────
  * Phase 3's integration + e2e evidence needs a CONTAINER RUNTIME (Docker) so
@@ -25,7 +25,7 @@
  * environment without Docker those checks cannot produce real evidence, and the
  * harness forbids fabricated evidence — the automated-verification stage must record
  * the gap honestly rather than claim a pass. Run this workflow where Docker + Node 22
- * are available. Scaffolding the app also introduces an npm workspace under app/,
+ * are available. Scaffolding the app also introduces an npm workspace under examples/hcm-graph/app/,
  * which AGENTS.md says to add only when asked — this workflow IS that authorization
  * boundary, so keep `create_pr` off and the repo local unless explicitly told.
  *
@@ -36,13 +36,13 @@ import { workflow } from "@bastani/workflows";
 import { Type } from "typebox";
 
 const APP = "app"; // server/ (tRPC + Neo4j repo) · web/ (RR7 + Vite) · test/ (Testcontainers)
-const EVIDENCE = "product/artifacts/evidence.md";
+const EVIDENCE = "examples/hcm-graph/artifacts/evidence.md";
 
 const GROUNDS = [
-  "product/PROJECT.md",
-  "product/design/schema.md",
-  "product/research/stack-recommendation.md",
-  "product/domain-graph.md",
+  "examples/hcm-graph/PROJECT.md",
+  "examples/hcm-graph/design/schema.md",
+  "examples/hcm-graph/research/stack-recommendation.md",
+  "examples/hcm-graph/domain-graph.md",
 ];
 
 export default workflow({
@@ -55,10 +55,10 @@ export default workflow({
     objective: Type.String({
       description: "The verifiable outcome for the slice.",
       default:
-        "Deliver the Core-HR slice from product/PROJECT.md: an employee directory (search + filter), a " +
+        "Deliver the Core-HR slice from examples/hcm-graph/PROJECT.md: an employee directory (search + filter), a " +
         "keyboard-navigable WCAG 2.2 AA org chart, and a person view, over a real Neo4j graph served by a " +
         "tRPC API, with the five graph invariants enforced and the four marquee traversals correct — " +
-        "exactly as finalized in product/design/schema.md.",
+        "exactly as finalized in examples/hcm-graph/design/schema.md.",
     }),
     max_repair_cycles: Type.Integer({
       description: "Maximum diagnose→repair→re-verify iterations before escalating to a human.",
@@ -88,10 +88,10 @@ export default workflow({
       "Read the approved artifacts first and build to them EXACTLY — do not re-open settled decisions: " +
       `${GROUNDS.join(", ")}. The stack is fixed (Neo4j 5 Community, tRPC over Hono with zod, ` +
       "React Router 7 + Vite, a React Aria `Tree` org chart, Neo4j Testcontainers for integration tests). " +
-      "The model is fixed in product/design/schema.md: use its node labels/properties, its CE uniqueness " +
+      "The model is fixed in examples/hcm-graph/design/schema.md: use its node labels/properties, its CE uniqueness " +
       "constraints and range indexes, its write-path guards for the five invariants (§4), and its marquee " +
       "traversals (§5) verbatim as the query contract. Keep all Cypher behind a repository seam. Add no " +
-      "dependency that is not implied by that stack without flagging it. Work under the app/ workspace.";
+      "dependency that is not implied by that stack without flagging it. Work under the examples/hcm-graph/app/ workspace.";
 
     // ── Phase 2: Implementation (parallel specialists from agent-team.md) ────────────
     const impl = [
@@ -191,7 +191,7 @@ export default workflow({
       const verdict = await ctx.task(`verify-independent-${i}`, {
         prompt:
           `Objective: ${objective}\n\nYou are an INDEPENDENT verifier with no knowledge of the implementers' ` +
-          `reasoning. Derive acceptance checks from product/PROJECT.md §Verification and product/design/schema.md ` +
+          `reasoning. Derive acceptance checks from examples/hcm-graph/PROJECT.md §Verification and examples/hcm-graph/design/schema.md ` +
           `FIRST, then judge the actual diff and the evidence at ${EVIDENCE}. Require, with file:line / command ` +
           `evidence: the five invariants hold on real seed (the §6 queries return 0 rows), the four traversals ` +
           `are correct, typecheck + unit + integration + e2e pass, and the org chart passes axe + the keyboard ` +

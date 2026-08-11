@@ -1,7 +1,7 @@
 /**
  * The Cypher contract — the ONLY place raw Cypher lives.
  *
- * Every string below is copied VERBATIM from product/design/schema.md
+ * Every string below is copied VERBATIM from examples/hcm-graph/design/schema.md
  * (§3 DDL, §4 write-path guards, §5 marquee traversals, §6 validation queries).
  * The repository seam (repository.ts) is the sole consumer; nothing else in the
  * codebase writes Cypher. Keeping the DDL/guards/traversals as a literal transcript

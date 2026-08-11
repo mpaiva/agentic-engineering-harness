@@ -2,7 +2,7 @@
 
 React Router 7 (framework mode) + Vite. The employee **directory**, a **person** view, and
 a keyboard-navigable **org chart**, over the tRPC API in [`app/server`](../server) (`@hcm/server`).
-Builds to the finalized contract in [`product/design/schema.md`](../../product/design/schema.md).
+Builds to the finalized contract in [`examples/hcm-graph/design/schema.md`](../../design/schema.md).
 
 ## Run
 

@@ -1,4 +1,4 @@
-I ran every check in the slice's evidence contract for real and appended the observed commands + output to `product/artifacts/evidence.md`. This environment is Docker-capable (Colima), so nothing had to be recorded as UNVERIFIED.
+I ran every check in the slice's evidence contract for real and appended the observed commands + output to `examples/hcm-graph/artifacts/evidence.md`. This environment is Docker-capable (Colima), so nothing had to be recorded as UNVERIFIED.
 
 # Phase 3 Verification — Core-HR slice: EVIDENCE (facts observed)
 
@@ -33,4 +33,4 @@ Both appear resolved in the current tree.
 ## UNVERIFIED
 None. Every contract check ran for real in this Docker-capable environment. DB torn down afterward (`npm run db:down`, exit 0).
 
-**Artifact written:** `product/artifacts/evidence.md` (exact commands + observed output). No source files were modified; nothing was committed.
+**Artifact written:** `examples/hcm-graph/artifacts/evidence.md` (exact commands + observed output). No source files were modified; nothing was committed.

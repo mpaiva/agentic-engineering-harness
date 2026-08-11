@@ -3,7 +3,7 @@
  *
  * These are conformed FIELD-FOR-FIELD to the api-engineer's single-source zod contract
  * at app/server/src/schemas.ts (the tRPC procedures' `.output()` DTOs) and the finalized
- * model in product/design/schema.md. Keeping them here lets the pure view components +
+ * model in examples/hcm-graph/design/schema.md. Keeping them here lets the pure view components +
  * their component tests typecheck and run standalone; at integration the loaders' calls
  * are additionally checked against `import type { AppRouter } from "@hcm/server"`
  * inference in app/web/app/lib/trpc.server.ts.

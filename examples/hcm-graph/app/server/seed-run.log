@@ -1,6 +1,6 @@
 ═══════════════════════════════════════════════════════════════════════
  HCM Core-HR seed run — schema.md §7 plan
-   started : 2026-08-11T22:51:00.588Z
+   started : 2026-08-11T22:58:45.919Z
    target  : bolt://localhost:7687 (user neo4j)
 ═══════════════════════════════════════════════════════════════════════
 [1/6] connected to Neo4j.
@@ -33,4 +33,4 @@ Sample §5 marquee traversals:
    §5.4 org rollup for ORG-000001 (company): 40 units, 200 positions total
    §1.2 matrix: POS-000006 -[:DOTTED_REPORTS_TO]-> POS-000171 ("Finance systems liaison (matrix)") — no second REPORTS_TO
 
-Finished: 2026-08-11T22:51:10.621Z — SEED OK.
+Finished: 2026-08-11T22:58:54.730Z — SEED OK.

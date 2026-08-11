@@ -4,7 +4,7 @@ I have enough grounded facts. Here is the complete stage artifact.
 
 # Phase 0 — Graph database recommendation for HCM Core-HR
 
-Scope: the graph store behind the Core-HR slice defined in `product/PROJECT.md` and modeled in `product/domain-graph.md`. Judged strictly on the six things the contract and your brief ask for: **traversal/query ergonomics, invariant/constraint support, local-dev experience, licensing, TypeScript client maturity, operational weight** — weighted by what this slice actually is: a read-mostly, ~200-person org graph served by an API to an accessible web UI, built and verified by agents.
+Scope: the graph store behind the Core-HR slice defined in `examples/hcm-graph/PROJECT.md` and modeled in `examples/hcm-graph/domain-graph.md`. Judged strictly on the six things the contract and your brief ask for: **traversal/query ergonomics, invariant/constraint support, local-dev experience, licensing, TypeScript client maturity, operational weight** — weighted by what this slice actually is: a read-mostly, ~200-person org graph served by an API to an accessible web UI, built and verified by agents.
 
 ## TL;DR
 

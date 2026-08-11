@@ -1,6 +1,6 @@
 /**
  * Typed result shapes for the four marquee traversals from
- * product/design/schema.md §5. These are the query contract the API and UI
+ * examples/hcm-graph/design/schema.md §5. These are the query contract the API and UI
  * consume; the Cypher that produces them lives only in the repository.
  */
 

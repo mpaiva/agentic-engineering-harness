@@ -1,9 +1,9 @@
 # Phase 2–3 — run notes and the environment gap
 
 Phase 2 (build) and Phase 3 (verify) are encoded in
-[`atomic/workflows/hcm-feature-build.ts`](../../atomic/workflows/hcm-feature-build.ts). This note records
+[`atomic/workflows/hcm-feature-build.ts`](../../../atomic/workflows/hcm-feature-build.ts). This note records
 what was done autonomously, why the build was **not executed to a "working slice + evidence" here**, and
-exactly how to run it for real. Per [AGENTS.md](../../AGENTS.md): *ground truth over assumption; do not
+exactly how to run it for real. Per [AGENTS.md](../../../AGENTS.md): *ground truth over assumption; do not
 fabricate evidence; label future/not-implemented clearly.*
 
 > **Update (blocker cleared).** Docker is now installed on this machine via **Colima** (a Docker daemon in a
@@ -40,9 +40,9 @@ Two hard blockers, both of which make a literal build here either unverifiable o
    stage is written to record such a gap as `UNVERIFIED` rather than claim a pass, and the independent verifier
    treats an unverified real-DB/e2e check as **failing** — so a run here would (correctly) escalate as blocked,
    not produce a trustworthy slice.
-2. **The repo is intentionally not an app project.** [AGENTS.md](../../AGENTS.md): *"this repo is
+2. **The repo is intentionally not an app project.** [AGENTS.md](../../../AGENTS.md): *"this repo is
    intentionally not an npm/cargo project… do not add runtime dependencies or package manifests without being
-   asked."* Scaffolding the full `app/` workspace (package manifests, `node_modules`, a `docker-compose.yml`) is
+   asked."* Scaffolding the full `examples/hcm-graph/app/` workspace (package manifests, `node_modules`, a `docker-compose.yml`) is
    exactly that kind of change. `hcm-feature-build.ts` is written as that authorization boundary: running it is
    the deliberate act of turning the worked example into runnable code.
 
@@ -61,8 +61,8 @@ atomic                                  # logged in to your Claude subscription
 /workflow hcm-feature-build             # defaults target the approved slice
 ```
 
-The run fans out the specialists into `app/` (`server/` tRPC + Neo4j repository, `web/` React Router 7 + Vite,
-`test/` Testcontainers), integrates, records evidence to `product/artifacts/evidence.md`, runs a fresh
+The run fans out the specialists into `examples/hcm-graph/app/` (`server/` tRPC + Neo4j repository, `web/` React Router 7 + Vite,
+`test/` Testcontainers), integrates, records evidence to `examples/hcm-graph/artifacts/evidence.md`, runs a fresh
 independent verifier, repairs up to 3 cycles, and **stops at the final-review gate**. It stays local by default
 (`create_pr=false`); the repo takes no remote/push unless you ask.
 

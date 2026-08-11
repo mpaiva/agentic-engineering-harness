@@ -1,6 +1,6 @@
 # Phase 0 — Stack Recommendation: Web Framework & Org‑Chart Rendering
 
-Scope of this stage: the **web framework** and the **org‑chart rendering approach** (library vs. hand‑rolled tree/treegrid), plus the **directory** and **person** views. Grounded in `product/PROJECT.md` (the contract) and `product/domain-graph.md` (the model). Graph‑DB and API‑paradigm selection are their own Phase‑0 decisions; this memo touches them only where they bear on the UI.
+Scope of this stage: the **web framework** and the **org‑chart rendering approach** (library vs. hand‑rolled tree/treegrid), plus the **directory** and **person** views. Grounded in `examples/hcm-graph/PROJECT.md` (the contract) and `examples/hcm-graph/domain-graph.md` (the model). Graph‑DB and API‑paradigm selection are their own Phase‑0 decisions; this memo touches them only where they bear on the UI.
 
 Every recommendation is weighed against the six stated optimization targets: graph‑native traversals, fast local dev, an accessible org chart (WCAG 2.2 AA), TypeScript end to end, permissive licensing, small dependency surface.
 

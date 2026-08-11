@@ -1,7 +1,7 @@
 # Test-engineer evidence — Core-HR slice
 
 What the test-engineer authored for the Phase-2 build and the **real results observed
-in this run**. Per [AGENTS.md](../../AGENTS.md): evidence, not claims. Nothing is
+in this run**. Per [AGENTS.md](../../../AGENTS.md): evidence, not claims. Nothing is
 committed; the workflow integrates and gates. A fresh verifier judges correctness.
 
 Environment: macOS, Node 22, Docker 29.5.2 via **Colima**, `neo4j:5-community` image.
@@ -10,11 +10,11 @@ Environment: macOS, Node 22, Docker 29.5.2 via **Colima**, `neo4j:5-community` i
 
 | Layer | Files | Covers |
 |---|---|---|
-| **Unit** (no Docker) | `app/server/test/unit/cypher-contract.test.ts`, `guards.repository.test.ts`, `seed-plan.test.ts`, `view-repository.test.ts` | §3–§6 Cypher contract-drift pins; §4 guard reject/accept wrappers (fake driver); §7 seed determinism + counts + §8 preconditions; view-repo tree-assembly / cursor / person mapping |
-| **Integration** (real Neo4j via Testcontainers) | `app/server/test/integration/slice.integration.test.ts`, `guards.integration.test.ts`, `support/neo4j.ts`, `support/seed.ts` | §6 validations = 0 rows; §5 traversals with **plan-derived** chains/counts/rollups; tRPC caller contract; temporal "as of today"; live guard rejection of cycle / second parent / double-book / self-loop / PART_OF cycle |
-| **e2e** (Playwright + axe) | `app/e2e/` (`playwright.config.ts`, `tests/org-chart.keyboard.spec.ts`, `axe.spec.ts`, `directory.spec.ts`, `person.spec.ts`) | Scripted **keyboard walkthrough** of the ARIA `tree` (roving tabindex, ←/→/↑/↓/Home/End, Enter→panel, Escape→restore focus); **axe** WCAG 2.2 AA on directory/org-chart/person; directory + person smoke |
+| **Unit** (no Docker) | `examples/hcm-graph/app/server/test/unit/cypher-contract.test.ts`, `guards.repository.test.ts`, `seed-plan.test.ts`, `view-repository.test.ts` | §3–§6 Cypher contract-drift pins; §4 guard reject/accept wrappers (fake driver); §7 seed determinism + counts + §8 preconditions; view-repo tree-assembly / cursor / person mapping |
+| **Integration** (real Neo4j via Testcontainers) | `examples/hcm-graph/app/server/test/integration/slice.integration.test.ts`, `guards.integration.test.ts`, `support/neo4j.ts`, `support/seed.ts` | §6 validations = 0 rows; §5 traversals with **plan-derived** chains/counts/rollups; tRPC caller contract; temporal "as of today"; live guard rejection of cycle / second parent / double-book / self-loop / PART_OF cycle |
+| **e2e** (Playwright + axe) | `examples/hcm-graph/app/e2e/` (`playwright.config.ts`, `tests/org-chart.keyboard.spec.ts`, `axe.spec.ts`, `directory.spec.ts`, `person.spec.ts`) | Scripted **keyboard walkthrough** of the ARIA `tree` (roving tabindex, ←/→/↑/↓/Home/End, Enter→panel, Escape→restore focus); **axe** WCAG 2.2 AA on directory/org-chart/person; directory + person smoke |
 
-Wiring: `app/server/vitest.config.ts` (unit, excludes integration) + `vitest.integration.config.ts`; scripts `test` / `test:unit` / `test:integration`; new `@hcm/e2e` workspace (added to root `workspaces`) with `pretest` DB bring-up+seed; root `typecheck` / `test` / `test:integration` / `test:e2e`.
+Wiring: `examples/hcm-graph/app/server/vitest.config.ts` (unit, excludes integration) + `vitest.integration.config.ts`; scripts `test` / `test:unit` / `test:integration`; new `@hcm/e2e` workspace (added to root `workspaces`) with `pretest` DB bring-up+seed; root `typecheck` / `test` / `test:integration` / `test:e2e`.
 
 Dependencies added — **all implied by the approved stack** (Neo4j Testcontainers, axe + Playwright), none novel: server devDeps already carried `vitest` + `testcontainers` + `@testcontainers/neo4j`; e2e adds `@playwright/test`, `@axe-core/playwright`.
 
@@ -35,11 +35,11 @@ Error: Could not determine server runtime. Please install @react-router/node,
 or provide a custom entry.server.tsx/jsx file in your app directory.
 ```
 
-`@react-router/node@7.18.2` **is** installed and declared, and `react-router.config.ts` sets `ssr: true`, yet RR7's runtime auto-detection does not fire and there is **no `app/web/app/entry.server.tsx`**. The error's own remedy is to add `app/entry.server.tsx` (and `entry.client.tsx`). This blocks all e2e and any production serve. Left for the web-engineer / repair loop — outside the test-engineer lane.
+`@react-router/node@7.18.2` **is** installed and declared, and `react-router.config.ts` sets `ssr: true`, yet RR7's runtime auto-detection does not fire and there is **no `examples/hcm-graph/app/web/app/entry.server.tsx`**. The error's own remedy is to add `examples/hcm-graph/app/entry.server.tsx` (and `entry.client.tsx`). This blocks all e2e and any production serve. Left for the web-engineer / repair loop — outside the test-engineer lane.
 
 ## Second finding (non-blocking, web unit test)
 
-`app/web/test/OrgTree.test.tsx` asserts `role="treegrid"` / `role="row"`, but the shipped `OrgTree.tsx` renders the APG **`role="tree"` / `role="treeitem"`** the accessibility contract mandates. The component is correct; that component test is stale and will fail `vitest`. The e2e keyboard walkthrough targets the correct `tree`/`treeitem` DOM.
+`examples/hcm-graph/app/web/test/OrgTree.test.tsx` asserts `role="treegrid"` / `role="row"`, but the shipped `OrgTree.tsx` renders the APG **`role="tree"` / `role="treeitem"`** the accessibility contract mandates. The component is correct; that component test is stale and will fail `vitest`. The e2e keyboard walkthrough targets the correct `tree`/`treeitem` DOM.
 
 ## How to reproduce
 
