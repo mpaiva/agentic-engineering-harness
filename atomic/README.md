@@ -50,13 +50,14 @@ Returning a top-level `status` of `"failed"`, `"blocked"`, `"needs_human"`, or `
 
 ## Running a workflow
 
-Workflows are discovered from conventional directories and installed packages. Install this repo's workflows project-locally, then launch by name inside Atomic's TUI:
+Atomic discovers project workflows only from **`.atomic/workflows/`** (with the dot). The authored, version-controlled copies live in [`workflows/`](workflows/) for readability, so make them runnable first with the sync helper (it copies them into `.atomic/workflows/`, which is gitignored/derived):
 
 ```bash
-# From a project that should use these workflows:
-atomic install ./path/to/agentic-engineering-harness   # or git:github.com/mpaiva/…
+# From the repo root, once (and after editing a workflow):
+./scripts/sync-workflows.sh
 
 # Inside atomic (interactive):
+/workflow reload                 # rediscover after a sync
 /workflow list
 /workflow inputs feature-development
 /workflow feature-development objective="Add employee event history view (WCAG 2.2 AA)"
