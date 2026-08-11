@@ -213,7 +213,7 @@ export default workflow({
         }),
       });
 
-      const result = verdict.output as {
+      const result = verdict.structured as {
         passed: boolean;
         blocking_findings: Array<{ severity: string; location: string; issue: string }>;
         rationale: string;
