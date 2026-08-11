@@ -89,7 +89,44 @@ Roll up the states from another terminal any time:
 ./scripts/status.sh EE-1428
 ```
 
-## Going further
+## Next steps — drive real agents from this workspace
 
-- Swap the sample task for a real one and run the Atomic workflow with a logged-in provider: `/workflow feature-development objective="…"`.
-- Add a `create_pr=true` run once you trust the loop (the workflow gates the PR behind final human approval — see the workflow source).
+Once `herdr --session ee-1428` is attached you have a live workspace with one pane per responsibility (research/planner/frontend/test/verifier), each sitting at a shell prompt. Inside those panes `HERDR_ENV=1` is set. Two ways to turn them into real work:
+
+### A. Let Atomic orchestrate (recommended — the most leverage)
+
+Focus one pane, point it at a real project, and run a workflow. Atomic fans out its own sub-agents and verifies internally; Herdr shows this pane going `working` → `blocked` at a gate.
+
+```bash
+# inside the `research` pane (or any) — you're in Herdr, so HERDR_ENV=1
+cd ~/path/to/your/project
+atomic                      # /login once if you haven't
+# then, inside atomic:
+/workflow goal objective="<one verifiable outcome + its acceptance criteria>"
+# richer, with explicit human gates:
+/workflow feature-development objective="…" scope="…"
+```
+
+The recorded [atomic-goal-run.md](atomic-goal-run.md) shows exactly what to expect from a real `goal` run (implementation → 3 independent reviewers → reducer-gated completion).
+
+### B. One live agent per responsibility (Pattern B)
+
+Put a real Claude agent in each named pane and drive the phase order yourself. Pane ids come from `herdr pane list` (in this session: research=`w1:p2`, planner=`w1:p3`, frontend=`w1:p4`, test=`w1:p5`, verifier=`w1:p6`):
+
+```bash
+herdr agent start research --kind claude --pane w1:p2
+herdr agent prompt research "Investigate <X>. Write findings to research/codebase.md. Do not implement."
+herdr agent wait  research --until done --until blocked --timeout 900000   # only step in on `blocked`
+```
+
+Repeat per pane, advancing phases as agents report `done`. [`../../scripts/launch-feature.sh`](../../scripts/launch-feature.sh) `--live` scaffolds this loop.
+
+### The arc to aim for
+
+1. **Define the six** before launching: goal · scope · context · constraints · verification · approval ([../../docs/operating-model.md](../../docs/operating-model.md)).
+2. **Run** — `goal`/`ralph` for bounded autonomous work, `feature-development` for explicit human gates.
+3. **Supervise by exception** — watch the sidebar; act only on `blocked`/failed ([../../docs/monitoring-agents.md](../../docs/monitoring-agents.md)). `./scripts/status.sh EE-1428` rolls it up from any terminal.
+4. **Trust evidence, not claims** — let fresh verifiers decide "done" ([../../docs/verification-and-gates.md](../../docs/verification-and-gates.md)).
+5. **Review at the gate, then ship** — add `create_pr=true` only once you trust the loop; the workflow gates the PR behind final human approval.
+
+Run autonomous work in an isolated worktree/VM — `goal` commits on its own ([../../docs/security.md](../../docs/security.md)).
