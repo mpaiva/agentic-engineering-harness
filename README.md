@@ -115,6 +115,38 @@ Then walk the [feature-development example](examples/feature-development/README.
 runs research → plan → (human gate) → parallel implementation → verification → bounded
 repair → (human gate) → PR.
 
+## Start here — a reading order
+
+New to this repo? Read in this order:
+
+1. **[docs/architecture.md](docs/architecture.md)** — the three layers and why they stay
+   separate.
+2. **[docs/operating-model.md](docs/operating-model.md)** — how you *supervise* this
+   instead of driving every step (goal · scope · context · constraints · verification ·
+   approval).
+3. **[docs/verification-and-gates.md](docs/verification-and-gates.md)** — the half that
+   keeps parallel agents trustworthy: independent verification + human gates.
+
+### Getting the best out of Atomic
+
+Atomic is the orchestration/verification engine, and the highest-leverage thing to learn.
+
+1. **[atomic/README.md](atomic/README.md)** — how workflows are defined (TypeScript),
+   the `ctx` primitives, DAG rules, and when to reuse built-ins (`goal`, `ralph`, …)
+   instead of hand-rolling.
+2. **[atomic/workflows/feature-development.ts](atomic/workflows/feature-development.ts)** —
+   an annotated reference workflow: fan-out research → plan → gate → implement → verify →
+   **bounded, DAG-unrolled repair** → gate → PR.
+3. **[examples/feature-development/atomic-goal-run.md](examples/feature-development/atomic-goal-run.md)** —
+   a **real, recorded `goal` run**: live agents implemented a utility test-first, three
+   independent reviewers re-ran the checks, and they **caught a real edge-case bug the
+   author's passing tests missed**. This is the payoff of the whole model, on tape. Raw
+   evidence (ledger, receipt, reviewer verdicts) is in
+   [examples/feature-development/atomic-run/](examples/feature-development/atomic-run/).
+
+The one-line lesson: **describe the outcome and its acceptance criteria, bound the turns,
+and let independent verifiers — not the author — decide "done."**
+
 ## Design principles
 
 1. **Workflows over mega-prompts.** Repeatable engineering behavior belongs in a
@@ -138,7 +170,13 @@ repair → (human gate) → PR.
 - The three-layer operating model, docs, conventions, and the Atomic workflow spec are
   complete and grounded in the installed tool versions (Atomic `0.9.12`, Herdr `0.8.0`,
   Ghostty `1.3.1`).
+- **Verified working, not just written:** the reference workflow is discovered and
+  schema-validated by Atomic; the Herdr example runs end-to-end over a real headless
+  session; and a **real Atomic `goal` run** was executed and recorded (see the
+  [case study](examples/feature-development/atomic-goal-run.md)).
 - A first-class **Atomic ↔ Herdr adapter** (a single command surface that projects
   Atomic workflow state into the Herdr sidebar) does **not** yet exist in either tool.
   It is documented as a target in [herdr/atomic-integration.md](herdr/atomic-integration.md)
   and is not implemented here. The example wires the two layers with scripts today.
+- No remote is configured — this repo is local by default. Clone it, read the
+  [reading order](#start-here--a-reading-order) above, and run the example.

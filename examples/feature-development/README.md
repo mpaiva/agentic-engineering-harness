@@ -67,12 +67,13 @@ registered alongside the built-ins, with its inputs parsed):
 │ … goal · ralph · fan-out-and-synthesize · adversarial-verification … │
 ```
 
-**The verification is real** — `artifacts/evidence.txt` from a run:
+**The verification is real** — `artifacts/evidence.txt` from a run (11 tests once the
+Atomic `goal` run added `truncate`; 5 before it):
 
 ```text
 $ node --test
-# tests 5
-# pass 5
+# tests 11
+# pass 11
 # fail 0
 ```
 
