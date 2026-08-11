@@ -8,6 +8,13 @@ The task: *add a URL-safe `slugify()` utility with tests* (see
 [`sample-project/`](sample-project/)). It's deliberately tiny so the **verification is
 real and fast**, not hand-waved.
 
+> **There is a real, paid, autonomous Atomic run recorded here too.** The built-in `goal`
+> workflow drove live Claude agents to add a `truncate()` utility to `sample-project/`,
+> with three independent reviewers — and the reviewers **caught a real edge-case bug the
+> author's passing tests missed**. See **[atomic-goal-run.md](atomic-goal-run.md)** and
+> the raw evidence in [atomic-run/](atomic-run/). That run is why `sample-project/` now
+> has two features (slugify + truncate) and the suite reports 11 tests.
+
 ## Two ways this maps onto the tools
 
 The harness has two layers you can drive. This example exercises both:

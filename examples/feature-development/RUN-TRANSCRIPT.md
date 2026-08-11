@@ -1,9 +1,12 @@
-# Run transcript — feature-development example
+# Run transcript — feature-development example (Herdr-orchestrated)
 
 Captured from `./examples/feature-development/run.sh` on macOS with Herdr 0.8.0,
 Atomic 0.9.12, Node 22. This is real output: a headless Herdr session, real pane/state
 transitions, and real `node --test` verification. The "agents" are the script's
 deterministic steps (see README — "What is real vs. simulated").
+
+The suite reports 11 tests because `sample-project/` now also contains the `truncate`
+feature added by a real Atomic `goal` run — see atomic-goal-run.md.
 
 ```text
 
@@ -37,7 +40,7 @@ Attend to BLOCKED / UNKNOWN. WORKING needs nothing from you.
 implemented: src/slugify.js  ·  test/slugify.test.js
 
 ── phase 4 · verification (real evidence) ──
-checks ran → # pass 5 # fail 0 
+checks ran → # pass 11 # fail 0 
 independent verdict: passed
 
 ── gate 2 · final human review ──
