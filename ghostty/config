@@ -10,7 +10,7 @@
 # ── Legibility: you read agent output for hours ────────────────────────────────
 font-family = "JetBrains Mono"
 font-size = 14
-theme = "dark:catppuccin-mocha,light:catppuccin-latte"
+theme = dark:Catppuccin Mocha,light:Catppuccin Latte
 cursor-style = block
 mouse-hide-while-typing = true
 copy-on-select = clipboard
