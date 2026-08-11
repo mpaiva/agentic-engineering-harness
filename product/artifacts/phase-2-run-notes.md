@@ -6,6 +6,17 @@ what was done autonomously, why the build was **not executed to a "working slice
 exactly how to run it for real. Per [AGENTS.md](../../AGENTS.md): *ground truth over assumption; do not
 fabricate evidence; label future/not-implemented clearly.*
 
+> **Update (blocker cleared).** Docker is now installed on this machine via **Colima** (a Docker daemon in a
+> macOS Virtualization.framework VM — no `sudo` needed) plus the Homebrew `docker` CLI and Compose plugin.
+> Verified end to end: `docker run neo4j:5-community` starts, the schema.md §3 CE uniqueness constraint
+> applies, and Bolt is reachable on `127.0.0.1:7687`. `~/.testcontainers.properties` points Testcontainers at
+> `unix:///Users/mp/.colima/default/docker.sock`, and Colima is registered as a login service. Phase 2
+> (`hcm-feature-build`) has therefore been **launched** against a real graph DB.
+>
+> If a Testcontainers integration stage cannot reach the daemon, set in that shell:
+> `export DOCKER_HOST=unix://$HOME/.colima/default/docker.sock` and, for the Ryuk reaper's socket mount,
+> `export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock` (fallback: `TESTCONTAINERS_RYUK_DISABLED=true`).
+
 ## What is done
 
 - The Phase 2–3 workflow is authored, synced, and discovers cleanly in Atomic (module + input schema valid).
