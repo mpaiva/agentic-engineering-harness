@@ -1,33 +1,17 @@
 # Example: feature-development, end to end
 
-A **real, runnable** walk of the harness's core loop — research → plan → human gate →
-implementation → verification → human gate → PR — on a small self-contained task, so you
-can see the operating model actually work before pointing it at your own codebase.
+A **real, runnable** walk of the harness's core loop — research → plan → human gate → implementation → verification → human gate → PR — on a small self-contained task, so you can see the operating model actually work before pointing it at your own codebase.
 
-The task: *add a URL-safe `slugify()` utility with tests* (see
-[`sample-project/`](sample-project/)). It's deliberately tiny so the **verification is
-real and fast**, not hand-waved.
+The task: *add a URL-safe `slugify()` utility with tests* (see [`sample-project/`](sample-project/)). It's deliberately tiny so the **verification is real and fast**, not hand-waved.
 
-> **There is a real, paid, autonomous Atomic run recorded here too.** The built-in `goal`
-> workflow drove live Claude agents to add a `truncate()` utility to `sample-project/`,
-> with three independent reviewers — and the reviewers **caught a real edge-case bug the
-> author's passing tests missed**. See **[atomic-goal-run.md](atomic-goal-run.md)** and
-> the raw evidence in [atomic-run/](atomic-run/). That run is why `sample-project/` now
-> has two features (slugify + truncate) and the suite reports 11 tests.
+> **There is a real, paid, autonomous Atomic run recorded here too.** The built-in `goal` workflow drove live Claude agents to add a `truncate()` utility to `sample-project/`, with three independent reviewers — and the reviewers **caught a real edge-case bug the author's passing tests missed**. See **[atomic-goal-run.md](atomic-goal-run.md)** and the raw evidence in [atomic-run/](atomic-run/). That run is why `sample-project/` now has two features (slugify + truncate) and the suite reports 11 tests.
 
 ## Two ways this maps onto the tools
 
 The harness has two layers you can drive. This example exercises both:
 
-1. **Atomic** expresses the process as a workflow —
-   [`../../atomic/workflows/feature-development.ts`](../../atomic/workflows/feature-development.ts).
-   Atomic discovers and validates it (evidence below). Running it to completion drives
-   real LLM agents through the stages; that needs a logged-in provider and answers at the
-   human gates.
-2. **Herdr** runs and observes the workers. [`run.sh`](run.sh) drives the *same phase
-   shape* over a real headless Herdr session so you can watch the cockpit — panes,
-   states, and the workspace rolling up to `BLOCKED` at each gate — without needing a
-   provider or spending agent credits.
+1. **Atomic** expresses the process as a workflow — [`../../atomic/workflows/feature-development.ts`](../../atomic/workflows/feature-development.ts). Atomic discovers and validates it (evidence below). Running it to completion drives real LLM agents through the stages; that needs a logged-in provider and answers at the human gates.
+2. **Herdr** runs and observes the workers. [`run.sh`](run.sh) drives the *same phase shape* over a real headless Herdr session so you can watch the cockpit — panes, states, and the workspace rolling up to `BLOCKED` at each gate — without needing a provider or spending agent credits.
 
 ## Run it
 
@@ -36,9 +20,7 @@ The harness has two layers you can drive. This example exercises both:
 ./examples/feature-development/run.sh
 ```
 
-It creates a workspace with one pane per responsibility, advances the phases, stops
-(visibly) at each human gate, runs the **real** checks, and writes real artifacts. A
-captured run is in [RUN-TRANSCRIPT.md](RUN-TRANSCRIPT.md).
+It creates a workspace with one pane per responsibility, advances the phases, stops (visibly) at each human gate, runs the **real** checks, and writes real artifacts. A captured run is in [RUN-TRANSCRIPT.md](RUN-TRANSCRIPT.md).
 
 ### What is real vs. simulated
 
@@ -50,14 +32,11 @@ captured run is in [RUN-TRANSCRIPT.md](RUN-TRANSCRIPT.md).
 | Verification: real `node --check` + `node --test`, output saved as evidence | — |
 | Artifacts written to `research/ specs/ artifacts/` | — |
 
-The **live-agent** path (real `claude` per pane) is
-[`../../scripts/launch-feature.sh`](../../scripts/launch-feature.sh) `--live`, which uses
-`herdr agent start --kind claude` + `herdr agent prompt` + `herdr agent wait`.
+The **live-agent** path (real `claude` per pane) is [`../../scripts/launch-feature.sh`](../../scripts/launch-feature.sh) `--live`, which uses `herdr agent start --kind claude` + `herdr agent prompt` + `herdr agent wait`.
 
 ## Evidence this actually ran
 
-**Atomic discovers and validates the workflow** (`/workflow list` — our workflow is
-registered alongside the built-ins, with its inputs parsed):
+**Atomic discovers and validates the workflow** (`/workflow list` — our workflow is registered alongside the built-ins, with its inputs parsed):
 
 ```text
 ╭ WORKFLOWS  10 registered ─────────────────────────────────────────────╮
@@ -67,8 +46,7 @@ registered alongside the built-ins, with its inputs parsed):
 │ … goal · ralph · fan-out-and-synthesize · adversarial-verification … │
 ```
 
-**The verification is real** — `artifacts/evidence.txt` from a run (11 tests once the
-Atomic `goal` run added `truncate`; 5 before it):
+**The verification is real** — `artifacts/evidence.txt` from a run (11 tests once the Atomic `goal` run added `truncate`; 5 before it):
 
 ```text
 $ node --test
@@ -77,8 +55,7 @@ $ node --test
 # fail 0
 ```
 
-**The cockpit rolls up to BLOCKED at a human gate** (from
-[RUN-TRANSCRIPT.md](RUN-TRANSCRIPT.md)):
+**The cockpit rolls up to BLOCKED at a human gate** (from [RUN-TRANSCRIPT.md](RUN-TRANSCRIPT.md)):
 
 ```text
 EE-1428 Employee Event Slug   [workspace: ! BLOCKED]
@@ -96,13 +73,11 @@ specs/implementation-plan.md
 artifacts/evidence.txt         artifacts/verification.md
 ```
 
-These are what "artifacts are handoffs" looks like in practice — inspectable findings,
-plan, and evidence rather than conversational memory.
+These are what "artifacts are handoffs" looks like in practice — inspectable findings, plan, and evidence rather than conversational memory.
 
 ## Watch it live
 
-While a run's server is up, attach the Herdr TUI from Ghostty to see the panes and
-sidebar for yourself:
+While a run's server is up, attach the Herdr TUI from Ghostty to see the panes and sidebar for yourself:
 
 ```bash
 herdr --session ee-1428
@@ -116,7 +91,5 @@ Roll up the states from another terminal any time:
 
 ## Going further
 
-- Swap the sample task for a real one and run the Atomic workflow with a logged-in
-  provider: `/workflow feature-development objective="…"`.
-- Add a `create_pr=true` run once you trust the loop (the workflow gates the PR behind
-  final human approval — see the workflow source).
+- Swap the sample task for a real one and run the Atomic workflow with a logged-in provider: `/workflow feature-development objective="…"`.
+- Add a `create_pr=true` run once you trust the loop (the workflow gates the PR behind final human approval — see the workflow source).

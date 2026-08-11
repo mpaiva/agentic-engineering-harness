@@ -1,20 +1,12 @@
 # Atomic layer — the engineering process as a workflow
 
-[Atomic](https://github.com/bastani-inc/atomic) (`@bastani/atomic`) is the orchestration
-and verification engine. This directory holds the **workflow definitions** that encode
-our engineering process as explicit, versioned, resumable graphs.
+[Atomic](https://github.com/bastani-inc/atomic) (`@bastani/atomic`) is the orchestration and verification engine. This directory holds the **workflow definitions** that encode our engineering process as explicit, versioned, resumable graphs.
 
-> Verified against Atomic `0.9.12`. Command surfaces here are copied from the installed
-> binary (`atomic --help`) and Atomic's bundled workflow docs
-> (`$(npm root -g)/@bastani/atomic/docs/workflows.md`).
+> Verified against Atomic `0.9.12`. Command surfaces here are copied from the installed binary (`atomic --help`) and Atomic's bundled workflow docs (`$(npm root -g)/@bastani/atomic/docs/workflows.md`).
 
 ## Mental model
 
-A workflow is a TypeScript module that **default-exports** a `workflow({...})`
-definition. The `run(ctx)` body is imperative TypeScript that materializes a graph of
-tracked stages at runtime. Each stage is a **model stage** (an agent turn), not a
-deterministic function. Stages pass large context to each other as **artifact files**,
-not inline prompt text.
+A workflow is a TypeScript module that **default-exports** a `workflow({...})` definition. The `run(ctx)` body is imperative TypeScript that materializes a graph of tracked stages at runtime. Each stage is a **model stage** (an agent turn), not a deterministic function. Stages pass large context to each other as **artifact files**, not inline prompt text.
 
 ```ts
 import { workflow } from "@bastani/workflows";
@@ -49,26 +41,16 @@ export default workflow({
 
 Two rules that shape the workflow's structure:
 
-1. **DAG only — no cycles.** A repair loop must be **unrolled**: each repair iteration
-   creates *new* tracked nodes (`review-1`, `repair-1`, `review-2`, …). You may not point
-   `repair` back at the original `implement` node. This is why the reference workflow
-   loops with a bounded `for` that names each iteration.
-2. **Independent verifiers get fresh context.** Reviewer/verifier stages use
-   `context: "fresh"` so the implementer's optimism can't bias them. They evaluate the
-   artifacts and the diff, not the author's narrative.
+1. **DAG only — no cycles.** A repair loop must be **unrolled**: each repair iteration creates *new* tracked nodes (`review-1`, `repair-1`, `review-2`, …). You may not point `repair` back at the original `implement` node. This is why the reference workflow loops with a bounded `for` that names each iteration.
+2. **Independent verifiers get fresh context.** Reviewer/verifier stages use `context: "fresh"` so the implementer's optimism can't bias them. They evaluate the artifacts and the diff, not the author's narrative.
 
 ## Reserved `status` output
 
-Returning a top-level `status` of `"failed"`, `"blocked"`, `"needs_human"`, or
-`"incomplete"` marks the run as *not a clean completion* — Atomic surfaces it as
-blocked/needs-attention rather than success. The reference workflow returns
-`status: "needs_human"` when the plan gate is declined or the repair bound is exhausted,
-and pairs it with a `summary` for the run notice.
+Returning a top-level `status` of `"failed"`, `"blocked"`, `"needs_human"`, or `"incomplete"` marks the run as *not a clean completion* — Atomic surfaces it as blocked/needs-attention rather than success. The reference workflow returns `status: "needs_human"` when the plan gate is declined or the repair bound is exhausted, and pairs it with a `summary` for the run notice.
 
 ## Running a workflow
 
-Workflows are discovered from conventional directories and installed packages. Install
-this repo's workflows project-locally, then launch by name inside Atomic's TUI:
+Workflows are discovered from conventional directories and installed packages. Install this repo's workflows project-locally, then launch by name inside Atomic's TUI:
 
 ```bash
 # From a project that should use these workflows:
@@ -89,9 +71,7 @@ Monitor and control runs:
 /workflow resume <run-id>     # resume a paused run
 ```
 
-Named runs execute in the **background** and return a run id, which is exactly what makes
-them supervisable from Herdr (see
-[../herdr/atomic-integration.md](../herdr/atomic-integration.md)).
+Named runs execute in the **background** and return a run id, which is exactly what makes them supervisable from Herdr (see [../herdr/atomic-integration.md](../herdr/atomic-integration.md)).
 
 ## When to write your own vs. use a built-in
 
@@ -105,7 +85,4 @@ Atomic ships composable built-ins — prefer them before hand-rolling:
 | `adversarial-verification` | Challenge a candidate with fresh verifiers + bounded repair. |
 | `loop-until-done` | Iterate against a durable ledger until done or bound exhausted. |
 
-[`workflows/feature-development.ts`](workflows/feature-development.ts) is a **teaching
-reference** that shows the full research → gate → implement → verify → repair → gate → PR
-shape explicitly. In production you would often express the implementation core with
-`goal` or `ralph` and keep only the gates and fan-out around them.
+[`workflows/feature-development.ts`](workflows/feature-development.ts) is a **teaching reference** that shows the full research → gate → implement → verify → repair → gate → PR shape explicitly. In production you would often express the implementation core with `goal` or `ralph` and keep only the gates and fan-out around them.

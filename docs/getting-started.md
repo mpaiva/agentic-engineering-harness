@@ -6,8 +6,7 @@ This gets you from nothing to a running, observable multi-agent workspace.
 
 - **macOS or Linux.** (Herdr has a Windows beta; this guide assumes macOS/Linux.)
 - **Node.js ≥ 22.19** for Atomic. Check with `node -v`.
-- **A coding agent CLI.** This harness uses **Claude Code** (`claude`) as the default
-  agent backend; Codex and 14+ others also work under Herdr.
+- **A coding agent CLI.** This harness uses **Claude Code** (`claude`) as the default agent backend; Codex and 14+ others also work under Herdr.
 - **git**.
 
 Verified against: Atomic `0.9.12`, Herdr `0.8.0`, Ghostty `1.3.1`, Claude Code `2.1.x`.
@@ -25,8 +24,7 @@ curl -fsSL https://herdr.dev/install.sh | sh
 brew install --cask ghostty
 ```
 
-> Security note: `curl … | sh` executes a remote script. If you prefer, download
-> `https://herdr.dev/install.sh`, read it, then run it. See [docs/security.md](security.md).
+> Security note: `curl … | sh` executes a remote script. If you prefer, download `https://herdr.dev/install.sh`, read it, then run it. See [docs/security.md](security.md).
 
 Make sure `~/.local/bin` is on your `PATH`:
 
@@ -44,8 +42,7 @@ claude --version   # 2.1.x
 
 ## 2. Teach Herdr to recognize your agent's state
 
-Herdr classifies agent state most reliably when it has the agent's **lifecycle
-integration** installed. Install the one(s) you use:
+Herdr classifies agent state most reliably when it has the agent's **lifecycle integration** installed. Install the one(s) you use:
 
 ```bash
 herdr integration install claude
@@ -53,8 +50,7 @@ herdr integration install claude
 herdr integration status
 ```
 
-Without an integration, Herdr falls back to reading the terminal buffer against
-screen-manifest rules — it still works, but lifecycle hooks are more accurate.
+Without an integration, Herdr falls back to reading the terminal buffer against screen-manifest rules — it still works, but lifecycle hooks are more accurate.
 
 ## 3. Authenticate your agent
 
@@ -64,9 +60,7 @@ Claude Code:
 claude   # follow the login prompt once; the session persists
 ```
 
-Atomic authenticates to a model provider on first run (`atomic`, then follow the auth
-flow). Atomic can also **print credentials for external clients** — see
-[atomic/README.md](../atomic/README.md).
+Atomic authenticates to a model provider on first run (`atomic`, then follow the auth flow). Atomic can also **print credentials for external clients** — see [atomic/README.md](../atomic/README.md).
 
 ## 4. Configure Ghostty (optional but recommended)
 
@@ -81,15 +75,13 @@ See [ghostty/recommended-config.md](../ghostty/recommended-config.md) for the ra
 
 ## 5. Launch your first workspace
 
-A workspace maps to **one meaningful engineering outcome** (one ticket / one feature).
-Open Ghostty, then:
+A workspace maps to **one meaningful engineering outcome** (one ticket / one feature). Open Ghostty, then:
 
 ```bash
 ./scripts/new-workspace.sh EE-1428 "Employee Event Details"
 ```
 
-This creates a Herdr workspace and drops you into it. Inside a Herdr-managed pane the
-environment variable `HERDR_ENV=1` is set — that is how agents know they can drive Herdr.
+This creates a Herdr workspace and drops you into it. Inside a Herdr-managed pane the environment variable `HERDR_ENV=1` is set — that is how agents know they can drive Herdr.
 
 ## 6. Understand what you are looking at
 
@@ -106,13 +98,11 @@ Employee Events (EE-1428)
 ● test              WORKING
 ```
 
-You are meant to watch the **exceptions** (`BLOCKED`, `FAILED`), not every pane. See
-[docs/monitoring-agents.md](monitoring-agents.md).
+You are meant to watch the **exceptions** (`BLOCKED`, `FAILED`), not every pane. See [docs/monitoring-agents.md](monitoring-agents.md).
 
 ## 7. Run the end-to-end example
 
-Walk the reference feature workflow — research → plan → human gate → parallel
-implementation → verification → bounded repair → human gate → PR:
+Walk the reference feature workflow — research → plan → human gate → parallel implementation → verification → bounded repair → human gate → PR:
 
 ```bash
 cd examples/feature-development

@@ -1,7 +1,6 @@
 # Monitoring autonomous runs — supervision by exception
 
-The engineer should **not** continuously watch autonomous agents. The harness watches;
-the human is pulled in only for exceptions and judgment.
+The engineer should **not** continuously watch autonomous agents. The harness watches; the human is pulled in only for exceptions and judgment.
 
 ## The wrong question and the right questions
 
@@ -34,11 +33,7 @@ Herdr classifies each agent pane into one of five states. Your response to each:
 | **FAILED** | A stage produced failing evidence and exhausted its retry bound. | Inspect evidence → retry, redirect, or stop. |
 | **IDLE** | Available for more work. | Assign work, or ignore. |
 
-> Herdr's own vocabulary is `idle`, `working`, `blocked`, `done`, `unknown`. `FAILED`
-> here is a workflow-level outcome (a stage that exhausted its repair bound and stopped
-> for review); operationally it surfaces as a `blocked` agent plus failing evidence in an
-> artifact. `unknown` means an agent is present but Herdr can't classify it confidently —
-> it does **not** prove completion.
+> Herdr's own vocabulary is `idle`, `working`, `blocked`, `done`, `unknown`. `FAILED` here is a workflow-level outcome (a stage that exhausted its repair bound and stopped for review); operationally it surfaces as a `blocked` agent plus failing evidence in an artifact. `unknown` means an agent is present but Herdr can't classify it confidently — it does **not** prove completion.
 
 Attention goes to **BLOCKED** and **FAILED**. `WORKING` needs nothing from you.
 
@@ -46,14 +41,10 @@ Attention goes to **BLOCKED** and **FAILED**. `WORKING` needs nothing from you.
 
 Two mechanisms, in priority order:
 
-1. **Lifecycle hooks** — installed with `herdr integration install <agent>` (e.g.
-   `claude`). The agent authoritatively reports `idle` / `working` / `blocked`.
-2. **Screen manifests** — when hooks aren't available, Herdr reads the live
-   bottom-buffer terminal snapshot and matches it against TOML rules (and terminal
-   titles / progress sequences).
+1. **Lifecycle hooks** — installed with `herdr integration install <agent>` (e.g. `claude`). The agent authoritatively reports `idle` / `working` / `blocked`.
+2. **Screen manifests** — when hooks aren't available, Herdr reads the live bottom-buffer terminal snapshot and matches it against TOML rules (and terminal titles / progress sequences).
 
-State **rolls up**: a `blocked` agent makes its pane, tab, and *workspace* read as
-blocked in the sidebar. That is the whole point — you scan workspaces, not panes.
+State **rolls up**: a `blocked` agent makes its pane, tab, and *workspace* read as blocked in the sidebar. That is the whole point — you scan workspaces, not panes.
 
 Diagnose why an agent is in a given state:
 
@@ -63,8 +54,7 @@ herdr agent explain <agent-name-or-pane-id>
 
 ## Reading state from scripts and other agents
 
-Everything the sidebar shows is available over the CLI / socket API, so a workflow — or a
-supervising agent — can act on state without a human:
+Everything the sidebar shows is available over the CLI / socket API, so a workflow — or a supervising agent — can act on state without a human:
 
 ```bash
 # Snapshot the whole session as JSON
@@ -81,14 +71,11 @@ herdr agent wait <agent> --until done --timeout 900000
 herdr agent wait <agent> --until blocked --until done
 ```
 
-`herdr agent wait --until <state>` is how the harness implements *supervision by
-exception* in automation: a coordinator waits on many agents and only escalates the ones
-that reach `blocked`, or that fail their checks.
+`herdr agent wait --until <state>` is how the harness implements *supervision by exception* in automation: a coordinator waits on many agents and only escalates the ones that reach `blocked`, or that fail their checks.
 
 ## The cockpit you actually want
 
-The target view — one glance tells you where your judgment is needed across everything
-you're running:
+The target view — one glance tells you where your judgment is needed across everything you're running:
 
 ```text
 EMPLOYEE EVENTS — EE-1428          NAV-431 GLOBAL NAV       DS-204 DATE PICKER
@@ -107,14 +94,8 @@ VERIFICATION
 HUMAN REVIEW      ○ waiting
 ```
 
-Today Herdr provides the pane/state cockpit and Atomic provides the stage graph; a
-first-class adapter that projects Atomic's stage names into the Herdr sidebar is a
-documented future step (see
-[herdr/atomic-integration.md](../herdr/atomic-integration.md)). Until then,
-`scripts/status.sh` rolls up `herdr agent list` into the same at-a-glance view.
+Today Herdr provides the pane/state cockpit and Atomic provides the stage graph; a first-class adapter that projects Atomic's stage names into the Herdr sidebar is a documented future step (see [herdr/atomic-integration.md](../herdr/atomic-integration.md)). Until then, `scripts/status.sh` rolls up `herdr agent list` into the same at-a-glance view.
 
 ## The principle
 
-> Human attention should be directed to **exceptions** rather than raw activity.
-> Do not make humans monitor agents; make the harness monitor agents and bring humans the
-> decisions that require human judgment.
+> Human attention should be directed to **exceptions** rather than raw activity. Do not make humans monitor agents; make the harness monitor agents and bring humans the decisions that require human judgment.

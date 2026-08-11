@@ -1,12 +1,8 @@
 # Herdr setup
 
-[Herdr](https://herdr.dev/) (`herdrdev/herdr`) is the workspace/operations layer: it holds
-real terminals open, groups agent panes into workspaces, and reports each agent's live
-state. This is how to install it, teach it to recognize your agents, and drive it.
+[Herdr](https://herdr.dev/) (`herdrdev/herdr`) is the workspace/operations layer: it holds real terminals open, groups agent panes into workspaces, and reports each agent's live state. This is how to install it, teach it to recognize your agents, and drive it.
 
-> Verified against Herdr `0.8.0`. Every command below is from `herdr --help` and the
-> agent skill (`herdr --skill`). The installed binary is always the authority — run
-> `herdr <group>` (e.g. `herdr agent`) to see the current subcommands.
+> Verified against Herdr `0.8.0`. Every command below is from `herdr --help` and the agent skill (`herdr --skill`). The installed binary is always the authority — run `herdr <group>` (e.g. `herdr agent`) to see the current subcommands.
 
 ## Install
 
@@ -16,8 +12,7 @@ export PATH="$HOME/.local/bin:$PATH"           # persist in ~/.zshrc
 herdr --version                                # herdr 0.8.0
 ```
 
-> The installer runs a remote script. For a trusted setup, download it, read it, then run
-> it. See [../docs/security.md](../docs/security.md).
+> The installer runs a remote script. For a trusted setup, download it, read it, then run it. See [../docs/security.md](../docs/security.md).
 
 Config lives at `~/.config/herdr/config.toml`. Print the defaults to start from:
 
@@ -27,8 +22,7 @@ herdr --default-config > ~/.config/herdr/config.toml
 
 ## Client / server model
 
-Herdr runs a persistent **server** (holding your terminals) and a **client** you attach
-with. This is what lets agents keep working after you close the lid or drop the network.
+Herdr runs a persistent **server** (holding your terminals) and a **client** you attach with. This is what lets agents keep working after you close the lid or drop the network.
 
 ```bash
 herdr                       # launch or attach to the persistent session
@@ -38,13 +32,11 @@ herdr --remote user@box     # attach through SSH to a remote Herdr server
 herdr server stop           # stop the running server via the API socket
 ```
 
-Running on a rented/remote box (`--remote`) is the recommended isolation posture for
-highly autonomous work — see [../docs/security.md](../docs/security.md).
+Running on a rented/remote box (`--remote`) is the recommended isolation posture for highly autonomous work — see [../docs/security.md](../docs/security.md).
 
 ## Teach Herdr your agents' lifecycle state
 
-Herdr classifies each agent pane as `idle`, `working`, `blocked`, `done`, or `unknown`.
-It is most accurate when the agent's **lifecycle integration** is installed:
+Herdr classifies each agent pane as `idle`, `working`, `blocked`, `done`, or `unknown`. It is most accurate when the agent's **lifecycle integration** is installed:
 
 ```bash
 herdr integration install claude
@@ -52,9 +44,7 @@ herdr integration install claude
 herdr integration status
 ```
 
-Without an integration Herdr falls back to **screen-manifest** detection (matching the
-live terminal buffer, titles, and progress sequences against TOML rules). It works, but
-lifecycle hooks are authoritative.
+Without an integration Herdr falls back to **screen-manifest** detection (matching the live terminal buffer, titles, and progress sequences against TOML rules). It works, but lifecycle hooks are authoritative.
 
 ## Driving panes and agents from the CLI
 
@@ -93,16 +83,11 @@ herdr agent explain <agent>            # why it's in its current state
 herdr agent wait planner --until done --until blocked --timeout 900000
 ```
 
-Note the state semantics from Herdr's own skill: `idle` = ready for input and its tab was
-seen in the UI; `done` = the same idle state after *unseen* background work finished;
-`blocked` = Herdr recognized an approval/question UI; `unknown` = present but
-unclassifiable — **not** proof of completion. CLI reads do **not** mark a tab "seen";
-focusing it does.
+Note the state semantics from Herdr's own skill: `idle` = ready for input and its tab was seen in the UI; `done` = the same idle state after *unseen* background work finished; `blocked` = Herdr recognized an approval/question UI; `unknown` = present but unclassifiable — **not** proof of completion. CLI reads do **not** mark a tab "seen"; focusing it does.
 
 ## Agents driving Herdr (`HERDR_ENV`)
 
-Inside a Herdr-managed pane, `HERDR_ENV=1` is set. Agents must check it before issuing
-control commands:
+Inside a Herdr-managed pane, `HERDR_ENV=1` is set. Agents must check it before issuing control commands:
 
 ```bash
 test "${HERDR_ENV:-}" = 1   # true only inside a Herdr pane

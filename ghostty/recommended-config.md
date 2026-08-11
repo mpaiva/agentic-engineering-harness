@@ -1,14 +1,8 @@
 # Ghostty recommended config
 
-[Ghostty](https://ghostty.org/) is the **interaction surface** — a fast, native,
-GPU-accelerated terminal. In this harness its only job is to be a comfortable,
-terminal-first home for Herdr. It does **not** orchestrate and knows nothing about agents.
-Keep its config about *legibility and comfort during long supervision sessions*, not about
-agent logic.
+[Ghostty](https://ghostty.org/) is the **interaction surface** — a fast, native, GPU-accelerated terminal. In this harness its only job is to be a comfortable, terminal-first home for Herdr. It does **not** orchestrate and knows nothing about agents. Keep its config about *legibility and comfort during long supervision sessions*, not about agent logic.
 
-> Verified against Ghostty `1.3.1`. The [`config`](config) file passes
-> `ghostty +validate-config` cleanly. Every key was checked against
-> `ghostty +show-config --default`.
+> Verified against Ghostty `1.3.1`. The [`config`](config) file passes `ghostty +validate-config` cleanly. Every key was checked against `ghostty +show-config --default`.
 
 ## Install
 
@@ -41,14 +35,9 @@ Validate any edits before reloading:
 
 ## What this config deliberately does *not* do
 
-- **No agent-specific keybindings or automation.** That belongs to Herdr (`herdr`
-  keybindings in `~/.config/herdr/config.toml`) and to Atomic (workflow definitions).
-  Ghostty stays a dumb, fast surface so it remains replaceable.
-- **No orchestration.** If you find yourself wanting Ghostty to "know" which agent is
-  blocked, that's Herdr's job — see [../herdr/setup.md](../herdr/setup.md).
+- **No agent-specific keybindings or automation.** That belongs to Herdr (`herdr` keybindings in `~/.config/herdr/config.toml`) and to Atomic (workflow definitions). Ghostty stays a dumb, fast surface so it remains replaceable.
+- **No orchestration.** If you find yourself wanting Ghostty to "know" which agent is blocked, that's Herdr's job — see [../herdr/setup.md](../herdr/setup.md).
 
 ## Alternatives
 
-Any terminal works — Herdr runs inside iTerm, Terminal.app, Alacritty, WezTerm, etc.
-Ghostty is *recommended* for speed and a native feel, and to avoid pushing engineers into
-a proprietary agent IDE, but nothing in the harness depends on it.
+Any terminal works — Herdr runs inside iTerm, Terminal.app, Alacritty, WezTerm, etc. Ghostty is *recommended* for speed and a native feel, and to avoid pushing engineers into a proprietary agent IDE, but nothing in the harness depends on it.

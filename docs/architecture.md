@@ -1,8 +1,6 @@
 # Architecture
 
-The harness is a **composition of three tools with strictly separated
-responsibilities**. The separation is the point: each layer is replaceable, and none of
-them tries to be the others.
+The harness is a **composition of three tools with strictly separated responsibilities**. The separation is the point: each layer is replaceable, and none of them tries to be the others.
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
@@ -48,12 +46,7 @@ them tries to be the others.
 
 ### Atomic defines *what should happen*
 
-Atomic (`@bastani/atomic`) is a "verifiable coding agent runtime." A workflow is a
-TypeScript definition with **inputs, stages, branches, parallelism, retries, checks,
-artifacts, checkpoints, and human review gates**. Stages form a directed acyclic graph;
-each stage declares expected outputs validated against a schema before the workflow
-proceeds. Verification is built into the model via **author/verifier separation** —
-fresh-context verifiers that are independent of the implementer's claims.
+Atomic (`@bastani/atomic`) is a "verifiable coding agent runtime." A workflow is a TypeScript definition with **inputs, stages, branches, parallelism, retries, checks, artifacts, checkpoints, and human review gates**. Stages form a directed acyclic graph; each stage declares expected outputs validated against a schema before the workflow proceeds. Verification is built into the model via **author/verifier separation** — fresh-context verifiers that are independent of the implementer's claims.
 
 Atomic ships reusable building-block workflows we compose from rather than reinvent:
 
@@ -69,48 +62,29 @@ Atomic is the **engine**. See [atomic/README.md](../atomic/README.md).
 
 ### Herdr manages *where and how workers run*
 
-Herdr (`herdrdev/herdr`) is a single Rust binary that turns your terminal into a
-workspace manager for coding agents. It:
+Herdr (`herdrdev/herdr`) is a single Rust binary that turns your terminal into a workspace manager for coding agents. It:
 
-- **Holds real terminals open.** Agents keep working when the laptop lid closes or the
-  network drops; Herdr restores the layout on restart.
+- **Holds real terminals open.** Agents keep working when the laptop lid closes or the network drops; Herdr restores the layout on restart.
 - **Groups panes** into workspaces and tabs.
-- **Recognizes coding agents** inside panes and classifies each one's state as
-  `idle`, `working`, `blocked`, `done`, or `unknown` — via lifecycle hooks (installed
-  with `herdr integration install <agent>`) or, failing that, screen-manifest detection
-  of the terminal buffer.
-- **Rolls state up** the sidebar: a `blocked` agent makes its pane, tab, and workspace
-  read as blocked, so the human sees *which project needs a decision*.
-- **Exposes a CLI + socket API** (`herdr agent`, `herdr pane`, `herdr workspace`,
-  `herdr api snapshot`) so scripts and agents can spawn panes, prompt agents, read
-  output, and — crucially — **`herdr agent wait --until <state>`** to block until an
-  agent reaches a state. That `wait` primitive is how supervision-by-exception is
-  implemented.
+- **Recognizes coding agents** inside panes and classifies each one's state as `idle`, `working`, `blocked`, `done`, or `unknown` — via lifecycle hooks (installed with `herdr integration install <agent>`) or, failing that, screen-manifest detection of the terminal buffer.
+- **Rolls state up** the sidebar: a `blocked` agent makes its pane, tab, and workspace read as blocked, so the human sees *which project needs a decision*.
+- **Exposes a CLI + socket API** (`herdr agent`, `herdr pane`, `herdr workspace`, `herdr api snapshot`) so scripts and agents can spawn panes, prompt agents, read output, and — crucially — **`herdr agent wait --until <state>`** to block until an agent reaches a state. That `wait` primitive is how supervision-by-exception is implemented.
 
 Herdr is the **cockpit**. See [herdr/setup.md](../herdr/setup.md).
 
 ### Ghostty is *where the human sits*
 
-Ghostty is a fast, native, GPU-accelerated terminal. Its only job here is to be a good
-terminal-first surface so the engineer is not forced into a proprietary agent IDE.
-Herdr runs inside it. See [ghostty/recommended-config.md](../ghostty/recommended-config.md).
+Ghostty is a fast, native, GPU-accelerated terminal. Its only job here is to be a good terminal-first surface so the engineer is not forced into a proprietary agent IDE. Herdr runs inside it. See [ghostty/recommended-config.md](../ghostty/recommended-config.md).
 
 ## Why keep them separate
 
 Collapsing any two layers looks convenient and costs you later:
 
-- **If Ghostty owned orchestration**, you would be locked to one terminal and one
-  process model. Ghostty stays a dumb, fast surface so it is replaceable.
-- **If Herdr defined the process**, your engineering workflow would be encoded in an
-  operations tool with no schema, no versioning, and no verification model. Herdr stays
-  about panes and state.
-- **If Atomic were the day-long UI**, engineers would live inside the orchestrator and
-  lose the supervision-by-exception view across *many* concurrent outcomes. Atomic stays
-  the engine that a cockpit observes.
+- **If Ghostty owned orchestration**, you would be locked to one terminal and one process model. Ghostty stays a dumb, fast surface so it is replaceable.
+- **If Herdr defined the process**, your engineering workflow would be encoded in an operations tool with no schema, no versioning, and no verification model. Herdr stays about panes and state.
+- **If Atomic were the day-long UI**, engineers would live inside the orchestrator and lose the supervision-by-exception view across *many* concurrent outcomes. Atomic stays the engine that a cockpit observes.
 
-The clean seam between "process definition" (Atomic) and "worker operation" (Herdr) is
-what lets you swap Claude for Codex under a stage, or run the same workflow on a rented
-box, without rewriting the process.
+The clean seam between "process definition" (Atomic) and "worker operation" (Herdr) is what lets you swap Claude for Codex under a stage, or run the same workflow on a rented box, without rewriting the process.
 
 ## How a stage becomes a running agent
 
@@ -126,11 +100,7 @@ Atomic stage  ──►  a shell command that launches an agent (e.g. `claude` /
                    Herdr recognizes the agent and reports its state
 ```
 
-Herdr does **not** need to model "Atomic" as an agent kind. An Atomic stage simply
-results in an agent process, and that process happens to run in a Herdr pane. This
-avoids coupling Herdr's agent-identity model to Atomic. See
-[herdr/atomic-integration.md](../herdr/atomic-integration.md) for the mapping and the
-future adapter concept.
+Herdr does **not** need to model "Atomic" as an agent kind. An Atomic stage simply results in an agent process, and that process happens to run in a Herdr pane. This avoids coupling Herdr's agent-identity model to Atomic. See [herdr/atomic-integration.md](../herdr/atomic-integration.md) for the mapping and the future adapter concept.
 
 ## The engineering graph (target state)
 
@@ -158,6 +128,4 @@ Issue / Product Goal
        PR
 ```
 
-Atomic expresses this graph; Herdr runs and shows it; the engineer supervises it. See
-the [maturity model in the operating model](operating-model.md#maturity-model) for how a
-team climbs from "one engineer, one agent" to operating this graph.
+Atomic expresses this graph; Herdr runs and shows it; the engineer supervises it. See the [maturity model in the operating model](operating-model.md#maturity-model) for how a team climbs from "one engineer, one agent" to operating this graph.

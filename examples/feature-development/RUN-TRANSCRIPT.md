@@ -1,12 +1,8 @@
 # Run transcript — feature-development example (Herdr-orchestrated)
 
-Captured from `./examples/feature-development/run.sh` on macOS with Herdr 0.8.0,
-Atomic 0.9.12, Node 22. This is real output: a headless Herdr session, real pane/state
-transitions, and real `node --test` verification. The "agents" are the script's
-deterministic steps (see README — "What is real vs. simulated").
+Captured from `./examples/feature-development/run.sh` on macOS with Herdr 0.8.0, Atomic 0.9.12, Node 22. This is real output: a headless Herdr session, real pane/state transitions, and real `node --test` verification. The "agents" are the script's deterministic steps (see README — "What is real vs. simulated").
 
-The suite reports 11 tests because `sample-project/` now also contains the `truncate`
-feature added by a real Atomic `goal` run — see atomic-goal-run.md.
+The suite reports 11 tests because `sample-project/` now also contains the `truncate` feature added by a real Atomic `goal` run — see atomic-goal-run.md.
 
 ```text
 
