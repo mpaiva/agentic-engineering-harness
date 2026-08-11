@@ -32,3 +32,12 @@ test("returns empty string for empty or non-string input", () => {
   assert.equal(truncate(undefined, 10), "");
   assert.equal(truncate(12345, 10), "");
 });
+
+// Regression: independent reviewers on goal run 7076c025 found that maxLen < suffix.length
+// produced output LONGER than maxLen (negative slice index). The result must never exceed maxLen.
+test("never exceeds maxLen when maxLen is smaller than the suffix", () => {
+  assert.equal(truncate("abcdefgh", 2), "..");
+  assert.equal(truncate("abcdefgh", 2).length, 2);
+  assert.equal(truncate("abcdefgh", 0), "");
+  assert.equal(truncate("abcdefgh", 1), ".");
+});

@@ -10,6 +10,11 @@
  */
 export function truncate(str, maxLen, suffix = "...") {
   if (typeof str !== "string") return "";
+  if (typeof maxLen !== "number" || maxLen < 0) return str;
   if (str.length <= maxLen) return str;
+  // Independent-review fix (goal run 7076c025): when maxLen < suffix.length the old
+  // `maxLen - suffix.length` slice endpoint went negative and returned a string LONGER
+  // than maxLen. Fall back to a clipped suffix so the result never exceeds maxLen.
+  if (maxLen <= suffix.length) return suffix.slice(0, maxLen);
   return str.slice(0, maxLen - suffix.length) + suffix;
 }
