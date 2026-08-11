@@ -56,5 +56,6 @@ Each phase is an Atomic stage; Atomic fans out its own sub-agents inside one run
 
 ## Mapping to workflows
 
-- **Phase 0** → [`atomic/workflows/hcm-stack-research.ts`](../atomic/workflows/hcm-stack-research.ts) (runnable now).
-- **Phases 1–3** → a specialization of [`feature-development.ts`](../atomic/workflows/feature-development.ts) with the specialists above; authored once the stack is approved, so its stages can name the real tools.
+- **Phase 0** → [`atomic/workflows/hcm-stack-research.ts`](../atomic/workflows/hcm-stack-research.ts) — run, stack **approved**.
+- **Phase 1** → [`atomic/workflows/hcm-model-design.ts`](../atomic/workflows/hcm-model-design.ts) — run, model **approved** ([schema.md](design/schema.md)).
+- **Phases 2–3** → [`atomic/workflows/hcm-feature-build.ts`](../atomic/workflows/hcm-feature-build.ts) — authored now the stack is approved, so its stages name the real tools (Neo4j 5 CE · tRPC/zod · React Router 7 + Vite · React Aria `Tree` · Testcontainers · axe + Playwright). **Run-time prerequisite:** the integration + e2e evidence needs a container runtime (Docker) for a real Neo4j; see [artifacts/phase-2-run-notes.md](artifacts/phase-2-run-notes.md).

@@ -65,4 +65,4 @@ Phase 0 runs the [`hcm-stack-research`](../atomic/workflows/hcm-stack-research.t
 
 ## Status
 
-Defining. Nothing built yet. Next action: run Phase 0 (stack research) — see [product/README.md](README.md).
+Phases 0–1 complete; Phase 2–3 workflow authored. **Phase 0 (stack)** approved — see [product/research/stack-recommendation.md](research/stack-recommendation.md) (Neo4j Community · tRPC · React Router 7 + Vite · ARIA `tree` org chart · Docker Compose + Testcontainers). **Phase 1 (model)** approved — the finalized graph schema, Neo4j 5 CE constraints/guards, marquee traversals, and ~200-person seed plan are at [product/design/schema.md](design/schema.md). **Phases 2–3** are encoded in [`atomic/workflows/hcm-feature-build.ts`](../atomic/workflows/hcm-feature-build.ts) (specializes the [`feature-development`](../atomic/workflows/feature-development.ts) shape with the [agent team](agent-team.md)). Next action: run `hcm-feature-build` in a **Docker-capable** environment so the integration + e2e evidence is real — see [product/artifacts/phase-2-run-notes.md](artifacts/phase-2-run-notes.md).
