@@ -111,15 +111,25 @@ The recorded [atomic-goal-run.md](atomic-goal-run.md) shows exactly what to expe
 
 ### B. One live agent per responsibility (Pattern B)
 
-Put a real Claude agent in each named pane and drive the phase order yourself. Pane ids come from `herdr pane list` (in this session: research=`w1:p2`, planner=`w1:p3`, frontend=`w1:p4`, test=`w1:p5`, verifier=`w1:p6`):
+The simplest way to put an agent in a pane is to **launch it in the pane you're sitting in** — focus the `research` pane and just run the agent:
 
 ```bash
+cd ~/path/to/your/project
+claude          # or: atomic
+```
+
+Then type the task at the agent's prompt. Herdr auto-detects the agent and tracks its state in the sidebar. Repeat in the `frontend`, `test`, … panes; supervise by exception (act only on `blocked`).
+
+**Driving panes from a script/controller** is a different pattern: `herdr agent start` launches an agent into a *different, idle* pane, so it must be run from *another* pane or terminal — never from the target pane itself (that pane is busy running your command, and you'll get `agent_pane_busy: not an available shell`). Pane ids come from `herdr pane list`:
+
+```bash
+# run these from a CONTROLLER pane (e.g. planner), targeting an IDLE research pane:
 herdr agent start research --kind claude --pane w1:p2
 herdr agent prompt research "Investigate <X>. Write findings to research/codebase.md. Do not implement."
 herdr agent wait  research --until done --until blocked --timeout 900000   # only step in on `blocked`
 ```
 
-Repeat per pane, advancing phases as agents report `done`. [`../../scripts/launch-feature.sh`](../../scripts/launch-feature.sh) `--live` scaffolds this loop.
+[`../../scripts/launch-feature.sh`](../../scripts/launch-feature.sh) `--live` scaffolds this controller loop across all the panes.
 
 ### The arc to aim for
 
