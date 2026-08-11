@@ -1,0 +1,28 @@
+{
+  "name": "hcm-graph",
+  "private": true,
+  "version": "0.1.0",
+  "description": "HCM Graph — Core-HR slice (npm workspace root). server = tRPC API over Neo4j; web = React Router 7 UI; e2e = Playwright + axe accessibility evidence.",
+  "workspaces": [
+    "server",
+    "web",
+    "e2e"
+  ],
+  "scripts": {
+    "db:up": "docker compose -f docker-compose.yml up -d --wait neo4j",
+    "db:down": "docker compose -f docker-compose.yml down",
+    "migrate": "npm run migrate -w @hcm/server",
+    "seed": "npm run seed -w @hcm/server",
+    "validate": "npm run validate -w @hcm/server",
+    "dev:api": "npm run dev -w @hcm/server",
+    "dev:web": "npm run dev -w @hcm/web",
+    "dev": "npm run db:up && npm run seed && npm run dev:api & npm run dev:web",
+    "typecheck": "npm run typecheck -w @hcm/server && npm run typecheck -w @hcm/web && npm run typecheck -w @hcm/e2e",
+    "test": "npm run test -w @hcm/server && npm run test -w @hcm/web",
+    "test:integration": "npm run test:integration -w @hcm/server",
+    "test:e2e": "npm run test -w @hcm/e2e"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

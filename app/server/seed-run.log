@@ -1,0 +1,36 @@
+═══════════════════════════════════════════════════════════════════════
+ HCM Core-HR seed run — schema.md §7 plan
+   started : 2026-08-11T22:51:00.588Z
+   target  : bolt://localhost:7687 (user neo4j)
+═══════════════════════════════════════════════════════════════════════
+[1/6] connected to Neo4j.
+[2/6] migration applied: 5 constraints, 4 indexes (schema.md §3).
+[3/6] wiped existing graph (idempotent reseed).
+[4/6] plan built: 40 org units, 200 positions, 15 jobs, 6 locations, 192 persons, 192 holds (188 open / 4 closed), 1 dotted.
+[5/6] graph written through the §4 write-path guards (all guards accepted).
+
+Node counts (live graph):
+   Job       15
+   Location  6
+   OrgUnit   40
+   Person    192
+   Position  200
+
+[6/6] schema.md §6 invariant validation (each MUST return 0 rows):
+  §6.1  PASS  (0 rows)  Invariant 1: no REPORTS_TO cycle
+  §6.2  PASS  (0 rows)  Invariant 2: at most one current holder per seat
+  §6.3  PASS  (0 rows)  Invariant 3: every filled Position has exactly one IN_ORG_UNIT
+  §6.4a  PASS  (0 rows)  Invariant 4: every non-root OrgUnit has exactly one PART_OF parent
+  §6.4b  PASS  (0 rows)  Invariant 4: OrgUnit PART_OF is acyclic
+  §6.5  PASS  (0 rows)  Invariant 5: every active held person resolves to exactly one manager, or is root
+      → ALL PASS — 0 violations across all five invariants.
+
+Sample §5 marquee traversals:
+   §5.1 reporting chain up for PER-000005: [PER-000005 → PER-000004 → PER-000003 → PER-000002 → PER-000001]  (5 levels to root)
+   §5.3 span of control for POS-000002 (VP, Engineering): 2 direct
+   §5.2 transitive reports below POS-000002: 42 seats, 39 filled
+   §5.3 span of control for POS-000001 (CEO): 5 direct
+   §5.4 org rollup for ORG-000001 (company): 40 units, 200 positions total
+   §1.2 matrix: POS-000006 -[:DOTTED_REPORTS_TO]-> POS-000171 ("Finance systems liaison (matrix)") — no second REPORTS_TO
+
+Finished: 2026-08-11T22:51:10.621Z — SEED OK.
