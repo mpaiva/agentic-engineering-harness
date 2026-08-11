@@ -1,0 +1,11 @@
+{
+  "name": "sample-project",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tiny dependency-free project used by the feature-development example.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "typecheck": "node --check src/slugify.js"
+  }
+}

@@ -1,0 +1,46 @@
+# Verification evidence — v22.22.0
+
+$ node --check src/slugify.js
+typecheck: OK
+
+$ node --test
+TAP version 13
+# Subtest: lowercases and hyphenates words
+ok 1 - lowercases and hyphenates words
+  ---
+  duration_ms: 0.727042
+  type: 'test'
+  ...
+# Subtest: strips punctuation
+ok 2 - strips punctuation
+  ---
+  duration_ms: 0.096584
+  type: 'test'
+  ...
+# Subtest: collapses repeated separators and trims edges
+ok 3 - collapses repeated separators and trims edges
+  ---
+  duration_ms: 0.057708
+  type: 'test'
+  ...
+# Subtest: transliterates common accented characters
+ok 4 - transliterates common accented characters
+  ---
+  duration_ms: 0.0585
+  type: 'test'
+  ...
+# Subtest: returns empty string for empty-ish input
+ok 5 - returns empty string for empty-ish input
+  ---
+  duration_ms: 0.066833
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 62.053542

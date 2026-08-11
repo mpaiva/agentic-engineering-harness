@@ -1,0 +1,24 @@
+# Secrets and local tool state — never commit
+.env
+.env.*
+*.key
+*.pem
+.atomic/
+.herdr/
+# Tool configs live in the user's home, not the repo; if copied in for reference, ignore
+**/config.local.toml
+
+# Live Atomic workflow run output (regenerated per run; not part of the repo)
+.atomic/workflows/runs/
+**/.runs/
+# NOTE: the worked artifacts under examples/feature-development/{research,specs,artifacts}
+# ARE committed on purpose — they show what good autonomous output looks like.
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# Node (in case a workflow package is added locally)
+node_modules/
