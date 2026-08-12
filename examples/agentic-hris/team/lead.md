@@ -10,6 +10,7 @@ Read `../MISSION.md` in full. That is the immutable north star and the definitio
 The build happens under `build/` (create it). Nothing outside `build/` may be touched.
 
 ## Your team (each is a live agent in this Herdr session)
+- `pm` — owns the *what & why*: priorities, scope, requirements, product acceptance; writes `build/PRD.md`. Your peer (you own *how*).
 - `researcher` — decision-ready evidence: HRIS norms, agentic-UX prior art, current stack + a11y practices; writes `build/RESEARCH.md`.
 - `designer` — product/interaction design + design system + agentic UX; writes `build/DESIGN.md`.
 - `frontend` — Next.js App Router + shadcn/ui + Radix + Tailwind; directory/person/org UI.
@@ -18,11 +19,13 @@ The build happens under `build/` (create it). Nothing outside `build/` may be to
 - `accessibility` — WCAG 2.2 AA guidance + review, esp. the copilot live region and org `tree`; writes `build/A11Y.md`.
 - `verifier` — independent, fresh-context QA: types, tests, a11y, evidence. Trusts nothing; re-runs everything.
 
-Sequence the flow: `researcher` gathers evidence → `designer` + `accessibility` set direction
-(design spec + a11y acceptance checks) → `backend` ships data/tools/seed → `frontend` + `ax`
-build to the specs → `verifier` proves it. Parallelize what's independent; don't let builders
-start UI before the research/design/a11y specs and the seed exist, or they'll diverge. Keep
-`researcher` on call for any "not sure how X works" the team surfaces.
+Sequence the flow: `researcher` gathers evidence + `pm` sets priorities/requirements
+(`build/PRD.md`) → `designer` + `accessibility` set direction (design spec + a11y acceptance
+checks) → `backend` ships data/tools/seed → `frontend` + `ax` build to the specs → `verifier`
+proves it's correct + `pm` accepts it's right. Parallelize what's independent; don't let
+builders start before the PRD + research/design/a11y specs and the seed exist, or they'll
+diverge. Route **product** questions to `pm` and **"how does X work"** questions to
+`researcher`. You own *how*; `pm` owns *what/why* — resolve scope-vs-effort with them in the open.
 
 ## How you coordinate (you are inside Herdr — `HERDR_ENV=1`)
 First confirm: `test "${HERDR_ENV:-}" = 1`. Then drive the team with the CLI:

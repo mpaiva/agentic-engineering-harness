@@ -4,23 +4,21 @@
 #
 #   ./launch.sh                 # DRY RUN — print the plan + every prompt, touch nothing
 #   ./launch.sh --layout        # build the split-pane Herdr grid only (no paid agents)
-#   ./launch.sh --go            # FULL LAUNCH — start 8 live Claude agents, autonomous
+#   ./launch.sh --go            # FULL LAUNCH — start 9 live Claude agents, autonomous
 #   ./launch.sh --go --session my-hris
 #
-# Team & layout (right + down splits): left column plans/researches, right column builds.
-#     ┌───────────────┬───────────────┐
-#     │  lead         │ frontend      │
-#     ├───────────────┼───────────────┤
-#     │  designer     │ ax            │
-#     ├───────────────┼───────────────┤
-#     │  accessibility│ backend       │
-#     ├───────────────┼───────────────┤
-#     │  researcher   │ verifier      │
-#     └───────────────┴───────────────┘
+# Team & layout (right + down splits) — a 3×3 grid:
+#     ┌───────────────┬───────────────┬───────────────┐
+#     │  lead         │ pm            │ researcher    │
+#     ├───────────────┼───────────────┼───────────────┤
+#     │  designer     │ frontend      │ ax            │
+#     ├───────────────┼───────────────┼───────────────┤
+#     │  accessibility│ backend       │ verifier      │
+#     └───────────────┴───────────────┴───────────────┘
 #
 # GUARDRAILS: agents work only in ./build/ (isolated). Full-autonomy mode spends real
-# Claude tokens across EIGHT agents for a long time — the mode the harness explicitly
-# warns about; the `verifier` (+ research/design/accessibility specs) are the floor of trust.
+# Claude tokens across NINE agents for a long time — the mode the harness explicitly
+# warns about; the `pm`/`verifier` (+ research/design/a11y specs) are the floor of trust.
 # Watch it, and stop it when you want (see the end of this script's output).
 #
 # Verified against Herdr 0.8.0. Bash 3.2 safe.
@@ -43,14 +41,14 @@ export PATH="$HOME/.local/bin:$PATH"
 herdr(){ command herdr --session "$SESSION" "$@"; }
 pane_id(){ python3 -c "import sys,json;print(json.load(sys.stdin)['result']['pane']['pane_id'])"; }
 
-SPECIALISTS="researcher designer frontend ax backend accessibility verifier"   # everyone but lead
+SPECIALISTS="pm researcher designer frontend ax backend accessibility verifier"   # everyone but lead
 
 shared_context(){ # $1 = role name
   cat <<EOF
 You are the "$1" agent on an autonomous engineering team building an agentic-first HRIS.
 Mission & definition of done: $HERE/MISSION.md  (read it fully before acting).
 All work happens under: $BUILD  (create/use it; never touch anything outside it).
-You are inside Herdr; your teammates are live agents in this session: lead, researcher,
+You are inside Herdr; your teammates are live agents in this session: lead, pm, researcher,
 designer, frontend, ax, backend, accessibility, verifier. The "lead" agent will assign you
 scoped tasks in this pane. Acknowledge your role in one line, then WAIT for the lead's first task.
 
@@ -67,21 +65,22 @@ inside Herdr (test "\${HERDR_ENV:-}" = 1), then drive the build.
 Mission & definition of done: $HERE/MISSION.md  (read it fully now).
 Build directory (isolated): $BUILD
 Your team, each a live Claude agent in this same Herdr session — talk to them by name:
-  herdr agent prompt researcher "..."      herdr agent prompt designer "..."
-  herdr agent prompt frontend "..."        herdr agent prompt ax "..."
-  herdr agent prompt backend "..."         herdr agent prompt accessibility "..."
-  herdr agent prompt verifier "..."
+  herdr agent prompt pm "..."              herdr agent prompt researcher "..."
+  herdr agent prompt designer "..."        herdr agent prompt frontend "..."
+  herdr agent prompt ax "..."              herdr agent prompt backend "..."
+  herdr agent prompt accessibility "..."   herdr agent prompt verifier "..."
   herdr agent wait <name> --until idle --until blocked --timeout 1800000   # await a handoff
   herdr agent read <name>                                                   # read their output
 
-Begin now: (1) read the mission; (2) task "researcher" to gather the decision-ready evidence
-(HRIS norms, agentic-UX prior art, current stack best practices, a11y standards) into
-$BUILD/RESEARCH.md; (3) with that, have "designer" write $BUILD/DESIGN.md and "accessibility"
-write $BUILD/A11Y.md while "backend" ships the data model + tools + seed; (4) write
-$BUILD/CONTRACT.md fixing the data model, API surface, and copilot tool contract; (5) then have
-"frontend" and "ax" build to the research/design/a11y specs; (6) after each slice, task
-"verifier" to re-run checks and report evidence — do not accept "done" without it. Keep
-"researcher" on call for any "not sure how X works" question the team surfaces.
+"pm" is your peer: pm owns WHAT/WHY (priorities, scope, product acceptance), you own HOW.
+Begin now: (1) read the mission; (2) in parallel, task "pm" to write $BUILD/PRD.md (v1 scope,
+non-goals, acceptance criteria) and "researcher" to gather evidence into $BUILD/RESEARCH.md;
+(3) with the PRD + research, have "designer" write $BUILD/DESIGN.md and "accessibility" write
+$BUILD/A11Y.md while "backend" ships the data model + tools + seed; (4) write $BUILD/CONTRACT.md
+fixing the data model, API surface, and copilot tool contract; (5) then have "frontend" and "ax"
+build to the specs; (6) after each slice, task "verifier" to re-run checks and report evidence,
+and "pm" to accept it against the PRD — do not call it done without both. Route product/scope
+questions to "pm" and "how does X work" questions to "researcher".
 Drive to the MISSION.md acceptance criteria, write $BUILD/EVIDENCE.md, then stop. Max ~3 repair
 cycles per slice, else write $BUILD/BLOCKED.md and stop for the human.
 
@@ -127,16 +126,17 @@ done
 [ "$MODE" = "go" ] && herdr integration install claude >/dev/null 2>&1 || true
 herdr workspace create --label "Agentic HRIS" >/dev/null 2>&1 || true
 
-# ── Build the split grid (right + down): left column plans, right column builds ───
+# ── Build the split grid (right + down): a 3×3 — row1 plan, row2 build, row3 assure ───
 LEAD=$(herdr pane list | python3 -c "import sys,json;print(json.load(sys.stdin)['result']['panes'][0]['pane_id'])")
-FRONTEND=$(herdr pane split "$LEAD"      --direction right --no-focus --cwd "$HERE" | pane_id)
+PM=$(herdr pane split "$LEAD"            --direction right --no-focus --cwd "$HERE" | pane_id)
+RESEARCHER=$(herdr pane split "$PM"      --direction right --no-focus --cwd "$HERE" | pane_id)
 DESIGNER=$(herdr pane split "$LEAD"      --direction down  --no-focus --cwd "$HERE" | pane_id)
-AX=$(herdr pane split "$FRONTEND"        --direction down  --no-focus --cwd "$HERE" | pane_id)
-BACKEND=$(herdr pane split "$AX"         --direction down  --no-focus --cwd "$HERE" | pane_id)
+FRONTEND=$(herdr pane split "$PM"        --direction down  --no-focus --cwd "$HERE" | pane_id)
+AX=$(herdr pane split "$RESEARCHER"      --direction down  --no-focus --cwd "$HERE" | pane_id)
 ACCESSIBILITY=$(herdr pane split "$DESIGNER" --direction down --no-focus --cwd "$HERE" | pane_id)
-RESEARCHER=$(herdr pane split "$ACCESSIBILITY" --direction down --no-focus --cwd "$HERE" | pane_id)
-VERIFIER=$(herdr pane split "$BACKEND"   --direction down  --no-focus --cwd "$HERE" | pane_id)
-echo "grid: lead=$LEAD researcher=$RESEARCHER designer=$DESIGNER frontend=$FRONTEND ax=$AX backend=$BACKEND accessibility=$ACCESSIBILITY verifier=$VERIFIER"
+BACKEND=$(herdr pane split "$FRONTEND"   --direction down  --no-focus --cwd "$HERE" | pane_id)
+VERIFIER=$(herdr pane split "$AX"        --direction down  --no-focus --cwd "$HERE" | pane_id)
+echo "grid: lead=$LEAD pm=$PM researcher=$RESEARCHER designer=$DESIGNER frontend=$FRONTEND ax=$AX backend=$BACKEND accessibility=$ACCESSIBILITY verifier=$VERIFIER"
 
 if [ "$MODE" = "layout" ]; then
   echo "✓ Herdr grid built (no agents started). Attach to watch:  herdr --session $SESSION"
@@ -163,6 +163,7 @@ herdr pane send-keys "$LEAD" Enter >/dev/null 2>&1 || true
 sleep 1
 
 echo "Starting specialists (they acknowledge their role, then await the lead)…"
+start_agent pm            "$PM"            "$(shared_context pm)"
 start_agent researcher    "$RESEARCHER"    "$(shared_context researcher)"
 start_agent designer      "$DESIGNER"      "$(shared_context designer)"
 start_agent frontend      "$FRONTEND"      "$(shared_context frontend)"
@@ -176,7 +177,7 @@ start_agent lead "$LEAD" "$(lead_kickoff)"
 cat <<EOF
 
 ════════════════════════════════════════════════════════════════════
- The team is live and autonomous. Eight Claude agents are now working.
+ The team is live and autonomous. Nine Claude agents are now working.
 ════════════════════════════════════════════════════════════════════
  WATCH:    herdr --session $SESSION          (attach the TUI; the sidebar shows each
            agent working / blocked / done — supervise by exception)
@@ -186,6 +187,6 @@ cat <<EOF
  STOP ALL: herdr --session $SESSION server stop                 (halt the whole team)
 
  Output lands in:  $BUILD   (isolated — nothing else in the repo is touched)
- Cost: eight live agents running autonomously spend real tokens continuously.
+ Cost: nine live agents running autonomously spend real tokens continuously.
        Check in, and stop them when you've seen enough.
 EOF

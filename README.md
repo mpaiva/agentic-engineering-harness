@@ -28,7 +28,7 @@ Pull Request
 
 ## See it run
 
-![Eight agents coordinating in Herdr — the agentic-hris example](examples/agentic-hris/herdr-demo.gif)
+![Nine agents coordinating in Herdr — the agentic-hris example](examples/agentic-hris/herdr-demo.gif)
 
 A team of specialized agents building software autonomously — coordinating over `herdr agent prompt`, monitored live in the Herdr cockpit. One agent blocks, another unblocks it, and the slice converges; you only glance when the amber dot needs you. Walk it yourself in [examples/agentic-hris](examples/agentic-hris/README.md).
 
