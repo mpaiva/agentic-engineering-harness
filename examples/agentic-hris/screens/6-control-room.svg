@@ -35,41 +35,41 @@
 <rect x="216" y="38" width="323" height="95" rx="6" fill="#313244" stroke="#89b4fa"/>
 <circle cx="232" cy="56" r="4" fill="#89b4fa"/>
 <text x="244" y="60" fill="#89b4fa" font-size="12.5">lead</text>
-<text x="230" y="84" fill="blue" font-size="11.5" xml:space="preserve">› prompt designer "give a11y a ruling"</text>
-<text x="230" y="102" fill="dim" font-size="11" xml:space="preserve">orchestrating · 3 agents out</text>
+<text x="230" y="84" fill="#89b4fa" font-size="11.5" xml:space="preserve">› prompt designer "give a11y a ruling"</text>
+<text x="230" y="102" fill="#a6adc8" font-size="11" xml:space="preserve">orchestrating · 3 agents out</text>
 <rect x="216" y="141" width="323" height="95" rx="6" fill="#1e1e2e" stroke="#45475a"/>
 <circle cx="232" cy="159" r="4" fill="#a6adc8"/>
 <text x="244" y="163" fill="#cdd6f4" font-size="12.5">designer</text>
-<text x="230" y="187" fill="purple" font-size="11.5" xml:space="preserve">‹ lead: focus ruling? — deciding</text>
-<text x="230" y="205" fill="dim" font-size="11" xml:space="preserve">writing build/DESIGN.md</text>
+<text x="230" y="187" fill="#cba6f7" font-size="11.5" xml:space="preserve">‹ lead: focus ruling? — deciding</text>
+<text x="230" y="205" fill="#a6adc8" font-size="11" xml:space="preserve">writing build/DESIGN.md</text>
 <rect x="216" y="244" width="323" height="95" rx="6" fill="#1e1e2e" stroke="#fab387"/>
 <circle cx="232" cy="262" r="4" fill="#fab387"/>
 <text x="244" y="266" fill="#fab387" font-size="12.5">accessibility</text>
-<text x="230" y="290" fill="amber" font-size="11.5" xml:space="preserve">⚠ blocked — asked lead</text>
-<text x="230" y="308" fill="amber" font-size="11" xml:space="preserve">needs copilot-focus ruling</text>
+<text x="230" y="290" fill="#fab387" font-size="11.5" xml:space="preserve">⚠ blocked — asked lead</text>
+<text x="230" y="308" fill="#fab387" font-size="11" xml:space="preserve">needs copilot-focus ruling</text>
 <rect x="216" y="347" width="323" height="95" rx="6" fill="#1e1e2e" stroke="#45475a"/>
 <circle cx="232" cy="365" r="4" fill="#a6adc8"/>
 <text x="244" y="369" fill="#cdd6f4" font-size="12.5">researcher</text>
-<text x="230" y="393" fill="blue" font-size="11.5" xml:space="preserve">› prompt designer "AI SDK §4 →"</text>
-<text x="230" y="411" fill="green" font-size="11" xml:space="preserve">✓ wrote build/RESEARCH.md</text>
+<text x="230" y="393" fill="#89b4fa" font-size="11.5" xml:space="preserve">› prompt designer "AI SDK §4 →"</text>
+<text x="230" y="411" fill="#a6e3a1" font-size="11" xml:space="preserve">✓ wrote build/RESEARCH.md</text>
 <rect x="547" y="38" width="323" height="95" rx="6" fill="#1e1e2e" stroke="#45475a"/>
 <circle cx="563" cy="56" r="4" fill="#a6adc8"/>
 <text x="575" y="60" fill="#cdd6f4" font-size="12.5">frontend</text>
-<text x="561" y="84" fill="dim" font-size="11.5" xml:space="preserve">idle</text>
-<text x="561" y="102" fill="dim" font-size="11" xml:space="preserve">awaiting DESIGN + CONTRACT</text>
+<text x="561" y="84" fill="#a6adc8" font-size="11.5" xml:space="preserve">idle</text>
+<text x="561" y="102" fill="#a6adc8" font-size="11" xml:space="preserve">awaiting DESIGN + CONTRACT</text>
 <rect x="547" y="141" width="323" height="95" rx="6" fill="#1e1e2e" stroke="#45475a"/>
 <circle cx="563" cy="159" r="4" fill="#a6adc8"/>
 <text x="575" y="163" fill="#cdd6f4" font-size="12.5">ax</text>
-<text x="561" y="187" fill="blue" font-size="11.5" xml:space="preserve">› prompt backend "tool shapes?"</text>
-<text x="561" y="205" fill="dim" font-size="11" xml:space="preserve">stubbing copilot route</text>
+<text x="561" y="187" fill="#89b4fa" font-size="11.5" xml:space="preserve">› prompt backend "tool shapes?"</text>
+<text x="561" y="205" fill="#a6adc8" font-size="11" xml:space="preserve">stubbing copilot route</text>
 <rect x="547" y="244" width="323" height="95" rx="6" fill="#1e1e2e" stroke="#45475a"/>
 <circle cx="563" cy="262" r="4" fill="#a6adc8"/>
 <text x="575" y="266" fill="#cdd6f4" font-size="12.5">backend</text>
-<text x="561" y="290" fill="green" font-size="11.5" xml:space="preserve">✓ done — replied to ax</text>
-<text x="561" y="308" fill="dim" font-size="11" xml:space="preserve">schema · seed · tools</text>
+<text x="561" y="290" fill="#a6e3a1" font-size="11.5" xml:space="preserve">✓ done — replied to ax</text>
+<text x="561" y="308" fill="#a6adc8" font-size="11" xml:space="preserve">schema · seed · tools</text>
 <rect x="547" y="347" width="323" height="95" rx="6" fill="#1e1e2e" stroke="#45475a"/>
 <circle cx="563" cy="365" r="4" fill="#a6adc8"/>
 <text x="575" y="369" fill="#cdd6f4" font-size="12.5">verifier</text>
-<text x="561" y="393" fill="dim" font-size="11.5" xml:space="preserve">idle — fresh context</text>
-<text x="561" y="411" fill="dim" font-size="11" xml:space="preserve">will re-run all checks</text>
+<text x="561" y="393" fill="#a6adc8" font-size="11.5" xml:space="preserve">idle — fresh context</text>
+<text x="561" y="411" fill="#a6adc8" font-size="11" xml:space="preserve">will re-run all checks</text>
 </svg>
