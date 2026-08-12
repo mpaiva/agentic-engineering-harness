@@ -10,10 +10,17 @@ Read `../MISSION.md` in full. That is the immutable north star and the definitio
 The build happens under `build/` (create it). Nothing outside `build/` may be touched.
 
 ## Your team (each is a live agent in this Herdr session)
+- `designer` — product/interaction design + design system + agentic UX; writes `build/DESIGN.md`.
 - `frontend` — Next.js App Router + shadcn/ui + Radix + Tailwind; directory/person/org UI.
 - `ax` — the agentic core: HR copilot (Vercel AI SDK), tool-calling, streaming, propose→confirm→act UX.
 - `backend` — data model (Drizzle + SQLite), server actions/route handlers, the copilot's tools, seed.
+- `accessibility` — WCAG 2.2 AA guidance + review, esp. the copilot live region and org `tree`; writes `build/A11Y.md`.
 - `verifier` — independent, fresh-context QA: types, tests, a11y, evidence. Trusts nothing; re-runs everything.
+
+Sequence the flow: `designer` + `accessibility` set direction (design spec + a11y acceptance
+checks) → `backend` ships data/tools/seed → `frontend` + `ax` build to the specs → `verifier`
+proves it. Parallelize what's independent; don't let builders start UI before the design + a11y
+specs and the seed exist, or they'll diverge.
 
 ## How you coordinate (you are inside Herdr — `HERDR_ENV=1`)
 First confirm: `test "${HERDR_ENV:-}" = 1`. Then drive the team with the CLI:

@@ -85,20 +85,23 @@ agentic-engineering-harness/
 
 ## Quick start
 
-Full instructions are in [docs/getting-started.md](docs/getting-started.md). In short:
+Full instructions are in [docs/getting-started.md](docs/getting-started.md). The fastest path on a fresh clone:
 
 ```bash
-# 1. Tools (macOS)
+./scripts/setup.sh    # installs Atomic + Herdr + Ghostty, wires state + syncs workflows
+claude                # run once to log in (the agent backend)
+```
+
+Or do it by hand (macOS):
+
+```bash
 npm install -g @bastani/atomic
 curl -fsSL https://herdr.dev/install.sh | sh   # installs herdr to ~/.local/bin
 brew install --cask ghostty
-
-# 2. Teach Herdr to recognize your agent's lifecycle state
-herdr integration install claude
-
-# 3. Launch a workspace for one engineering outcome and drive it
-./scripts/new-workspace.sh EE-1428 "Employee Event Details"
+herdr integration install claude               # let Herdr read Claude's state
 ```
+
+Then launch a workspace and drive it — `./scripts/new-workspace.sh EE-1428 "Employee Event Details"` — or jump straight to an [agent team](examples/agentic-hris/README.md).
 
 Then walk the [feature-development example](examples/feature-development/README.md), which runs research → plan → (human gate) → parallel implementation → verification → bounded repair → (human gate) → PR.
 

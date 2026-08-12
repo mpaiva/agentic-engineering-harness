@@ -1,26 +1,45 @@
 # Example: a Herdr-monitored autonomous agent team
 
-This example stands up a **team of five world-class Claude agents in a split-pane Herdr grid** and turns them loose to **autonomously build a greenfield agentic-first HRIS** — coordinating with each other, monitored live, pushing toward a single goal with minimal human gates.
+This example stands up a **team of seven world-class Claude agents in a split-pane Herdr grid** and turns them loose to **autonomously build a greenfield agentic-first HRIS** — coordinating with each other, monitored live, pushing toward a single goal with minimal human gates.
 
 It is deliberately the **opposite** of the [hcm-graph](../hcm-graph/README.md) example. Where that one uses Atomic's gated, verified workflows, this one explores **maximum autonomy**: agents talking to agents, driving to done on their own. It's a great way to *see* multi-agent coordination — and an honest look at **why the harness argues for gates and verification** (spoiler: full autonomy drifts; the `verifier` agent is the floor that keeps it honest).
 
 ## What you're watching
 
-- **Herdr** is the cockpit. Five agents, one per pane; the sidebar shows each one `working` / `blocked` / `done`. You supervise by exception — you only step in on the agent that needs you.
+- **Herdr** is the cockpit. Seven agents, one per pane; the sidebar shows each one `working` / `blocked` / `done`. You supervise by exception — you only step in on the agent that needs you.
 - **The agents communicate with each other** via `herdr agent prompt` — the `lead` delegates tasks, specialists report back, all visible in Herdr. (See the note on "intercom" below.)
 - **The work is real:** a Next.js 15 + shadcn/Radix + Vercel AI SDK app with an in-app HR copilot, built under `build/` (git-ignored, created at runtime).
 
 ```text
-┌───────────┬───────────┐    lead      — principal engineer & orchestrator
-│  lead     │ frontend  │    frontend  — Next.js · shadcn/ui · Radix · Tailwind
-├───────────┼───────────┤    ax        — the agentic core: HR copilot (Vercel AI SDK)
-│  ax       │ backend   │    backend   — Drizzle + SQLite · server actions · copilot tools
-│           ├───────────┤    verifier  — independent, fresh-context QA (the floor of trust)
-│           │ verifier  │
-└───────────┴───────────┘
+┌───────────────┬───────────┐   lead          — principal engineer & orchestrator
+│ lead          │ frontend  │   designer       — product/interaction design + agentic UX
+├───────────────┼───────────┤   frontend       — Next.js · shadcn/ui · Radix · Tailwind
+│ designer      │ ax        │   ax             — the agentic core: HR copilot (Vercel AI SDK)
+├───────────────┼───────────┤   backend        — Drizzle + SQLite · server actions · copilot tools
+│ accessibility │ backend   │   accessibility  — WCAG 2.2 AA guidance + review
+│               ├───────────┤   verifier       — independent, fresh-context QA (floor of trust)
+│               │ verifier  │
+└───────────────┴───────────┘
 ```
 
 The goal and definition of done: [MISSION.md](MISSION.md). The role briefs: [team/](team/).
+
+## From a fresh clone (your notebook)
+
+```bash
+git clone https://github.com/mpaiva/agentic-engineering-harness
+cd agentic-engineering-harness
+./scripts/setup.sh          # installs Atomic + Herdr + Ghostty, wires state + workflows
+```
+
+Then the two credential steps `setup.sh` can't do for you:
+
+```bash
+claude          # run once, log in (the agents' backend)
+atomic          # then: /login → Claude Pro/Max (only needed if a workflow uses Atomic)
+```
+
+Now launch the team (below).
 
 ## Run it
 
@@ -29,7 +48,7 @@ cd examples/agentic-hris
 
 ./launch.sh              # DRY RUN — prints the plan + every agent prompt, touches nothing
 ./launch.sh --layout     # builds the split-pane Herdr grid only (no paid agents)
-./launch.sh --go         # FULL LAUNCH — 5 live Claude agents, autonomous
+./launch.sh --go         # FULL LAUNCH — 7 live Claude agents, autonomous
 ```
 
 Then **watch**:
@@ -48,7 +67,7 @@ herdr --session agentic-hris server stop                  # halt the whole team
 
 ## Read this before `--go` (the honest part)
 
-- **It spends real tokens, continuously.** Five agents running autonomously is the most expensive mode in this repo. Watch it and stop it.
+- **It spends real tokens, continuously.** Seven agents running autonomously is the most expensive mode in this repo. Watch it and stop it.
 - **`--go` starts each agent with `--dangerously-skip-permissions`.** Autonomous agents can't stop to ask permission for every command, so they don't. The guardrails are the isolated `build/` directory and the "only touch `build/`" instruction — **not** a sandbox. For anything beyond a demo, run this on a **throwaway VM / devcontainer**, per [docs/security.md](../../docs/security.md).
 - **Full autonomy is experimental and drifts.** Agents may misunderstand each other, duplicate work, or stall. That's the point of the example — it shows the failure modes the harness's gates and verification exist to prevent. The `lead` is told to keep the `verifier` in the loop and to escalate (write `build/BLOCKED.md`) rather than grind. You may still need to `agent prompt lead "…"` to nudge it.
 - **The copilot needs an LLM key to *run*.** The team *builds* the Vercel AI SDK integration; running the copilot needs `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` in `build/.env.local` (git-ignored). Never commit a key.
