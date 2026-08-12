@@ -25,3 +25,6 @@ node_modules/
 
 # Agentic-HRIS example: agents build here at runtime
 examples/agentic-hris/build/
+
+# Atomic-intercom example: workflow builds here at runtime
+examples/atomic-intercom/build/

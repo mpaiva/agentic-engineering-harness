@@ -74,7 +74,8 @@ agentic-engineering-harness/
 ├── examples/
 │   ├── feature-development/       ← a small, runnable end-to-end example
 │   ├── hcm-graph/                 ← a product built by gated multi-agent Atomic workflows
-│   └── agentic-hris/              ← a Herdr-monitored autonomous agent team (max autonomy)
+│   ├── agentic-hris/              ← a Herdr-monitored autonomous agent team (max autonomy)
+│   └── atomic-intercom/          ← agents steering each other live via Atomic Intercom
 └── scripts/
     ├── new-workspace.sh          ← create a Herdr workspace for an outcome
     ├── launch-feature.sh         ← launch the feature-development run
