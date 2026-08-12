@@ -20,6 +20,21 @@ The [agent team](agent-team.md) is wired into an **engineering graph**: each pha
 
 ## The Atomic workflow screens
 
+**The workflow as a graph.** This is the Atomic half of the stack — the build as a DAG of
+stages: the research fan-out, the human gates it *pauses* at, the parallel implementation,
+and the verify → gate → PR tail. It runs top to bottom; you watch it with `/workflow status`.
+
+![The hcm-feature-build workflow graph, running](workflow-graph.gif)
+
+*A faithful **simulation** of Atomic's workflow graph (Catppuccin Mocha) — the real DAG from
+[`hcm-feature-build`](../../atomic/workflows/hcm-feature-build.ts) and the four-phase
+engineering graph in [agent-team.md](agent-team.md), animated. Static still:
+[screens/workflow-graph.svg](screens/workflow-graph.svg). Not a pixel-copy of Atomic's overlay.*
+
+> Contrast this with the Herdr control room in [agentic-hris](../agentic-hris/README.md): Herdr
+> shows *agents in panes talking to each other*; Atomic shows *a graph of stages*. Same stack,
+> two views — this is the Atomic one.
+
 **All three HCM workflows registered** (`/workflow list`, live capture):
 
 ```text
