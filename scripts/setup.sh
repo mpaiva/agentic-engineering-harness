@@ -62,7 +62,7 @@ cat <<EOF
   cd examples/agentic-hris
   ./launch.sh            # dry run — see the plan, touch nothing
   ./launch.sh --layout   # build the split-pane Herdr grid (no paid agents)
-  ./launch.sh --go       # FULL LAUNCH — 7 live agents, autonomous
+  ./launch.sh --go       # FULL LAUNCH — 8 live agents, autonomous
   herdr --session agentic-hris    # attach and watch the control room
 
 See examples/agentic-hris/README.md before --go (cost, autonomy, isolation).
