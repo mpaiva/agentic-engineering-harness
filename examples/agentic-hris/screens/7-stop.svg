@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="125" viewBox="0 0 780 125" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+<rect x=".5" y=".5" width="779" height="124" rx="10" fill="#15161e" stroke="#2a2c3d"/>
+<path d="M0 10 Q0 0 10 0 H770 Q780 0 780 10 V30 H0 Z" fill="#1a1b26"/>
+<circle cx="18" cy="15" r="5" fill="#f7768e"/>
+<circle cx="36" cy="15" r="5" fill="#e0af68"/>
+<circle cx="54" cy="15" r="5" fill="#9ece6a"/>
+<text x="390.0" y="19.0" fill="#565f89" font-size="12" text-anchor="middle">Ghostty  —  stop the team</text>
+<text x="16" y="60" fill="#7aa2f7" font-size="13.5" xml:space="preserve">mp@Mac …agentic-hris % herdr --session agentic-hris server stop</text>
+<text x="16" y="80" fill="#9ece6a" font-size="13.5" xml:space="preserve">  ✓ server stopped — all eight agents halted</text>
+<text x="16" y="102" fill="#c0caf5" font-size="13.5" xml:space="preserve">mp@Mac …agentic-hris %  </text>
+</svg>

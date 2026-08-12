@@ -24,45 +24,107 @@ It is deliberately the **opposite** of the [hcm-graph](../hcm-graph/README.md) e
 
 The goal and definition of done: [MISSION.md](MISSION.md). The role briefs: [team/](team/).
 
-## From a fresh clone (your notebook)
+## Step-by-step walkthrough (no experience needed)
+
+Never used a terminal? That's fine. Do these steps **in order**. For each one: type the
+command exactly as shown, press **Return**, and check your screen against the picture.
+
+### Step 1 — Open the terminal
+
+Open the app called **Ghostty**. You'll see a window like this — a blank line ending in `%`
+is all you need.
+
+![Step 1 — an open Ghostty terminal](screens/1-terminal.svg)
+
+### Step 2 — Get the code
+
+Type these two lines, pressing **Return** after each:
 
 ```bash
 git clone https://github.com/mpaiva/agentic-engineering-harness
 cd agentic-engineering-harness
-./scripts/setup.sh          # installs Atomic + Herdr + Ghostty, wires state + workflows
 ```
 
-Then the two credential steps `setup.sh` can't do for you:
+![Step 2 — cloning the repository](screens/2-clone.svg)
+
+### Step 3 — Set up the tools (one command)
 
 ```bash
-claude          # run once, log in (the agents' backend)
-atomic          # then: /login → Claude Pro/Max (only needed if a workflow uses Atomic)
+./scripts/setup.sh
 ```
 
-Now launch the team (below).
+This installs everything and finishes with a list of green ✓ checkmarks. If any line is a
+red ✗, it tells you exactly what to do.
 
-## Run it
+![Step 3 — setup.sh installing the tools](screens/3-setup.svg)
+
+### Step 4 — Log in (one time only)
+
+Two quick logins. Run the first, and a browser opens for you to sign in:
+
+```bash
+claude
+```
+
+Then, in the same window, start Atomic and log in there too:
+
+```bash
+atomic
+```
+
+…and type **`/login`**, then choose **Claude Pro/Max**. When both say “logged in”, press
+**Ctrl** and **C** together, twice, to leave.
+
+![Step 4 — logging in to Claude and Atomic](screens/4-login.svg)
+
+### Step 5 — Start the team
 
 ```bash
 cd examples/agentic-hris
-
-./launch.sh              # DRY RUN — prints the plan + every agent prompt, touches nothing
-./launch.sh --layout     # builds the split-pane Herdr grid only (no paid agents)
-./launch.sh --go         # FULL LAUNCH — 8 live Claude agents, autonomous
+./launch.sh --go
 ```
 
-Then **watch**:
+Eight AI agents boot up and get their instructions. When you see **“The team is live”**,
+they're off and working.
+
+![Step 5 — launching the eight-agent team](screens/5-launch.svg)
+
+> First time? Run `./launch.sh` on its own first (no `--go`) — it just **prints the plan**
+> and changes nothing, so you can see what will happen before you spend anything.
+
+### Step 6 — Watch them work together
 
 ```bash
-herdr --session agentic-hris          # attach the TUI; the sidebar is your control room
-herdr --session agentic-hris agent read lead     # peek at the lead's thinking
+herdr --session agentic-hris
 ```
 
-**Stop** whenever you've seen enough:
+This is your **control room**. Each box is one agent; the lines inside show them **talking
+to each other**. The list on the left shows who's *working*, *done*, or *stuck*. You don't
+watch all of them — you watch for the one **amber dot** that says it needs you.
+
+![Step 6 — the Herdr control room, agents talking to each other](screens/6-control-room.svg)
+
+### Step 7 — Stop when you've seen enough
+
+Leave the control room by pressing **Ctrl** and **C** together. Then stop the whole team:
 
 ```bash
-herdr --session agentic-hris agent send-keys <name> C-c   # interrupt one agent
-herdr --session agentic-hris server stop                  # halt the whole team
+herdr --session agentic-hris server stop
+```
+
+![Step 7 — stopping the team](screens/7-stop.svg)
+
+---
+
+**Command reference** (once you're comfortable):
+
+```bash
+./launch.sh              # dry run — print the plan, change nothing
+./launch.sh --layout     # build the split-pane grid only (no paid agents)
+./launch.sh --go         # full launch — 8 live agents, autonomous
+herdr --session agentic-hris                 # attach and watch
+herdr --session agentic-hris agent read lead # peek at the lead's thinking
+herdr --session agentic-hris server stop     # stop everything
 ```
 
 ## Read this before `--go` (the honest part)
