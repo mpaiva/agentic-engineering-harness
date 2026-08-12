@@ -4,6 +4,10 @@ This example stands up a **team of eight world-class Claude agents in a split-pa
 
 It is deliberately the **opposite** of the [hcm-graph](../hcm-graph/README.md) example. Where that one uses Atomic's gated, verified workflows, this one explores **maximum autonomy**: agents talking to agents, driving to done on their own. It's a great way to *see* multi-agent coordination — and an honest look at **why the harness argues for gates and verification** (spoiler: full autonomy drifts; the `verifier` agent is the floor that keeps it honest).
 
+![The agentic-hris team coordinating live in Herdr](herdr-demo.gif)
+
+*Eight agents building the HRIS autonomously — delegating and messaging over `herdr agent prompt`, one blocking on an ambiguity and getting unblocked by another agent, then converging. Catppuccin Mocha (Herdr's default theme).*
+
 ## What you're watching
 
 - **Herdr** is the cockpit. Eight agents, one per pane; the sidebar shows each one `working` / `blocked` / `done`. You supervise by exception — you only step in on the agent that needs you.

@@ -26,6 +26,12 @@ Evidence + Human Gates
 Pull Request
 ```
 
+## See it run
+
+![Eight agents coordinating in Herdr — the agentic-hris example](examples/agentic-hris/herdr-demo.gif)
+
+A team of specialized agents building software autonomously — coordinating over `herdr agent prompt`, monitored live in the Herdr cockpit. One agent blocks, another unblocks it, and the slice converges; you only glance when the amber dot needs you. Walk it yourself in [examples/agentic-hris](examples/agentic-hris/README.md).
+
 ## Why
 
 Adopting coding agents usually starts as *one engineer, one agent, one long prompt loop, many terminal windows*. That does not scale, and — more importantly — it does not stay **trustworthy** as you add agents. Parallelism without observability produces architectural drift, duplicated work, inaccessible UIs, and merge conflicts faster than a human can catch them.
