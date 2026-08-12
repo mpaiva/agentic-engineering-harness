@@ -73,7 +73,8 @@ agentic-engineering-harness/
 │   └── config                    ← drop-in Ghostty config
 ├── examples/
 │   ├── feature-development/       ← a small, runnable end-to-end example
-│   └── hcm-graph/                 ← the big example: a product built by multi-agent workflows
+│   ├── hcm-graph/                 ← a product built by gated multi-agent Atomic workflows
+│   └── agentic-hris/              ← a Herdr-monitored autonomous agent team (max autonomy)
 └── scripts/
     ├── new-workspace.sh          ← create a Herdr workspace for an outcome
     ├── launch-feature.sh         ← launch the feature-development run
