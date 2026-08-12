@@ -1,75 +1,75 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="880" height="452" viewBox="0 0 880 452" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
-<rect x=".5" y=".5" width="879" height="451" rx="10" fill="#15161e" stroke="#2a2c3d"/>
-<path d="M0 10 Q0 0 10 0 H870 Q880 0 880 10 V30 H0 Z" fill="#1a1b26"/>
-<circle cx="18" cy="15" r="5" fill="#f7768e"/>
-<circle cx="36" cy="15" r="5" fill="#e0af68"/>
-<circle cx="54" cy="15" r="5" fill="#9ece6a"/>
-<text x="440.0" y="19.0" fill="#565f89" font-size="12" text-anchor="middle">herdr — session: agentic-hris</text>
-<rect x="10" y="38" width="196" height="404" rx="7" fill="#1a1b26" stroke="#2a2c3d"/>
-<text x="26" y="60" fill="#565f89" font-size="11" letter-spacing="2">AGENTS</text>
-<circle cx="28" cy="76" r="4.5" fill="#7dcfff"/>
-<text x="42" y="80" fill="#eaf0ff" font-size="13">lead</text>
-<text x="192" y="80" fill="#565f89" font-size="10.5" text-anchor="end">working</text>
-<circle cx="28" cy="116" r="4.5" fill="#7dcfff"/>
-<text x="42" y="120" fill="#eaf0ff" font-size="13">researcher</text>
-<text x="192" y="120" fill="#565f89" font-size="10.5" text-anchor="end">working</text>
-<circle cx="28" cy="156" r="4.5" fill="#7dcfff"/>
-<text x="42" y="160" fill="#eaf0ff" font-size="13">designer</text>
-<text x="192" y="160" fill="#565f89" font-size="10.5" text-anchor="end">working</text>
-<circle cx="28" cy="196" r="4.5" fill="none" stroke="#33364a" stroke-width="1.5"/>
-<text x="42" y="200" fill="#eaf0ff" font-size="13">frontend</text>
-<text x="192" y="200" fill="#565f89" font-size="10.5" text-anchor="end">idle</text>
-<circle cx="28" cy="236" r="4.5" fill="#7dcfff"/>
-<text x="42" y="240" fill="#eaf0ff" font-size="13">ax</text>
-<text x="192" y="240" fill="#565f89" font-size="10.5" text-anchor="end">working</text>
-<circle cx="28" cy="276" r="4.5" fill="#9ece6a"/>
-<text x="42" y="280" fill="#eaf0ff" font-size="13">backend</text>
-<text x="192" y="280" fill="#565f89" font-size="10.5" text-anchor="end">done</text>
-<circle cx="28" cy="316" r="4.5" fill="#e0af68"/>
-<text x="42" y="320" fill="#e0af68" font-size="13">accessibility</text>
-<text x="192" y="320" fill="#e0af68" font-size="10.5" text-anchor="end">blocked</text>
-<circle cx="28" cy="356" r="4.5" fill="none" stroke="#33364a" stroke-width="1.5"/>
-<text x="42" y="360" fill="#eaf0ff" font-size="13">verifier</text>
-<text x="192" y="360" fill="#565f89" font-size="10.5" text-anchor="end">idle</text>
-<text x="26" y="430" fill="#e0af68" font-size="11">! 1 agent needs you</text>
-<rect x="216" y="38" width="323" height="95" rx="6" fill="#1c2233" stroke="#7aa2f7"/>
-<circle cx="232" cy="56" r="4" fill="#7dcfff"/>
-<text x="244" y="60" fill="#7aa2f7" font-size="12.5">lead</text>
+<rect x=".5" y=".5" width="879" height="451" rx="10" fill="#1e1e2e" stroke="#45475a"/>
+<path d="M0 10 Q0 0 10 0 H870 Q880 0 880 10 V30 H0 Z" fill="#181825"/>
+<circle cx="18" cy="15" r="5" fill="#f38ba8"/>
+<circle cx="36" cy="15" r="5" fill="#fab387"/>
+<circle cx="54" cy="15" r="5" fill="#a6e3a1"/>
+<text x="440.0" y="19.0" fill="#a6adc8" font-size="12" text-anchor="middle">herdr — session: agentic-hris</text>
+<rect x="10" y="38" width="196" height="404" rx="7" fill="#181825" stroke="#45475a"/>
+<text x="26" y="60" fill="#a6adc8" font-size="11" letter-spacing="2">AGENTS</text>
+<circle cx="28" cy="76" r="4.5" fill="#89b4fa"/>
+<text x="42" y="80" fill="#cdd6f4" font-size="13">lead</text>
+<text x="192" y="80" fill="#a6adc8" font-size="10.5" text-anchor="end">working</text>
+<circle cx="28" cy="116" r="4.5" fill="#89b4fa"/>
+<text x="42" y="120" fill="#cdd6f4" font-size="13">researcher</text>
+<text x="192" y="120" fill="#a6adc8" font-size="10.5" text-anchor="end">working</text>
+<circle cx="28" cy="156" r="4.5" fill="#89b4fa"/>
+<text x="42" y="160" fill="#cdd6f4" font-size="13">designer</text>
+<text x="192" y="160" fill="#a6adc8" font-size="10.5" text-anchor="end">working</text>
+<circle cx="28" cy="196" r="4.5" fill="none" stroke="#585b70" stroke-width="1.5"/>
+<text x="42" y="200" fill="#cdd6f4" font-size="13">frontend</text>
+<text x="192" y="200" fill="#a6adc8" font-size="10.5" text-anchor="end">idle</text>
+<circle cx="28" cy="236" r="4.5" fill="#89b4fa"/>
+<text x="42" y="240" fill="#cdd6f4" font-size="13">ax</text>
+<text x="192" y="240" fill="#a6adc8" font-size="10.5" text-anchor="end">working</text>
+<circle cx="28" cy="276" r="4.5" fill="#a6e3a1"/>
+<text x="42" y="280" fill="#cdd6f4" font-size="13">backend</text>
+<text x="192" y="280" fill="#a6adc8" font-size="10.5" text-anchor="end">done</text>
+<circle cx="28" cy="316" r="4.5" fill="#fab387"/>
+<text x="42" y="320" fill="#fab387" font-size="13">accessibility</text>
+<text x="192" y="320" fill="#fab387" font-size="10.5" text-anchor="end">blocked</text>
+<circle cx="28" cy="356" r="4.5" fill="none" stroke="#585b70" stroke-width="1.5"/>
+<text x="42" y="360" fill="#cdd6f4" font-size="13">verifier</text>
+<text x="192" y="360" fill="#a6adc8" font-size="10.5" text-anchor="end">idle</text>
+<text x="26" y="430" fill="#fab387" font-size="11">! 1 agent needs you</text>
+<rect x="216" y="38" width="323" height="95" rx="6" fill="#313244" stroke="#89b4fa"/>
+<circle cx="232" cy="56" r="4" fill="#89b4fa"/>
+<text x="244" y="60" fill="#89b4fa" font-size="12.5">lead</text>
 <text x="230" y="84" fill="blue" font-size="11.5" xml:space="preserve">› prompt designer "give a11y a ruling"</text>
 <text x="230" y="102" fill="dim" font-size="11" xml:space="preserve">orchestrating · 3 agents out</text>
-<rect x="216" y="141" width="323" height="95" rx="6" fill="#1e2030" stroke="#2a2c3d"/>
-<circle cx="232" cy="159" r="4" fill="#565f89"/>
-<text x="244" y="163" fill="#eaf0ff" font-size="12.5">designer</text>
+<rect x="216" y="141" width="323" height="95" rx="6" fill="#1e1e2e" stroke="#45475a"/>
+<circle cx="232" cy="159" r="4" fill="#a6adc8"/>
+<text x="244" y="163" fill="#cdd6f4" font-size="12.5">designer</text>
 <text x="230" y="187" fill="purple" font-size="11.5" xml:space="preserve">‹ lead: focus ruling? — deciding</text>
 <text x="230" y="205" fill="dim" font-size="11" xml:space="preserve">writing build/DESIGN.md</text>
-<rect x="216" y="244" width="323" height="95" rx="6" fill="#1e2030" stroke="#e0af68"/>
-<circle cx="232" cy="262" r="4" fill="#e0af68"/>
-<text x="244" y="266" fill="#e0af68" font-size="12.5">accessibility</text>
+<rect x="216" y="244" width="323" height="95" rx="6" fill="#1e1e2e" stroke="#fab387"/>
+<circle cx="232" cy="262" r="4" fill="#fab387"/>
+<text x="244" y="266" fill="#fab387" font-size="12.5">accessibility</text>
 <text x="230" y="290" fill="amber" font-size="11.5" xml:space="preserve">⚠ blocked — asked lead</text>
 <text x="230" y="308" fill="amber" font-size="11" xml:space="preserve">needs copilot-focus ruling</text>
-<rect x="216" y="347" width="323" height="95" rx="6" fill="#1e2030" stroke="#2a2c3d"/>
-<circle cx="232" cy="365" r="4" fill="#565f89"/>
-<text x="244" y="369" fill="#eaf0ff" font-size="12.5">researcher</text>
+<rect x="216" y="347" width="323" height="95" rx="6" fill="#1e1e2e" stroke="#45475a"/>
+<circle cx="232" cy="365" r="4" fill="#a6adc8"/>
+<text x="244" y="369" fill="#cdd6f4" font-size="12.5">researcher</text>
 <text x="230" y="393" fill="blue" font-size="11.5" xml:space="preserve">› prompt designer "AI SDK §4 →"</text>
 <text x="230" y="411" fill="green" font-size="11" xml:space="preserve">✓ wrote build/RESEARCH.md</text>
-<rect x="547" y="38" width="323" height="95" rx="6" fill="#1e2030" stroke="#2a2c3d"/>
-<circle cx="563" cy="56" r="4" fill="#565f89"/>
-<text x="575" y="60" fill="#eaf0ff" font-size="12.5">frontend</text>
+<rect x="547" y="38" width="323" height="95" rx="6" fill="#1e1e2e" stroke="#45475a"/>
+<circle cx="563" cy="56" r="4" fill="#a6adc8"/>
+<text x="575" y="60" fill="#cdd6f4" font-size="12.5">frontend</text>
 <text x="561" y="84" fill="dim" font-size="11.5" xml:space="preserve">idle</text>
 <text x="561" y="102" fill="dim" font-size="11" xml:space="preserve">awaiting DESIGN + CONTRACT</text>
-<rect x="547" y="141" width="323" height="95" rx="6" fill="#1e2030" stroke="#2a2c3d"/>
-<circle cx="563" cy="159" r="4" fill="#565f89"/>
-<text x="575" y="163" fill="#eaf0ff" font-size="12.5">ax</text>
+<rect x="547" y="141" width="323" height="95" rx="6" fill="#1e1e2e" stroke="#45475a"/>
+<circle cx="563" cy="159" r="4" fill="#a6adc8"/>
+<text x="575" y="163" fill="#cdd6f4" font-size="12.5">ax</text>
 <text x="561" y="187" fill="blue" font-size="11.5" xml:space="preserve">› prompt backend "tool shapes?"</text>
 <text x="561" y="205" fill="dim" font-size="11" xml:space="preserve">stubbing copilot route</text>
-<rect x="547" y="244" width="323" height="95" rx="6" fill="#1e2030" stroke="#2a2c3d"/>
-<circle cx="563" cy="262" r="4" fill="#565f89"/>
-<text x="575" y="266" fill="#eaf0ff" font-size="12.5">backend</text>
+<rect x="547" y="244" width="323" height="95" rx="6" fill="#1e1e2e" stroke="#45475a"/>
+<circle cx="563" cy="262" r="4" fill="#a6adc8"/>
+<text x="575" y="266" fill="#cdd6f4" font-size="12.5">backend</text>
 <text x="561" y="290" fill="green" font-size="11.5" xml:space="preserve">✓ done — replied to ax</text>
 <text x="561" y="308" fill="dim" font-size="11" xml:space="preserve">schema · seed · tools</text>
-<rect x="547" y="347" width="323" height="95" rx="6" fill="#1e2030" stroke="#2a2c3d"/>
-<circle cx="563" cy="365" r="4" fill="#565f89"/>
-<text x="575" y="369" fill="#eaf0ff" font-size="12.5">verifier</text>
+<rect x="547" y="347" width="323" height="95" rx="6" fill="#1e1e2e" stroke="#45475a"/>
+<circle cx="563" cy="365" r="4" fill="#a6adc8"/>
+<text x="575" y="369" fill="#cdd6f4" font-size="12.5">verifier</text>
 <text x="561" y="393" fill="dim" font-size="11.5" xml:space="preserve">idle — fresh context</text>
 <text x="561" y="411" fill="dim" font-size="11" xml:space="preserve">will re-run all checks</text>
 </svg>
