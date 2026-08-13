@@ -94,6 +94,14 @@ RULES THAT KEEP THIS TEAM FROM DEADLOCKING — follow them exactly:
 5. When you finish a task, \`send\` the result to whoever asked for it. Artifacts are files
    under $BUILD — reference them by path rather than pasting them.
 
+NEVER TERMINATE YOUR OWN PANE OR SESSION. Do not run \`exit\`, \`herdr pane close\`,
+\`herdr server stop\`, or anything else that closes a pane or stops the Herdr session — not on
+yourself and not on a teammate. A closed pane takes its scrollback with it, so the human loses
+the record of what you did, and the team loses an agent it cannot get back. \`herdr\` commands
+cannot reach these agents anyway (that is what intercom is for), so you have no reason to run
+one. If you believe your work is finished, say so and stop generating; the human decides when
+this team shuts down.
+
 Your working directory is $BUILD. Never touch anything outside it.
 EOF
 }
@@ -170,13 +178,22 @@ for r in $ROLES; do
     echo "export ATOMIC_ROLE=$r"
     echo "export ATOMIC_INTERCOM_GROUP=$GROUP"
     echo "cd \"$HERE\""
-    printf 'exec atomic -e %q --provider %q --model %q -n %q \\\n' "$EXT" "$PROVIDER" "$MODEL" "$r"
+    # Deliberately NOT `exec`: keep a shell wrapping Atomic so that when a session ends, the
+    # exit status lands in the pane's scrollback instead of vanishing. stderr is teed to a log
+    # as well, because a pane that dies takes its scrollback with it — and a crash you cannot
+    # read is a crash you cannot fix.
+    printf 'atomic -e %q --provider %q --model %q -n %q \\\n' "$EXT" "$PROVIDER" "$MODEL" "$r"
     printf '  --append-system-prompt "$(cat %q)" \\\n' "$HERE/team/$r.md"
     printf '  --append-system-prompt "$(cat %q)"' "$LAUNCHDIR/TRANSPORT.md"
     if [ "$r" = "lead" ]; then
       printf ' \\\n  --append-system-prompt "$(cat %q)"' "$LAUNCHDIR/LEAD.md"
     fi
-    echo
+    printf ' \\\n  2> >(tee -a %q >&2)\n' "$LAUNCHDIR/$r.stderr.log"
+    echo 'status=$?'
+    echo "echo"
+    echo "echo \"[herdr] the '$r' Atomic session exited (status \$status). Pane kept open —\""
+    echo "echo \"[herdr] scrollback above, stderr in $LAUNCHDIR/$r.stderr.log\""
+    echo "echo \"[herdr] restart with: bash $LAUNCHDIR/$r.sh\""
   } > "$LAUNCHDIR/$r.sh"
   chmod +x "$LAUNCHDIR/$r.sh"
 done
