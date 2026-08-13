@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="780" height="83" viewBox="0 0 780 83" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
-<rect x=".5" y=".5" width="779" height="82" rx="10" fill="#1e1e2e" stroke="#45475a"/>
-<path d="M0 10 Q0 0 10 0 H770 Q780 0 780 10 V30 H0 Z" fill="#181825"/>
-<circle cx="18" cy="15" r="5" fill="#f38ba8"/>
-<circle cx="36" cy="15" r="5" fill="#fab387"/>
-<circle cx="54" cy="15" r="5" fill="#a6e3a1"/>
-<text x="390.0" y="19.0" fill="#a6adc8" font-size="12" text-anchor="middle">Ghostty</text>
-<text x="16" y="60" fill="#89b4fa" font-size="13.5" xml:space="preserve">mp@Mac ~ %  </text>
-</svg>

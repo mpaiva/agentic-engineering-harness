@@ -23,11 +23,7 @@
 # Node (in case a workflow package is added locally)
 node_modules/
 
-# Agentic-HRIS example: agents build here at runtime
-examples/agentic-hris/build/
-
-# Atomic-intercom example: workflow builds here at runtime
-examples/atomic-intercom/build/
+/build/
 
 # subagent-driven-development scratch (ledger, briefs, review packages)
 .superpowers/
