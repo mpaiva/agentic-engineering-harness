@@ -29,6 +29,8 @@ If a capability is desired but does **not** exist yet (for example, a first-clas
 - Do **not** commit secrets, API keys, tokens, or `~/.config/herdr` or `~/.atomic` contents. See `.gitignore`.
 - Do **not** create a GitHub remote or push unless explicitly asked. This repo is local by default.
 - Keep the three layers' responsibilities separate in anything you write: Ghostty = interaction surface, Herdr = workspace/operations, Atomic = orchestration.
+- **`build/` is run output, not source.** It is git-ignored and recreated by `./build.sh`. Never commit anything from it; never treat its contents as repo documentation.
+- **Role briefs in `team/` must stay domain-neutral.** They are appended to agent system prompts for *any* project. A brief that assumes a web app, a language, or a domain is a defect — the mission supplies the domain, the brief supplies the discipline.
 
 ## Verification for changes to this repo
 

@@ -28,7 +28,7 @@ Run the Atomic workflow (its stages fan out and verify internally), and use Herd
 
 ```bash
 # Inside a Herdr pane (HERDR_ENV=1):
-atomic -p '/workflow feature-development objective="Add employee event history (WCAG 2.2 AA)"'
+atomic -p '/workflow feature-development objective="Add CSV export to the report view"'
 # → returns a run id; monitor with /workflow status <id> or /workflow connect <id>
 ```
 
@@ -36,7 +36,7 @@ Atomic owns stage state; Herdr shows the pane running the workflow as `working` 
 
 ### Pattern B — Herdr hosts one pane per responsibility; a script drives the phases
 
-When you want each responsibility visible as its own pane/state in the sidebar, launch an agent per pane and drive the phase order with `herdr agent prompt` + `herdr agent wait`. This is what [`../scripts/launch-feature.sh`](../scripts/launch-feature.sh) does, and what the [example](../examples/feature-development/README.md) runs. It gives you the per-responsibility cockpit at the cost of expressing the orchestration in shell rather than in Atomic's graph.
+When you want each responsibility visible as its own pane/state in the sidebar, launch an agent per pane and drive the phase order with `herdr agent prompt` + `herdr agent wait`. This is what [`../scripts/launch-feature.sh`](../scripts/launch-feature.sh) does. It gives you the per-responsibility cockpit at the cost of expressing the orchestration in shell rather than in Atomic's graph.
 
 The state primitive that ties a script to the Atomic-style phase order:
 

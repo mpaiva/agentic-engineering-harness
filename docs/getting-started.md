@@ -102,12 +102,12 @@ You are meant to watch the **exceptions** (`BLOCKED`, `FAILED`), not every pane.
 
 ## 7. Run the end-to-end example
 
-Walk the reference feature workflow — research → plan → human gate → parallel implementation → verification → bounded repair → human gate → PR:
-
 ```bash
-cd examples/feature-development
-cat README.md
+./build.sh
 ```
+
+Answer the question it asks. The lead refines your answer into `build/MISSION.md`, shows it
+to you for confirmation, then hires its team and starts building.
 
 ## Where to go next
 

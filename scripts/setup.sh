@@ -52,18 +52,11 @@ else no "claude (Claude Code) missing — install it, then run 'claude' once to 
 if have herdr; then herdr integration install claude >/dev/null 2>&1 && ok "herdr → claude state integration installed" || info "could not install herdr claude integration (run: herdr integration install claude)"; fi
 if [ -x scripts/sync-workflows.sh ]; then ./scripts/sync-workflows.sh >/dev/null 2>&1 && ok "workflows synced into .atomic/workflows/" || true; fi
 
-cat <<EOF
+cat <<'EOF'
 
-── Two things only you can do (credentials — I never touch them) ──
-  1. Claude Code:  run  \033[1mclaude\033[0m  once and log in.
-  2. Atomic:       run  \033[1matomic\033[0m  →  \033[1m/login\033[0m  →  Claude Pro/Max.
+Next:
+  ./build.sh                      # asks what to build, then builds it
+  herdr --session harness         # attach and watch the cockpit
 
-── Then get the agent team going ──
-  cd examples/agentic-hris
-  ./launch.sh            # dry run — see the plan, touch nothing
-  ./launch.sh --layout   # build the split-pane Herdr grid (no paid agents)
-  ./launch.sh --go       # FULL LAUNCH — 8 live agents, autonomous
-  herdr --session agentic-hris    # attach and watch the control room
-
-See examples/agentic-hris/README.md before --go (cost, autonomy, isolation).
+See README.md before your first run (cost, autonomy, isolation).
 EOF

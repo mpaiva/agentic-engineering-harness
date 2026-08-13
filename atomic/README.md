@@ -60,7 +60,7 @@ Atomic discovers project workflows only from **`.atomic/workflows/`** (with the 
 /workflow reload                 # rediscover after a sync
 /workflow list
 /workflow inputs feature-development
-/workflow feature-development objective="Add employee event history view (WCAG 2.2 AA)"
+/workflow feature-development objective="Add CSV export to the report view"
 ```
 
 Monitor and control runs:
