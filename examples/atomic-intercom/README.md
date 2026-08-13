@@ -1,10 +1,21 @@
 # Example: Atomic Intercom — agents steering each other live
 
-A runnable demo of **Atomic's Intercom** feature: two agents run **concurrently in one workflow** and **talk to each other mid-run** to progress toward a goal. This is the real Intercom feature — not the `herdr agent prompt` substitute used in [agentic-hris](../agentic-hris/README.md).
+A runnable demo of **Atomic's Intercom** feature: two agents run **concurrently in one workflow** and **talk to each other mid-run** to progress toward a goal.
 
 ## What Intercom is
 
-Intercom is **Atomic's** channel for agents in the **same workflow group** to communicate *while they are still generating*: status/needs-attention/completed notices, and blocking **`intercom.ask`** peer questions. It's tool-gated and lives **inside** an Atomic run — so you watch it with `/workflow status`, not in Herdr's sidebar. (Herdr can't see inside an Atomic run; that's the whole reason the two examples exist.)
+Intercom is **Atomic's** channel for direct messaging **between Atomic sessions on the same machine**, over a local broker (`~/.atomic/agent/intercom/broker.sock`, auto-spawned on first use). Peers exchange `send` (fire-and-forget), blocking **`ask`**, and `reply`, plus status/needs-attention/completed notices — and with `ask`, *while the asking agent is still generating*.
+
+It works at **two scales**, and both are real:
+
+| Scale | Who is talking | How you watch it |
+|-------|----------------|------------------|
+| **Inside one workflow** | Stages/sub-agents in a shared group (`group: true` on a `ctx.parallel` set) | `/workflow status` — this example |
+| **Across separate sessions** | Independent `atomic` processes, one per terminal or Herdr pane | The panes themselves — [agentic-hris](../agentic-hris/README.md)'s `launch-atomic.sh` |
+
+Every session belongs to exactly one **group** and can only message peers in that group (cross-group sends are rejected by the broker, not merely hidden). Workflow stages inherit their run's group automatically; standalone sessions take theirs from `ATOMIC_INTERCOM_GROUP`, falling back to `"default"`.
+
+> **Earlier versions of this page said Intercom was intra-workflow only and "invisible to Herdr."** That was wrong. Atomic 0.9.12's `docs/intercom.md` describes it as "direct messaging between Atomic sessions on the same machine," and a nine-session run under `agentic-hris/launch-atomic.sh` confirmed it: nine independent Atomic sessions, one per Herdr pane, each registered by role name in one group, delegating and replying across panes. Herdr still can't see *inside* a single Atomic run — the distinction is the run, not Intercom.
 
 ## The demo
 
@@ -46,7 +57,7 @@ Watch the two agents coordinate: `/workflow status <run-id>` (and `/workflow con
 
 ## Honest notes
 
-- **Intercom is intra-workflow.** You monitor it via `/workflow status`, not Herdr. For the Herdr-monitored, per-agent-pane experience, that's [agentic-hris](../agentic-hris/README.md) (which uses `herdr agent prompt`).
+- **This demo is the intra-workflow shape.** Both agents are stages of one run, so you monitor them with `/workflow status` — Herdr cannot see inside a single Atomic run. For Intercom **across** separate sessions, one per Herdr pane, see [agentic-hris](../agentic-hris/README.md)'s `launch-atomic.sh`.
 - **It spends real tokens** — two concurrent agents plus a verifier. It's a small, self-contained task, so it's cheap as these go, but it's a live paid run.
 - **The models must actually use the tool.** The prompts require `intercom.ask`; if a provider/model declines to call it, the builder is told to state the conflict rather than silently guess. If Intercom is unavailable in your Atomic build, the run still completes but without live steering.
 
@@ -54,4 +65,4 @@ Watch the two agents coordinate: `/workflow status <run-id>` (and `/workflow con
 
 - **Atomic Intercom** — same-group agents steering each other with `intercom.ask` during generation (`group: true` on a `ctx.parallel` set).
 - **Communication as a first-class part of the graph** — the goal is only reachable *through* the exchange.
-- The contrast with [agentic-hris](../agentic-hris/README.md): Intercom (inside Atomic, watched via `/workflow status`) vs. `herdr agent prompt` (across panes, watched in Herdr).
+- The contrast with [agentic-hris](../agentic-hris/README.md): the same Intercom channel at a different scale — stages of one run, watched via `/workflow status`, vs. nine independent sessions in Herdr panes, watched in the cockpit.

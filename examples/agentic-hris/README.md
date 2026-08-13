@@ -131,12 +131,24 @@ herdr --session agentic-hris server stop
 **Command reference** (once you're comfortable):
 
 ```bash
+# Claude Code team — coordinates via `herdr agent prompt`
 ./launch.sh              # dry run — print the plan, change nothing
 ./launch.sh --layout     # build the split-pane grid only (no paid agents)
 ./launch.sh --go         # full launch — 9 live agents, autonomous
 herdr --session agentic-hris                 # attach and watch
 herdr --session agentic-hris agent read lead # peek at the lead's thinking
+herdr --session agentic-hris agent send-keys lead esc  # pause the orchestrator
 herdr --session agentic-hris server stop     # stop everything
+
+# Atomic team — coordinates via Atomic Intercom (separate Herdr session, so the two
+# launchers never collide; you can even run both at once)
+./launch-atomic.sh                       # dry run
+./launch-atomic.sh --layout              # grid only, named panes, no paid agents
+./launch-atomic.sh --go                  # full launch — 9 Atomic sessions (claude-sonnet-5)
+./launch-atomic.sh --go --model claude-opus-5
+herdr --session agentic-hris-atomic                    # attach and watch
+herdr --session agentic-hris-atomic pane read w1:p1    # peek at a pane (panes are named by role)
+herdr --session agentic-hris-atomic server stop        # stop everything
 ```
 
 ## Read this before `--go` (the honest part)
@@ -146,9 +158,36 @@ herdr --session agentic-hris server stop     # stop everything
 - **Full autonomy is experimental and drifts.** Agents may misunderstand each other, duplicate work, or stall. That's the point of the example — it shows the failure modes the harness's gates and verification exist to prevent. The `lead` is told to keep the `verifier` in the loop and to escalate (write `build/BLOCKED.md`) rather than grind. You may still need to `agent prompt lead "…"` to nudge it.
 - **The copilot needs an LLM key to *run*.** The team *builds* the Vercel AI SDK integration; running the copilot needs `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` in `build/.env.local` (git-ignored). Never commit a key.
 
-## A note on "intercom"
+## Two transports: `herdr agent prompt` and Atomic Intercom
 
-Atomic's **Intercom** is real agent-to-agent communication, but it happens **between stages/sub-agents inside a single Atomic workflow** (live steering, `intercom.ask`, status handshakes) — and it's **invisible to Herdr**. Because you asked for a team you can **watch in Herdr**, this example uses **`herdr agent prompt`** instead: separate Claude agents messaging each other, every exchange visible in the cockpit. Same idea ("agents communicate to progress toward a goal"), different transport — and the one that's monitorable. If you'd rather see Atomic Intercom specifically, that's a different example: sub-agents inside one `hcm-feature-build`-style workflow, watched via `/workflow status`.
+This example ships **two launchers**, because there are two ways to make a team of agents talk:
+
+```bash
+./launch.sh --go          # nine Claude Code agents, coordinating via `herdr agent prompt`
+./launch-atomic.sh --go   # nine Atomic sessions, coordinating via Atomic Intercom
+```
+
+**`launch.sh` (Claude Code)** uses `herdr agent prompt`. Herdr natively detects Claude Code
+(`herdr agent start --kind claude`), so it fills in the sidebar's working/blocked/done state
+itself, and agents address each other by the names Herdr knows them by.
+
+**`launch-atomic.sh` (Atomic)** uses **Intercom** — Atomic's own channel for direct messaging
+between sessions on the same machine. Nine independent Atomic sessions, one per pane, each
+named with `/name <role>` and sharing an `ATOMIC_INTERCOM_GROUP`, delegate and reply to each
+other with `intercom({action: "send" | "ask" | "reply"})`. Two things make this work:
+
+- Atomic is **not** one of Herdr 0.8.0's ~21 known agent kinds, so `herdr agent start`,
+  `herdr agent prompt`, and native state detection are all unavailable. Sidebar state instead
+  comes from [`atomic/extensions/herdr-state.ts`](../../atomic/extensions/herdr-state.ts),
+  which pushes Atomic's lifecycle events into Herdr over its socket API.
+- `/name <role>` must land **before** a session's first Intercom call. A session that connects
+  to the broker unnamed registers a `subagent-chat-<id>` alias and stays unaddressable by role.
+
+> An earlier version of this note claimed Intercom only works "between stages/sub-agents inside
+> a single Atomic workflow" and is "invisible to Herdr" — which is why this example originally
+> used `herdr agent prompt` as a substitute. That was wrong: Intercom is session-to-session over
+> a local broker, and workflows are just one way to use it. See
+> [atomic-intercom](../atomic-intercom/README.md) for the intra-workflow shape.
 
 ## What this example teaches
 
