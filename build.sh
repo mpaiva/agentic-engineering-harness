@@ -140,16 +140,20 @@ print(sorted(leads,key=lambda p:p['pane_id'])[0]['pane_id'])
 "
 }
 LEAD=""
-for _ in $(seq 1 40); do
-  if [ "$MODE" = "resume" ]; then
+if [ "$MODE" = "resume" ]; then
+  for _ in $(seq 1 40); do
     LEAD="$(lead_pane_by_label || true)"
-    [ -n "$LEAD" ] || LEAD="$(root_pane || true)"
-  else
+    [ -n "$LEAD" ] && break
+    sleep 0.5
+  done
+fi
+if [ -z "$LEAD" ]; then
+  for _ in $(seq 1 40); do
     LEAD="$(root_pane || true)"
-  fi
-  [ -n "$LEAD" ] && break
-  sleep 0.5
-done
+    [ -n "$LEAD" ] && break
+    sleep 0.5
+  done
+fi
 [ -n "$LEAD" ] || { echo "could not find a shell pane to start the lead in" >&2; exit 1; }
 
 herdr pane rename "$LEAD" lead >/dev/null 2>&1 || true
