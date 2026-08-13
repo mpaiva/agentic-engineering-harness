@@ -165,28 +165,18 @@ echo "$LEAD" > "$LAUNCHDIR/lead.pane"
 herdr pane send-text "$LEAD" "bash $LAUNCHDIR/lead.sh" >/dev/null
 herdr pane send-keys "$LEAD" Enter >/dev/null
 
-ATOMIC_UP=0
-for _ in $(seq 1 60); do
-  if herdr pane list 2>/dev/null | python3 -c "
-import sys,json
-p=[x for x in json.load(sys.stdin)['result']['panes'] if x['pane_id']=='$LEAD']
-sys.exit(0 if p and (p[0].get('terminal_title_stripped') or '').startswith('atomic') else 1)
-" 2>/dev/null; then ATOMIC_UP=1; break; fi
-  sleep 1
-done
-[ "$ATOMIC_UP" = 1 ] || {
-  rm -f "$LAUNCHDIR/lead.pane"
-  echo "Atomic did not reach its prompt in the lead pane within 60s." >&2
-  echo "Removed $LAUNCHDIR/lead.pane so this can be retried. Inspect the pane, then restart" >&2
-  echo "it with: bash $LAUNCHDIR/lead.sh" >&2
-  exit 1; }
-
-# NOTE: unlike scripts/team.sh, this script must NOT send a `/name` command here. `-n lead`
-# at launch (above) already sets the session's name, and by this point build-intake.ts has
-# opened its `ctx.ui.input(...)` popup in the lead's pane (session_start fires before the
-# readiness poll below can return) — anything typed into the pane now lands IN the popup,
-# not at a shell or Atomic prompt. Nothing may be sent to this pane until IDEA.md exists.
-sleep 2
+# DO NOT add a pane-readiness poll here. An earlier version waited for the pane's title to
+# start with "atomic", and it deadlocked on the first real run: build-intake.ts opens its
+# popup during session_start, and while that dialog is open the pane title stays "bash
+# .../lead.sh". The title never changes, so the poll always timed out, deleted lead.pane, and
+# exited — leaving a live popup with no script left to send the kickoff once it was answered.
+#
+# The poll existed only to gate a `/name lead` send that no longer happens: `-n lead` at
+# launch (above) already sets the session name. The wait for IDEA.md below IS the readiness
+# signal — it cannot be satisfied unless Atomic booted, rendered the popup, and got an answer.
+#
+# Nothing may be sent to this pane before IDEA.md exists: anything typed while the dialog is
+# open lands IN the popup and is submitted as the human's answer.
 
 # The popup is now up in the lead's pane. Wait for the human to answer it, then kick the lead
 # into refining. (If a future Atomic lets an extension self-start a turn, this poll becomes
