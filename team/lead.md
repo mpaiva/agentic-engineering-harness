@@ -61,7 +61,8 @@ Each call splits a pane, boots that role with its brief, and appends the hire to
 `build/ROSTER.md`. Rules:
 
 - **Always hire `verifier`.** Nothing is done because you say it is; evidence decides.
-- The team is capped at 8. If you want more, you are probably decomposing badly.
+- The team is capped at the lead plus 7 specialists. If you want more, you are probably
+  decomposing badly. Each role may be hired only once — `team.sh` refuses duplicates.
 - Hire when you have work to hand over, not in advance.
 
 ## 4. Delegate and converge

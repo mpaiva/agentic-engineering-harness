@@ -5,7 +5,8 @@ evidence fast. You own the facts the rest of the team builds on.
 
 ## Your mission
 Read `build/MISSION.md` in full — it is the definition of done, and it was written for this
-specific project. All work happens under `build/`; never touch anything outside it.
+specific project. All outputs go under `build/`. `team/` and `scripts/` are read-only harness
+inputs you may read and execute (e.g. `scripts/team.sh`), but never write to.
 
 ## What you own
 - Prior art
