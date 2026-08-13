@@ -150,7 +150,18 @@ start_agent(){ # $1 name  $2 pane  $3 prompt
   # one, or an autonomous team stalls at every prompt. This is the risky mode the harness
   # warns about — the isolated build/ dir and the "only touch build/" instruction are the
   # guardrails. Run this on a throwaway machine/VM for real work (see docs/security.md).
-  herdr agent start "$1" --kind claude --pane "$2" -- --dangerously-skip-permissions >/dev/null 2>&1 || {
+  #
+  # Retry: observed on Herdr 0.8.0 — a single `agent start` attempt shortly after `pane split`
+  # failed for all eight split panes (only the pre-existing lead pane took an agent), leaving a
+  # grid of empty shells; the same command succeeded on a later attempt. Retry before giving up.
+  started=0
+  for _ in 1 2 3 4 5; do
+    if herdr agent start "$1" --kind claude --pane "$2" -- --dangerously-skip-permissions >/dev/null 2>&1; then
+      started=1; break
+    fi
+    sleep 2
+  done
+  [ "$started" = 1 ] || {
     echo "  ! could not start agent '$1' on $2 (pane busy? claude missing?)" >&2; return 0; }
   herdr agent wait "$1" --until idle --timeout 45000 >/dev/null 2>&1 || sleep 4
   herdr agent prompt "$1" "$3" >/dev/null 2>&1 || echo "  ! could not prompt '$1'" >&2
@@ -160,7 +171,8 @@ start_agent(){ # $1 name  $2 pane  $3 prompt
 # The root (lead) pane defaults to $HOME; point it at the project dir before launch.
 herdr pane send-text "$LEAD" "cd \"$HERE\"" >/dev/null 2>&1 || true
 herdr pane send-keys "$LEAD" Enter >/dev/null 2>&1 || true
-sleep 1
+# Let the eight freshly split panes finish spawning their shells before hosting agents.
+sleep 4
 
 echo "Starting specialists (they acknowledge their role, then await the lead)…"
 start_agent pm            "$PM"            "$(shared_context pm)"
@@ -183,6 +195,11 @@ cat <<EOF
            agent working / blocked / done — supervise by exception)
  PEEK:     herdr --session $SESSION agent read lead
  NUDGE:    herdr --session $SESSION agent prompt lead "status?"
+ PAUSE:    herdr --session $SESSION agent send-keys lead esc     (interrupt the orchestrator
+           mid-turn — it stops delegating and the sidebar shows it "done" until you prompt
+           it again. Specialists already mid-task keep working until they finish; pause
+           them the same way, by name.)
+ RESUME:   herdr --session $SESSION agent prompt lead "resume — continue where you stopped"
  STOP 1:   herdr --session $SESSION agent send-keys <name> C-c   (interrupt one agent)
  STOP ALL: herdr --session $SESSION server stop                 (halt the whole team)
 
