@@ -22,7 +22,7 @@ MAX_AGENTS=8
 export PATH="$HOME/.local/bin:$PATH"
 herdr(){ command herdr --session "$SESSION" "$@"; }
 
-usage(){ sed -n '2,11p' "$0"; exit "${1:-0}"; }
+usage(){ sed -n '2,9p' "$0"; exit "${1:-0}"; }
 [ $# -gt 0 ] || usage 2
 
 CMD="$1"; shift
@@ -39,6 +39,14 @@ case "$CMD" in
   add) : ;;
   *) echo "unknown command: $CMD" >&2; usage 2 ;;
 esac
+
+# Preflight, same as build.sh: fail before splitting a pane, not partway through.
+command -v herdr >/dev/null || { echo "herdr not found on PATH (run ./scripts/setup.sh)" >&2; exit 1; }
+command -v atomic >/dev/null || { echo "atomic not found on PATH (run ./scripts/setup.sh)" >&2; exit 1; }
+if ! atomic auth print-bearer-token --model "$MODEL" --provider "$PROVIDER" >/dev/null 2>&1; then
+  echo "atomic has no usable credential for $PROVIDER/$MODEL — run 'atomic' then '/login'." >&2
+  exit 1
+fi
 
 ROLE="${1:-}"; shift || true
 REASON=""
@@ -82,7 +90,9 @@ fi
 # Split the most recently created pane, alternating right/down, so the grid stays roughly
 # square as the team grows.
 LAST_PANE="$(ls -t "$LAUNCHDIR"/*.pane 2>/dev/null | head -1)" || true
-TARGET="$(cat "${LAST_PANE:-$LAUNCHDIR/lead.pane}")"
+TARGET_FILE="${LAST_PANE:-$LAUNCHDIR/lead.pane}"
+[ -f "$TARGET_FILE" ] || { echo "no pane record at $TARGET_FILE — is the lead running? Start it with ./build.sh first." >&2; exit 1; }
+TARGET="$(cat "$TARGET_FILE")"
 if [ $((HIRED % 2)) -eq 1 ]; then DIRECTION=down; else DIRECTION=right; fi
 
 PANE=$(herdr pane split "$TARGET" --direction "$DIRECTION" --no-focus --cwd "$HERE" \
@@ -130,7 +140,10 @@ done
 }
 
 # ORDER MATTERS: /name before the session's first intercom call, or it registers as
-# subagent-chat-<id> and is unaddressable by role forever.
+# subagent-chat-<id> and is unaddressable by role forever. Unlike build.sh's lead pane, this
+# is safe here: specialists load only herdr-state.ts (not build-intake.ts), and
+# build-intake.ts's session_start handler returns immediately when ATOMIC_ROLE != "lead", so
+# no intake popup is ever open in a specialist pane for this text to land in.
 herdr pane send-text "$PANE" "/name $ROLE" >/dev/null
 herdr pane send-keys "$PANE" Enter >/dev/null
 sleep 2

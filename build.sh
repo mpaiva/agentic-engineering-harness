@@ -87,6 +87,9 @@ mkdir -p "$BUILD" "$LAUNCHDIR"
   printf 'export ATOMIC_ROLE=%q\n' "lead"
   printf 'export ATOMIC_INTERCOM_GROUP=%q\n' "$GROUP"
   printf 'export BUILD_DIR=%q\n' "$BUILD"
+  printf 'export ATOMIC_PROVIDER=%q\n' "$PROVIDER"
+  printf 'export ATOMIC_MODEL=%q\n' "$MODEL"
+  printf 'export HERDR_SESSION=%q\n' "$SESSION"
   echo "cd \"$HERE\""
   printf 'atomic -e %q -e %q --provider %q --model %q -n lead \\\n' \
     "$HERE/atomic/extensions/herdr-state.ts" \
@@ -172,15 +175,17 @@ sys.exit(0 if p and (p[0].get('terminal_title_stripped') or '').startswith('atom
   sleep 1
 done
 [ "$ATOMIC_UP" = 1 ] || {
+  rm -f "$LAUNCHDIR/lead.pane"
   echo "Atomic did not reach its prompt in the lead pane within 60s." >&2
-  echo "Inspect the pane, then restart it with: bash $LAUNCHDIR/lead.sh" >&2
+  echo "Removed $LAUNCHDIR/lead.pane so this can be retried. Inspect the pane, then restart" >&2
+  echo "it with: bash $LAUNCHDIR/lead.sh" >&2
   exit 1; }
 
-# ORDER MATTERS: /name must land BEFORE the session's first intercom call. A session that
-# connects to the broker unnamed registers a subagent-chat-<id> alias and stays unaddressable
-# by role for the rest of its life.
-herdr pane send-text "$LEAD" "/name lead" >/dev/null
-herdr pane send-keys "$LEAD" Enter >/dev/null
+# NOTE: unlike scripts/team.sh, this script must NOT send a `/name` command here. `-n lead`
+# at launch (above) already sets the session's name, and by this point build-intake.ts has
+# opened its `ctx.ui.input(...)` popup in the lead's pane (session_start fires before the
+# readiness poll below can return) — anything typed into the pane now lands IN the popup,
+# not at a shell or Atomic prompt. Nothing may be sent to this pane until IDEA.md exists.
 sleep 2
 
 # The popup is now up in the lead's pane. Wait for the human to answer it, then kick the lead
@@ -193,10 +198,17 @@ for _ in $(seq 1 600); do
 done
 
 if [ -f "$BUILD/IDEA.md" ]; then
-  herdr pane send-text "$LEAD" "Begin. Read $BUILD/IDEA.md, refine it into $BUILD/MISSION.md with /skill:prompt-engineer, show me the mission for confirmation, then hire your team with scripts/team.sh add <role>." >/dev/null
+  if [ -f "$BUILD/MISSION.md" ]; then
+    # A mission already exists — this is a resume. It may already be human-confirmed, so do
+    # NOT re-refine IDEA.md or re-run the confirmation gate; that would silently rewrite a
+    # mission the human already approved. Just get the lead re-oriented and moving again.
+    herdr pane send-text "$LEAD" "Resume. Re-read $BUILD/MISSION.md and $BUILD/ROSTER.md (if present) to recover context, then continue the mission from where it left off. Do NOT re-refine MISSION.md and do NOT re-run the human confirmation gate — treat the mission as already confirmed. Hire more specialists with scripts/team.sh add <role> only if the mission still needs them." >/dev/null
+  else
+    herdr pane send-text "$LEAD" "Begin. Read $BUILD/IDEA.md, refine it into $BUILD/MISSION.md with /skill:prompt-engineer, show me the mission for confirmation, then hire your team with scripts/team.sh add <role>." >/dev/null
+  fi
   herdr pane send-keys "$LEAD" Enter >/dev/null
 else
-  echo "No IDEA.md after 10 minutes. Answer the popup, or run /build-intake in the lead pane." >&2
+  echo "No IDEA.md after 10 minutes. Re-run: ./build.sh --resume" >&2
 fi
 
 cat <<EOF
