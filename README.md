@@ -2,7 +2,7 @@
 
 A reference harness for **agentic engineering**: running multiple autonomous coding agents in parallel, under explicit workflows, with independent verification and human review gates — so one engineer can *supervise* engineering work instead of manually driving every keystroke.
 
-This repository is documentation, conventions, and working examples. It is not a new tool. It composes three existing tools into one operating model:
+This repository is documentation and conventions, plus the harness scripts and Atomic extensions that wire them together. It is not a new tool. It composes three existing tools into one operating model:
 
 | Layer | Tool | Responsibility |
 |-------|------|----------------|
@@ -120,7 +120,7 @@ Atomic is the orchestration/verification engine, and the highest-leverage thing 
 
 1. **[atomic/README.md](atomic/README.md)** — how workflows are defined (TypeScript), the `ctx` primitives, DAG rules, and when to reuse built-ins (`goal`, `ralph`, …) instead of hand-rolling.
 2. **[atomic/workflows/feature-development.ts](atomic/workflows/feature-development.ts)** — an annotated reference workflow: fan-out research → plan → gate → implement → verify → **bounded, DAG-unrolled repair** → gate → PR.
-4. **[docs/case-study-first-run.md](docs/case-study-first-run.md)** — one real run end to end: the question, the refined mission, the roster the lead chose and why, and the evidence it finished with.
+3. **[docs/case-study-first-run.md](docs/case-study-first-run.md)** — one real run end to end: the question, the refined mission, the roster the lead chose and why, and the evidence it finished with.
 
 The one-line lesson: **describe the outcome and its acceptance criteria, bound the turns, and let independent verifiers — not the author — decide "done."**
 
@@ -139,6 +139,6 @@ The one-line lesson: **describe the outcome and its acceptance criteria, bound t
 ## Status
 
 - The three-layer operating model, docs, conventions, and the Atomic workflow spec are complete and grounded in the installed tool versions (Atomic `0.9.12`, Herdr `0.8.0`, Ghostty `1.3.1`).
-- A first-class **Atomic ↔ Herdr adapter** (a single command surface that projects Atomic workflow state into the Herdr sidebar) does **not** yet exist in either tool. It is documented as a target in [herdr/atomic-integration.md](herdr/atomic-integration.md) and is not implemented here. The example wires the two layers with scripts today.
+- A first-class **Atomic ↔ Herdr adapter** (a single command surface that projects Atomic workflow state into the Herdr sidebar) does **not** yet exist in either tool. It is documented as a target in [herdr/atomic-integration.md](herdr/atomic-integration.md) and is not implemented here. `build.sh` and `scripts/team.sh` wire the two layers with scripts today.
 - No remote is configured — this repo is local by default. Clone it, read the [reading order](#start-here--a-reading-order) above, and run `./build.sh`.
 - **The harness builds whatever you point it at.** `./build.sh` asks what you want, refines it with Atomic's `prompt-engineer` skill into a mission, and composes a team to build it. See [docs/case-study-first-run.md](docs/case-study-first-run.md) for a recorded run.

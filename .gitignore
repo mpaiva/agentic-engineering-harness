@@ -11,8 +11,9 @@
 # Live Atomic workflow run output (regenerated per run; not part of the repo)
 .atomic/workflows/runs/
 **/.runs/
-# NOTE: the worked artifacts under examples/feature-development/{research,specs,artifacts}
-# ARE committed on purpose — they show what good autonomous output looks like.
+# NOTE: docs/case-study-first-run.md (committed) documents a real ./build.sh run in prose —
+# that is how this repo shows what good autonomous output looks like; build/ itself (see
+# below) is always run output and is never committed.
 
 # OS / editor
 .DS_Store
