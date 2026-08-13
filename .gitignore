@@ -28,3 +28,6 @@ examples/agentic-hris/build/
 
 # Atomic-intercom example: workflow builds here at runtime
 examples/atomic-intercom/build/
+
+# subagent-driven-development scratch (ledger, briefs, review packages)
+.superpowers/
