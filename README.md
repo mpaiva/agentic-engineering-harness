@@ -28,9 +28,14 @@ Pull Request
 
 ## See it run
 
-![Nine agents coordinating in Herdr — the agentic-hris example](examples/agentic-hris/herdr-demo.gif)
+```bash
+./build.sh
+```
 
-A team of specialized agents building software autonomously — coordinating over `herdr agent prompt`, monitored live in the Herdr cockpit. One agent blocks, another unblocks it, and the slice converges; you only glance when the amber dot needs you. Walk it yourself in [examples/agentic-hris](examples/agentic-hris/README.md).
+You are asked one question — **"What do you want to build today?"** — and the answer becomes
+the project. A lead agent refines it into a mission, hires the roles that mission actually
+needs, and drives the build. A Rust CLI gets a small team; a web app gets a larger one. You
+watch the cockpit grow from one pane to N, and `build/ROSTER.md` records who was hired and why.
 
 ## Why
 
@@ -58,58 +63,46 @@ Atomic defines the process. Herdr runs and observes the workers. Ghostty gives t
 agentic-engineering-harness/
 ├── README.md                     ← you are here
 ├── AGENTS.md                     ← rules for coding agents working in THIS repo
+├── build.sh                      ← the one command you run
+├── team/
+│   ├── ROLES.md                  ← the role library index: what to hire, and when
+│   ├── TRANSPORT.md              ← how agents talk to each other (Atomic Intercom)
+│   ├── lead.md                   ← the orchestrator's brief
+│   └── *.md                      ← one brief per role, domain-neutral
+├── atomic/
+│   ├── README.md                 ← how workflows are defined and run
+│   ├── extensions/
+│   │   ├── build-intake.ts       ← asks what to build; writes build/IDEA.md
+│   │   └── herdr-state.ts        ← projects Atomic session state into Herdr's sidebar
+│   └── workflows/
+│       └── feature-development.ts← the reference feature workflow (process spec)
 ├── docs/
 │   ├── architecture.md           ← the three-layer model, in depth
-│   ├── getting-started.md        ← install + first workspace
+│   ├── getting-started.md        ← install + first build
 │   ├── operating-model.md        ← goal/scope/context/constraints/verification/approval
 │   ├── monitoring-agents.md      ← supervision by exception, agent states
 │   ├── verification-and-gates.md ← independent verification + human review gates
-│   └── security.md               ← least privilege + isolation
-├── atomic/
-│   ├── README.md                 ← how workflows are defined and run
-│   └── workflows/
-│       ├── feature-development.ts← the reference feature workflow (process spec)
-│       └── hcm-*.ts              ← the HCM Graph build workflows (stack-research · model-design · feature-build)
-├── herdr/
-│   ├── setup.md                  ← install, integrations, HERDR_ENV
-│   ├── workspace-conventions.md  ← one outcome = one workspace; agent naming
-│   └── atomic-integration.md     ← how Atomic stages map onto Herdr panes (+ future adapter)
-├── ghostty/
-│   ├── recommended-config.md     ← rationale for the config
-│   └── config                    ← drop-in Ghostty config
-├── examples/
-│   ├── feature-development/       ← a small, runnable end-to-end example
-│   ├── hcm-graph/                 ← a product built by gated multi-agent Atomic workflows
-│   ├── agentic-hris/              ← a Herdr-monitored autonomous agent team (max autonomy)
-│   └── atomic-intercom/          ← agents steering each other live via Atomic Intercom
+│   ├── security.md               ← least privilege + isolation
+│   └── case-study-first-run.md   ← a real run, start to finish
+├── herdr/                        ← setup, workspace conventions, Atomic integration
+├── ghostty/                      ← recommended terminal config
 └── scripts/
+    ├── team.sh                   ← the lead hires with this: team.sh add <role>
+    ├── setup.sh                  ← install Atomic + Herdr + Ghostty
     ├── new-workspace.sh          ← create a Herdr workspace for an outcome
-    ├── launch-feature.sh         ← launch the feature-development run
+    ├── launch-feature.sh         ← drive the feature-development workflow across panes
     ├── sync-workflows.sh         ← make repo workflows discoverable by Atomic
     └── status.sh                 ← roll up agent states (supervision by exception)
 ```
 
 ## Quick start
 
-Full instructions are in [docs/getting-started.md](docs/getting-started.md). The fastest path on a fresh clone:
-
 ```bash
 ./scripts/setup.sh    # installs Atomic + Herdr + Ghostty, wires state + syncs workflows
-claude                # run once to log in (the agent backend)
+claude                # run once to log in (optional; only if you use Claude Code directly)
+atomic                # run once, then /login → Claude Pro/Max
+./build.sh            # asks what to build, then builds it
 ```
-
-Or do it by hand (macOS):
-
-```bash
-npm install -g @bastani/atomic
-curl -fsSL https://herdr.dev/install.sh | sh   # installs herdr to ~/.local/bin
-brew install --cask ghostty
-herdr integration install claude               # let Herdr read Claude's state
-```
-
-Then launch a workspace and drive it — `./scripts/new-workspace.sh EE-1428 "Employee Event Details"` — or jump straight to an [agent team](examples/agentic-hris/README.md).
-
-Then walk the [feature-development example](examples/feature-development/README.md), which runs research → plan → (human gate) → parallel implementation → verification → bounded repair → (human gate) → PR.
 
 ## Start here — a reading order
 
@@ -125,9 +118,7 @@ Atomic is the orchestration/verification engine, and the highest-leverage thing 
 
 1. **[atomic/README.md](atomic/README.md)** — how workflows are defined (TypeScript), the `ctx` primitives, DAG rules, and when to reuse built-ins (`goal`, `ralph`, …) instead of hand-rolling.
 2. **[atomic/workflows/feature-development.ts](atomic/workflows/feature-development.ts)** — an annotated reference workflow: fan-out research → plan → gate → implement → verify → **bounded, DAG-unrolled repair** → gate → PR.
-3. **[examples/feature-development/atomic-goal-run.md](examples/feature-development/atomic-goal-run.md)** — a **real, recorded `goal` run**: live agents implemented a utility test-first, three independent reviewers re-ran the checks, and they **caught a real edge-case bug the author's passing tests missed**. This is the payoff of the whole model, on tape. Raw evidence (ledger, receipt, reviewer verdicts) is in [examples/feature-development/atomic-run/](examples/feature-development/atomic-run/).
-
-4. **[examples/hcm-graph/README.md](examples/hcm-graph/README.md)** — the same model at full scale: a graph-native HCM product built from scratch across **four multi-agent phases** (research → model → build → verify), each an Atomic workflow with a human gate, verified against a real Neo4j database. This is where the multi-agent, multi-phase shape pays off.
+4. **[docs/case-study-first-run.md](docs/case-study-first-run.md)** — one real run end to end: the question, the refined mission, the roster the lead chose and why, and the evidence it finished with.
 
 The one-line lesson: **describe the outcome and its acceptance criteria, bound the turns, and let independent verifiers — not the author — decide "done."**
 
@@ -146,7 +137,6 @@ The one-line lesson: **describe the outcome and its acceptance criteria, bound t
 ## Status
 
 - The three-layer operating model, docs, conventions, and the Atomic workflow spec are complete and grounded in the installed tool versions (Atomic `0.9.12`, Herdr `0.8.0`, Ghostty `1.3.1`).
-- **Verified working, not just written:** the reference workflow is discovered and schema-validated by Atomic; the Herdr example runs end-to-end over a real headless session; and a **real Atomic `goal` run** was executed and recorded (see the [case study](examples/feature-development/atomic-goal-run.md)).
 - A first-class **Atomic ↔ Herdr adapter** (a single command surface that projects Atomic workflow state into the Herdr sidebar) does **not** yet exist in either tool. It is documented as a target in [herdr/atomic-integration.md](herdr/atomic-integration.md) and is not implemented here. The example wires the two layers with scripts today.
 - No remote is configured — this repo is local by default. Clone it, read the [reading order](#start-here--a-reading-order) above, and run the example.
-- **The harness is being pointed at a real product:** [`examples/hcm-graph/`](examples/hcm-graph/README.md) — **HCM Graph**, a graph-native Human Capital Management product built from scratch by specialized agents that Atomic orchestrates as an engineering graph. See [examples/hcm-graph/PROJECT.md](examples/hcm-graph/PROJECT.md) for the contract and roadmap.
+- **The harness builds whatever you point it at.** `./build.sh` asks what you want, refines it with Atomic's `prompt-engineer` skill into a mission, and composes a team to build it. See [docs/case-study-first-run.md](docs/case-study-first-run.md) for a recorded run.
