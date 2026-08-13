@@ -104,6 +104,8 @@ atomic                # run once, then /login → Claude Pro/Max
 ./build.sh            # asks what to build, then builds it
 ```
 
+Full install detail, including the manual steps, is in [docs/getting-started.md](docs/getting-started.md).
+
 ## Start here — a reading order
 
 New to this repo? Read in this order:
@@ -138,5 +140,5 @@ The one-line lesson: **describe the outcome and its acceptance criteria, bound t
 
 - The three-layer operating model, docs, conventions, and the Atomic workflow spec are complete and grounded in the installed tool versions (Atomic `0.9.12`, Herdr `0.8.0`, Ghostty `1.3.1`).
 - A first-class **Atomic ↔ Herdr adapter** (a single command surface that projects Atomic workflow state into the Herdr sidebar) does **not** yet exist in either tool. It is documented as a target in [herdr/atomic-integration.md](herdr/atomic-integration.md) and is not implemented here. The example wires the two layers with scripts today.
-- No remote is configured — this repo is local by default. Clone it, read the [reading order](#start-here--a-reading-order) above, and run the example.
+- No remote is configured — this repo is local by default. Clone it, read the [reading order](#start-here--a-reading-order) above, and run `./build.sh`.
 - **The harness builds whatever you point it at.** `./build.sh` asks what you want, refines it with Atomic's `prompt-engineer` skill into a mission, and composes a team to build it. See [docs/case-study-first-run.md](docs/case-study-first-run.md) for a recorded run.
