@@ -28,8 +28,16 @@ Pull Request
 
 ## See it run
 
+In one terminal, start the build:
+
 ```bash
 ./build.sh
+```
+
+In a second terminal, attach to the cockpit to see and answer the question:
+
+```bash
+herdr --session harness
 ```
 
 You are asked one question — **"What do you want to build today?"** — and the answer becomes

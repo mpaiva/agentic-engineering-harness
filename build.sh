@@ -191,7 +191,16 @@ sleep 2
 # The popup is now up in the lead's pane. Wait for the human to answer it, then kick the lead
 # into refining. (If a future Atomic lets an extension self-start a turn, this poll becomes
 # unnecessary — see atomic/extensions/build-intake.ts.)
-echo "Waiting for you to answer the popup in the cockpit…"
+echo
+echo "════════════════════════════════════════════════════════════"
+echo " To see the popup and answer the question, open another"
+echo " terminal and run:"
+echo
+printf ' %s\n' "  herdr --session $SESSION"
+echo
+echo "════════════════════════════════════════════════════════════"
+echo
+echo "Waiting for your answer in the attached cockpit…"
 for _ in $(seq 1 600); do
   [ -f "$BUILD/IDEA.md" ] && break
   sleep 1
@@ -208,7 +217,9 @@ if [ -f "$BUILD/IDEA.md" ]; then
   fi
   herdr pane send-keys "$LEAD" Enter >/dev/null
 else
-  echo "No IDEA.md after 10 minutes. Re-run: ./build.sh --resume" >&2
+  echo "No IDEA.md after 10 minutes. Attach a cockpit with:" >&2
+  echo "  herdr --session $SESSION" >&2
+  echo "Then re-run: ./build.sh --resume" >&2
 fi
 
 cat <<EOF

@@ -75,10 +75,16 @@ See [ghostty/recommended-config.md](../ghostty/recommended-config.md) for the ra
 
 ## 5. Run your first build
 
-This is the primary path. Open Ghostty, then from the repo root:
+This is the primary path. Open Ghostty, then from the repo root in one terminal:
 
 ```bash
 ./build.sh
+```
+
+In a second terminal, attach to the Herdr session to see the interactive popup:
+
+```bash
+herdr --session harness
 ```
 
 `build.sh` starts a Herdr session and boots one Atomic agent — the **lead** — in it. The lead
