@@ -51,10 +51,16 @@ while [ $# -gt 0 ]; do
 done
 
 [ -n "$ROLE" ] || { echo "usage: team.sh add <role> --reason \"...\"" >&2; exit 2; }
-[ -f "$HERE/team/$ROLE.md" ] || {
+
+# Compute the valid-role list once and check membership against it, so the gate and the
+# error message's "available" list can never drift apart. team/ROLES.md, team/TRANSPORT.md,
+# and team/lead.md are real files under team/ but are not hireable roles — excluded here.
+VALID_ROLES="$(ls "$HERE/team" | sed 's/\.md$//' | grep -v -E '^(ROLES|TRANSPORT|lead)$')"
+if ! printf '%s\n' "$VALID_ROLES" | grep -qx "$ROLE"; then
   echo "no such role: $ROLE" >&2
-  echo "available: $(ls "$HERE/team" | sed 's/\.md$//' | grep -v -E '^(ROLES|TRANSPORT|lead)$' | tr '\n' ' ')" >&2
-  exit 2; }
+  echo "available: $(printf '%s\n' "$VALID_ROLES" | tr '\n' ' ')" >&2
+  exit 2
+fi
 [ -n "$REASON" ] || { echo "--reason is required: say why this mission needs a $ROLE" >&2; exit 2; }
 [ -f "$BUILD/MISSION.md" ] || { echo "no $BUILD/MISSION.md yet — refine the idea before hiring" >&2; exit 2; }
 
@@ -72,7 +78,7 @@ fi
 
 # Split the most recently created pane, alternating right/down, so the grid stays roughly
 # square as the team grows.
-LAST_PANE="$(ls -t "$LAUNCHDIR"/*.pane 2>/dev/null | head -1)"
+LAST_PANE="$(ls -t "$LAUNCHDIR"/*.pane 2>/dev/null | head -1)" || true
 TARGET="$(cat "${LAST_PANE:-$LAUNCHDIR/lead.pane}")"
 if [ $((HIRED % 2)) -eq 1 ]; then DIRECTION=down; else DIRECTION=right; fi
 
@@ -95,6 +101,7 @@ echo "$PANE" > "$LAUNCHDIR/$ROLE.pane"
   printf '  2> >(tee -a %q >&2)\n' "$LAUNCHDIR/$ROLE.stderr.log"
   echo 'status=$?'
   echo "echo; echo \"[harness] the '$ROLE' session exited (status \$status). Pane kept open.\""
+  echo "echo \"[harness] stderr: $LAUNCHDIR/$ROLE.stderr.log\""
   echo "echo \"[harness] restart with: bash $LAUNCHDIR/$ROLE.sh\""
 } > "$LAUNCHDIR/$ROLE.sh"
 chmod +x "$LAUNCHDIR/$ROLE.sh"
@@ -102,14 +109,22 @@ chmod +x "$LAUNCHDIR/$ROLE.sh"
 herdr pane send-text "$PANE" "bash $LAUNCHDIR/$ROLE.sh" >/dev/null
 herdr pane send-keys "$PANE" Enter >/dev/null
 
+ATOMIC_UP=0
 for _ in $(seq 1 60); do
   if herdr pane list 2>/dev/null | python3 -c "
 import sys,json
 p=[x for x in json.load(sys.stdin)['result']['panes'] if x['pane_id']=='$PANE']
 sys.exit(0 if p and (p[0].get('terminal_title_stripped') or '').startswith('atomic') else 1)
-" 2>/dev/null; then break; fi
+" 2>/dev/null; then ATOMIC_UP=1; break; fi
   sleep 1
 done
+[ "$ATOMIC_UP" = 1 ] || {
+  rm -f "$LAUNCHDIR/$ROLE.pane"
+  echo "Atomic did not reach its prompt in the '$ROLE' pane (pane $PANE) within 60s." >&2
+  echo "Removed $LAUNCHDIR/$ROLE.pane so the role can be retried. Inspect the pane, then" >&2
+  echo "re-run: scripts/team.sh add $ROLE --reason \"...\"" >&2
+  exit 1
+}
 
 # ORDER MATTERS: /name before the session's first intercom call, or it registers as
 # subagent-chat-<id> and is unaddressable by role forever.
