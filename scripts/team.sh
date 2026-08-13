@@ -55,8 +55,11 @@ done
 # Compute the valid-role list once and check membership against it, so the gate and the
 # error message's "available" list can never drift apart. team/ROLES.md, team/TRANSPORT.md,
 # and team/lead.md are real files under team/ but are not hireable roles — excluded here.
-VALID_ROLES="$(ls "$HERE/team" | sed 's/\.md$//' | grep -v -E '^(ROLES|TRANSPORT|lead)$')"
-if ! printf '%s\n' "$VALID_ROLES" | grep -qx "$ROLE"; then
+VALID_ROLES="$(ls "$HERE/team" | sed 's/\.md$//' | grep -v -E '^(ROLES|TRANSPORT|lead)$')" || true
+[ -n "$VALID_ROLES" ] || { echo "no role briefs found in $HERE/team" >&2; exit 2; }
+# -F: literal-string match. $ROLE is untrusted input; without -F, grep -x treats it as a
+# regex, so a role of ".*" or "verifie." would clear this gate (and everything after it).
+if ! printf '%s\n' "$VALID_ROLES" | grep -qxF "$ROLE"; then
   echo "no such role: $ROLE" >&2
   echo "available: $(printf '%s\n' "$VALID_ROLES" | tr '\n' ' ')" >&2
   exit 2
