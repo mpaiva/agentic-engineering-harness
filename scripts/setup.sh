@@ -55,6 +55,7 @@ if [ -x scripts/sync-workflows.sh ]; then ./scripts/sync-workflows.sh >/dev/null
 cat <<'EOF'
 
 Next:
+  claude                          # run once to log in (optional; only if you use Claude Code directly)
   atomic                          # run once, then /login → Claude Pro/Max
   ./build.sh                      # asks what to build, then builds it
   herdr --session harness         # attach and watch the cockpit

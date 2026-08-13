@@ -78,7 +78,7 @@ herdr agent wait <agent> --until blocked --until done
 The target view — one glance tells you where your judgment is needed across everything you're running:
 
 ```text
-EMPLOYEE EVENTS — EE-1428          NAV-431 GLOBAL NAV       DS-204 DATE PICKER
+CSV EXPORT — RPT-204               NAV-431 GLOBAL NAV       DS-204 DATE PICKER
 Atomic workflow: implementation-v3
 
 RESEARCH          ✓                RESEARCH        ✓          RESEARCH      ● working

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # status.sh — supervision-by-exception cockpit for a workspace.
 #
-#   ./scripts/status.sh EE-1428
+#   ./scripts/status.sh RPT-204
 #
 # Rolls up `herdr agent list` + workspace state into an at-a-glance view, drawing your
 # attention to BLOCKED / UNKNOWN agents. This approximates the future Atomic↔Herdr

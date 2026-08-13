@@ -9,14 +9,14 @@ Consistent conventions are what make supervision-by-exception legible. When ever
 Name the workspace after the outcome (ticket id + short title), not after a tool or a person:
 
 ```text
-EE-1428  Employee Event Details
+RPT-204  CSV Export
 NAV-431  Global Navigation
 LMS-812  Course Assignment
 DS-204   Accessible Date Picker
 ```
 
 ```bash
-herdr workspace create --name "EE-1428 Employee Event Details"
+herdr workspace create --name "RPT-204 CSV Export"
 ```
 
 A workspace bundles the agents working the outcome **and** the runtime processes that support them.
@@ -24,7 +24,7 @@ A workspace bundles the agents working the outcome **and** the runtime processes
 ## What lives inside a workspace
 
 ```text
-EE-1428 Employee Event Details
+RPT-204 CSV Export
 │
 ├── Agents
 │   ├── research

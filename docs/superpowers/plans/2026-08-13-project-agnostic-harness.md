@@ -303,7 +303,7 @@ Replace the HR objective with a domain-neutral one, in both places it appears:
 atomic -p '/workflow feature-development objective="Add CSV export to the report view"'
 ```
 
-In the line-39 sentence, drop the `and what the [example](../examples/feature-development/README.md) runs` clause, keeping the reference to `../scripts/launch-feature.sh`, which still exists.
+In the line-39 sentence, drop the `and what the example (at ../examples/feature-development/README.md) runs` clause, keeping the reference to `../scripts/launch-feature.sh`, which still exists.
 
 - [ ] **Step 3: Fix `scripts/setup.sh`**
 

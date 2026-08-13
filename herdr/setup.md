@@ -26,7 +26,7 @@ Herdr runs a persistent **server** (holding your terminals) and a **client** you
 
 ```bash
 herdr                       # launch or attach to the persistent session
-herdr --session ee-1428     # a named, persistent session
+herdr --session rpt-204     # a named, persistent session
 herdr status                # local client + running server status
 herdr --remote user@box     # attach through SSH to a remote Herdr server
 herdr server stop           # stop the running server via the API socket

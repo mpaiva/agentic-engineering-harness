@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # launch-feature.sh — drive the feature-development phases across Herdr panes.
 #
-#   ./scripts/launch-feature.sh EE-1428 "Add employee event history (WCAG 2.2 AA)"
-#   ./scripts/launch-feature.sh EE-1428 "…" --demo    # no agents/credits; shows the choreography
+#   ./scripts/launch-feature.sh RPT-204 "Add CSV export to the report view (WCAG 2.2 AA)"
+#   ./scripts/launch-feature.sh RPT-204 "…" --demo    # no agents/credits; shows the choreography
 #
 # This is the Herdr-side realization of atomic/workflows/feature-development.ts:
 # one pane per responsibility, phases advanced by agent STATE, human gates surfaced as

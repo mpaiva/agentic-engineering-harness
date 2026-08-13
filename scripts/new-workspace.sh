@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # new-workspace.sh — create a Herdr workspace for one engineering outcome.
 #
-#   ./scripts/new-workspace.sh EE-1428 "Employee Event Details"
+#   ./scripts/new-workspace.sh RPT-204 "CSV Export"
 #
 # One meaningful engineering outcome = one workspace (see herdr/workspace-conventions.md).
 # Ensures a headless Herdr server for the session is running, then creates the workspace.

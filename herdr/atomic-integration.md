@@ -71,7 +71,7 @@ atomic.review   → surface a human gate as a `blocked` pane needing attention
 Rendered in the Herdr sidebar, it would look like:
 
 ```text
-EMPLOYEE EVENTS — EE-1428
+CSV EXPORT — RPT-204
 Atomic Workflow: feature-development
 
 RESEARCH          ✓
