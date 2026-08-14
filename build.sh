@@ -117,6 +117,45 @@ done
 [ "$WORKSPACE_READY" = 1 ] || echo "warning: herdr server did not report workspaces ready within 12s — continuing anyway" >&2
 herdr workspace create --label "Harness" >/dev/null 2>&1 || true
 
+# A Herdr server restart (e.g. from an unrelated `herdr plugin uninstall` — see
+# docs/case-study-first-run.md) destroys the workspace and every agent pane, but
+# build/.launch/*.pane records survive on disk. Left alone, team.sh's duplicate-role guard
+# refuses to re-hire anyone ("$ROLE is already hired") pointing at panes that no longer exist,
+# and its team-cap count includes the dead records too. Prune anything stale here: after the
+# server is confirmed up (so `herdr pane list` is answerable) and before this script writes
+# its own lead.pane below. Runs in both run-mode and resume-mode; in run-mode build/ is
+# normally fresh so this is a no-op, but a leftover build/ from a killed run is exactly when
+# it matters.
+live_pane_ids(){
+  herdr pane list 2>/dev/null | python3 -c "
+import sys,json
+try: panes=json.load(sys.stdin)['result']['panes']
+except Exception: sys.exit(1)
+for p in panes: print(p['pane_id'])
+"
+}
+if [ -d "$LAUNCHDIR" ]; then
+  if LIVE_PANE_IDS="$(live_pane_ids)"; then
+    # `|| true`: a glob matching no *.pane files would otherwise abort under set -e.
+    PANE_RECORDS="$(ls "$LAUNCHDIR"/*.pane 2>/dev/null)" || true
+    if [ -n "$PANE_RECORDS" ]; then
+      for f in $PANE_RECORDS; do
+        ROLE_NAME="$(basename "$f" .pane)"
+        RECORDED_PANE="$(cat "$f" 2>/dev/null || true)"
+        if [ -z "$RECORDED_PANE" ] || ! printf '%s\n' "$LIVE_PANE_IDS" | grep -qxF "$RECORDED_PANE"; then
+          echo "pruned stale pane record: $ROLE_NAME (pane $RECORDED_PANE no longer exists)"
+          rm -f "$f"
+        fi
+      done
+    fi
+  else
+    # Cannot reach the server — do NOT prune. Deleting every record because the server is
+    # unreachable would be worse than the bug this is fixing: it would make a merely-offline
+    # server look identical to a destroyed workspace and wipe valid records.
+    echo "warning: could not reach herdr to check for stale pane records — leaving $LAUNCHDIR/*.pane untouched" >&2
+  fi
+fi
+
 # The root shell pane is NOT reliably panes[0]: Herdr plugin panes carry labels ("Sidebar",
 # "Explorer", …) and may register first. Select on the ABSENCE of a label.
 root_pane(){

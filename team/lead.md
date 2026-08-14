@@ -48,7 +48,7 @@ first, then continue.
 
 Read `team/ROLES.md`. It lists every available role and the condition under which each is
 worth hiring. Choose the roles **this** mission needs — not a standard set. A small CLI may
-need three agents; a web application may need eight. Hiring a role with nothing to do wastes
+need three agents; a web application may need the lead plus 7 specialists. Hiring a role with nothing to do wastes
 money and adds coordination cost.
 
 Hire one at a time:
