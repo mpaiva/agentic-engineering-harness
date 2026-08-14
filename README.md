@@ -236,8 +236,7 @@ through you.
 These pages have more detail. They are written for people who want the full picture.
 
 - [docs/getting-started.md](docs/getting-started.md) — setup, with every step spelled out
-- [docs/case-study-ozymandias.md](docs/case-study-ozymandias.md) — the run in the picture above, screenshot by screenshot
-- [docs/case-study-first-run.md](docs/case-study-first-run.md) — a real run, including what broke
+- [docs/case-study-ozymandias.md](docs/case-study-ozymandias.md) — a real run, screenshot by screenshot, including what broke
 - [docs/architecture.md](docs/architecture.md) — how the three tools fit together
 - [docs/monitoring-agents.md](docs/monitoring-agents.md) — how to watch a team without reading everything
 - [docs/verification-and-gates.md](docs/verification-and-gates.md) — how the work gets checked
@@ -270,8 +269,6 @@ Here is what happened:
     <a href="docs/samples/poem-page.html">docs/samples/poem-page.html</a>.</em>
   </figcaption>
 </figure>
-
-Read the full story in [docs/case-study-poem-page.md](docs/case-study-poem-page.md).
 
 **It has now worked twice, with a different sized team each time.**
 
@@ -320,8 +317,9 @@ The test found three problems. All three are fixed.
 
 **This is still rough:**
 
-- The first two tries failed before any build worked. Both problems are now fixed. You can
-  read what broke in [docs/case-study-first-run.md](docs/case-study-first-run.md).
+- The first two tries failed before any build worked. One deadlocked on its own readiness
+  check; the other had an unrelated Herdr plugin uninstall kill the running team. Both are
+  fixed.
 - **`build.sh` stops waiting for your answer after ten minutes.** If you take longer to answer
   the opening question, the script exits. The agent itself keeps running with your question on
   screen, but the two messages that get it moving never arrive, and `--resume` is not a safe

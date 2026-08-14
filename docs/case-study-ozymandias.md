@@ -6,9 +6,9 @@ while this was happening, taken every two seconds. Nothing in it was drawn or re
 It ran on 14 August 2026, from 05:58 to 06:43 in the morning. A person asked for a web page.
 Four agents built and checked it. It cost about four dollars.
 
-Two other runs are written up here too. [The first one](case-study-first-run.md) did not
-finish. [The second one](case-study-poem-page.md) did, with a two-agent team and a 19-minute
-stall. This is the third.
+It is the third run of this harness. The first did not finish. The second did, with a
+two-agent team and a 19-minute stall. This one is the first that was photographed while it
+happened, which is why it is the one written up.
 
 ## What was asked for
 
@@ -92,10 +92,10 @@ person picks one. This run picked *Yes, proceed as written*.
 | `accessibility` | It is a page people read; contrast, readability, non-flashing motion |
 | `verifier` | Independent proof that the 7 criteria pass |
 
-Four, not two. The [previous run](case-study-poem-page.md) asked for almost the same thing and
-hired two. The difference is that this mission put presentation and readability in its success
-criteria, so the lead staffed for them. It still skipped the researcher, the architect, the
-docs writer and the rest of the role library.
+Four, not two. The run before this one asked for almost the same thing — the same poem-reveal
+idea, one verse every 10 seconds — and hired two. The difference is that this mission put
+presentation and readability in its success criteria, so the lead staffed for them. It still
+skipped the researcher, the architect, the docs writer and the rest of the role library.
 
 <figure>
   <img src="media/steps/06-team-of-five.png" width="1400"

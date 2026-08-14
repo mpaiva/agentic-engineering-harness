@@ -51,8 +51,7 @@ today?*:
 > until the whole poem is shown, ending with the author signature
 
 Two agents did the work. One built the page. A second agent, which did not read the first
-one's notes, tested it and found all 8 goals passed. The full story is in
-[docs/case-study-poem-page.md](../case-study-poem-page.md).
+one's notes, tested it and found all 8 goals passed.
 
 **The poem.** "The Road Not Taken" by Robert Frost, first published in 1916 in *Mountain
 Interval*. It is in the public domain in the United States. The agents chose it, checked that

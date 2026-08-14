@@ -220,7 +220,7 @@ atomic                # run once, then /login → Claude Pro/Max
 Reading-order items 3 and 4 point at deleted examples. Replace both with a single item:
 
 ```markdown
-4. **[docs/case-study-first-run.md](docs/case-study-first-run.md)** — one real run end to end: the question, the refined mission, the roster the lead chose and why, and the evidence it finished with.
+4. **`docs/case-study-first-run.md`** — one real run end to end: the question, the refined mission, the roster the lead chose and why, and the evidence it finished with.
 ```
 
 - [ ] **Step 6: Fix the Status section**
@@ -228,7 +228,7 @@ Reading-order items 3 and 4 point at deleted examples. Replace both with a singl
 Remove the bullets describing `examples/hcm-graph` and the recorded `goal` run. Replace the "pointed at a real product" bullet with:
 
 ```markdown
-- **The harness builds whatever you point it at.** `./build.sh` asks what you want, refines it with Atomic's `prompt-engineer` skill into a mission, and composes a team to build it. See [docs/case-study-first-run.md](docs/case-study-first-run.md) for a recorded run.
+- **The harness builds whatever you point it at.** `./build.sh` asks what you want, refines it with Atomic's `prompt-engineer` skill into a mission, and composes a team to build it. See `docs/case-study-first-run.md` for a recorded run.
 ```
 
 - [ ] **Step 7: Verify no broken references remain**

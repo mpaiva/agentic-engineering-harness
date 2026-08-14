@@ -122,8 +122,8 @@ if ! herdr workspace list 2>/dev/null | grep -q '"workspace_id"'; then
   herdr workspace create --label "Harness" >/dev/null 2>&1 || true
 fi
 
-# A Herdr server restart (e.g. from an unrelated `herdr plugin uninstall` — see
-# docs/case-study-first-run.md) destroys the workspace and every agent pane, but
+# A Herdr server restart — observed for real when an unrelated `herdr plugin uninstall`
+# bounced the server mid-run — destroys the workspace and every agent pane, but
 # build/.launch/*.pane records survive on disk. Left alone, team.sh's duplicate-role guard
 # refuses to re-hire anyone ("$ROLE is already hired") pointing at panes that no longer exist,
 # and its team-cap count includes the dead records too. Prune anything stale here: after the
