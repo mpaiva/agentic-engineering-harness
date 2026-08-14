@@ -41,6 +41,16 @@ checksum matches the original: `49facb384e65c7bd26c29f1e9ae1d10cba06d255`.
 A single HTML page. It shows one verse of a poem every 10 seconds until the poem is complete,
 then shows the author's signature and stops.
 
+<figure>
+  <img src="../media/poem-page-verified.jpg" width="1200"
+       alt="The end of the page on a cream background: the last two verses of The Road Not Taken, finishing with 'I took the one less traveled by, And that has made all the difference.' Below a rule, the signature 'Robert Frost, The Road Not Taken, Mountain Interval (1916, public domain)', and a smaller note that the text is a pre-1929 U.S. publication." />
+  <figcaption>
+    <em>How it ends, photographed from the screen while a person watched the run finish. This
+    is the only picture that exists of that run — it was not screen-captured while it
+    happened.</em>
+  </figcaption>
+</figure>
+
 **To see it:** open `poem-page.html` in a web browser. Wait about 40 seconds to see the whole
 poem.
 

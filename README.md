@@ -245,43 +245,19 @@ These pages have more detail. They are written for people who want the full pict
 
 ## What is finished and what is not
 
-**A full build has now worked, start to finish.**
+**A full build has worked, start to finish — twice, with a different sized team each time.**
 
-Someone asked for *"a single HTML landing page that reveals one verse of a public-domain poem
-every 10 seconds until the whole poem is shown, ending with the author signature."*
-
-Here is what happened:
-
-- Two agents were started for the job: one to build, one to check.
-- The page was built as one HTML file.
-- It shows Robert Frost's poem *The Road Not Taken*, one verse every 10 seconds.
-- It ends with the author's signature, then stops.
-- The checking agent tested all 8 goals. **All 8 passed.** Nothing had to be fixed.
-- A person then opened the page and watched it, to be sure.
-
-<figure>
-  <img src="docs/media/poem-page-verified.jpg" width="1200"
-       alt="A finished web page on a cream background: the last two verses of The Road Not Taken, ending with the line 'I took the one less traveled by, And that has made all the difference.' Below a rule sits the signature 'Robert Frost, The Road Not Taken, Mountain Interval (1916, public domain)' and a note that the text is a pre-1929 U.S. publication." />
-  <figcaption>
-    <em>The end of the page the first finished run built, in a browser.
-    <a href="https://mpaiva.github.io/agentic-engineering-harness/docs/samples/poem-page.html">Watch
-    it run</a> — it takes about 40 seconds to reveal the whole poem. The file itself is
-    <a href="docs/samples/poem-page.html">docs/samples/poem-page.html</a>.</em>
-  </figcaption>
-</figure>
-
-**It has now worked twice, with a different sized team each time.**
-
-A second job — the same idea, but one *line* every 2 seconds instead of one verse every 10 —
-was asked for on 14 August 2026. This time the lead hired **four** agents, not two, because
-that mission put presentation and readability in its checks. All 7 checks passed, proved by an
-agent that did not write the code. It cost $4.21 in total.
+The run this page shows was asked for on 14 August 2026: *"a single HTML landing page that
+reveals one line of a public-domain poem every 2 seconds until the whole poem is shown, ending
+with the author signature."* The lead hired **four** agents, because that mission put
+presentation and readability in its checks. All 7 checks passed, proved by an agent that did
+not write the code, and then watched by a person. It cost $4.21 in total.
 
 <figure>
   <img src="docs/media/steps/11-the-page-itself.png" width="1200"
        alt="A finished web page on a near-black background. The heading OZYMANDIAS in gold small capitals, then all fourteen lines of the sonnet in a cream serif, from 'I met a traveller from an antique land' to 'The lone and level sands stretch far away.' Underneath, right-aligned in gold italics, the signature 'Percy Bysshe Shelley'." />
   <figcaption>
-    <em>The page the second run built, photographed from the screen the moment the reveal
+    <em>The page this run built, photographed from the screen the moment the reveal
     finished and the timer stopped.
     <a href="https://mpaiva.github.io/agentic-engineering-harness/docs/samples/ozymandias.html">Watch
     it run</a> — it takes about 30 seconds, and there is a Pause button while it goes. The file
@@ -292,6 +268,10 @@ agent that did not write the code. It cost $4.21 in total.
 That run is the picture at the top of this page, and it is written up screenshot by screenshot
 in [docs/case-study-ozymandias.md](docs/case-study-ozymandias.md), including the four things
 that went wrong.
+
+An earlier run finished too, for the same idea at one verse every 10 seconds. It hired **two**
+agents rather than four — the same harness sizing the team to the job. Its page is kept at
+[docs/samples/poem-page.html](docs/samples/poem-page.html).
 
 **This works:**
 
