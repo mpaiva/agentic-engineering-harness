@@ -115,7 +115,12 @@ for _ in $(seq 1 40); do
   sleep 0.3
 done
 [ "$WORKSPACE_READY" = 1 ] || echo "warning: herdr server did not report workspaces ready within 12s — continuing anyway" >&2
-herdr workspace create --label "Harness" >/dev/null 2>&1 || true
+# Only create a workspace if this session has none. `workspace create` is unconditional
+# otherwise, and on --resume Herdr has already restored the previous run's workspace — so
+# every resume was adding another empty "Harness" workspace beside the real one.
+if ! herdr workspace list 2>/dev/null | grep -q '"workspace_id"'; then
+  herdr workspace create --label "Harness" >/dev/null 2>&1 || true
+fi
 
 # A Herdr server restart (e.g. from an unrelated `herdr plugin uninstall` — see
 # docs/case-study-first-run.md) destroys the workspace and every agent pane, but
@@ -126,24 +131,39 @@ herdr workspace create --label "Harness" >/dev/null 2>&1 || true
 # its own lead.pane below. Runs in both run-mode and resume-mode; in run-mode build/ is
 # normally fresh so this is a no-op, but a leftover build/ from a killed run is exactly when
 # it matters.
-live_pane_ids(){
+# A record is stale if its pane is gone OR the pane survived with no live agent in it.
+# Pane existence alone is NOT the test. A Herdr server restart RESTORES the panes — labels and
+# all — while every agent process inside them is dead. Checking only pane_id therefore pruned
+# nothing in exactly the case that matters, and scripts/team.sh went on refusing to re-hire
+# ("already hired") for agents that no longer existed. Observed directly: after a restart the
+# implementer and verifier panes came back with agent_status "unknown" and a bare shell prompt.
+#
+# An agent that is genuinely alive reports working/idle/blocked/done through
+# atomic/extensions/herdr-state.ts, so "unknown" is the signal for an empty pane. Pruning runs
+# before this script starts anything, so a live agent can never be caught by it.
+live_agent_panes(){
   herdr pane list 2>/dev/null | python3 -c "
 import sys,json
 try: panes=json.load(sys.stdin)['result']['panes']
 except Exception: sys.exit(1)
-for p in panes: print(p['pane_id'])
+for p in panes:
+    if (p.get('agent_status') or 'unknown') != 'unknown':
+        print(p['pane_id'])
 "
 }
 if [ -d "$LAUNCHDIR" ]; then
-  if LIVE_PANE_IDS="$(live_pane_ids)"; then
+  # An empty result with a zero exit means the server answered and no pane holds a live agent —
+  # the normal resume case, where everything should be pruned. Only a non-zero exit (the server
+  # could not be reached at all) suppresses pruning.
+  if LIVE_AGENT_PANES="$(live_agent_panes)"; then
     # `|| true`: a glob matching no *.pane files would otherwise abort under set -e.
     PANE_RECORDS="$(ls "$LAUNCHDIR"/*.pane 2>/dev/null)" || true
     if [ -n "$PANE_RECORDS" ]; then
       for f in $PANE_RECORDS; do
         ROLE_NAME="$(basename "$f" .pane)"
         RECORDED_PANE="$(cat "$f" 2>/dev/null || true)"
-        if [ -z "$RECORDED_PANE" ] || ! printf '%s\n' "$LIVE_PANE_IDS" | grep -qxF "$RECORDED_PANE"; then
-          echo "pruned stale pane record: $ROLE_NAME (pane $RECORDED_PANE no longer exists)"
+        if [ -z "$RECORDED_PANE" ] || ! printf '%s\n' "$LIVE_AGENT_PANES" | grep -qxF "$RECORDED_PANE"; then
+          echo "pruned stale record: $ROLE_NAME (pane ${RECORDED_PANE:-none} has no live agent) — the role can be hired again"
           rm -f "$f"
         fi
       done
@@ -223,14 +243,24 @@ herdr pane send-keys "$LEAD" Enter >/dev/null
 # unnecessary — see atomic/extensions/build-intake.ts.)
 echo
 echo "════════════════════════════════════════════════════════════"
-echo " To see the popup and answer the question, open another"
-echo " terminal and run:"
+if [ "$MODE" = "resume" ]; then
+  # On a resume IDEA.md already exists, so build-intake.ts stays quiet and the wait below
+  # returns at once. Saying "answer the question" here described a popup that never appears.
+  echo " Resuming. To watch the team, open another terminal and run:"
+else
+  echo " To see the popup and answer the question, open another"
+  echo " terminal and run:"
+fi
 echo
 printf ' %s\n' "  herdr --session $SESSION"
 echo
 echo "════════════════════════════════════════════════════════════"
 echo
-echo "Waiting for your answer in the attached cockpit…"
+if [ "$MODE" = "resume" ]; then
+  echo "Re-attaching the lead to the existing mission…"
+else
+  echo "Waiting for your answer in the attached cockpit…"
+fi
 for _ in $(seq 1 600); do
   [ -f "$BUILD/IDEA.md" ] && break
   sleep 1
@@ -268,10 +298,16 @@ else
   echo "Then re-run: ./build.sh --resume" >&2
 fi
 
+if [ "$MODE" = "resume" ]; then
+  HEADLINE=" The lead is back. It is re-reading the mission and continuing."
+else
+  HEADLINE=" The lead is live. It will ask what to build, then hire."
+fi
+
 cat <<EOF
 
 ════════════════════════════════════════════════════════════
- The lead is live. It will ask what to build, then hire.
+$HEADLINE
 ════════════════════════════════════════════════════════════
  WATCH:    herdr --session $SESSION
  ROSTER:   cat $BUILD/ROSTER.md
