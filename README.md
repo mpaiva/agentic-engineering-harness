@@ -262,11 +262,27 @@ Read the full story in [docs/case-study-poem-page.md](docs/case-study-poem-page.
 - Seeing what each agent is doing.
 - Building real, working software and proving it works.
 
+**Restarting a stopped build works:**
+
+If a build stops before it is done, you can start it again:
+
+```bash
+./build.sh --resume
+```
+
+We tested this. We stopped a build on purpose, then started it again. The lead agent came
+back, read the plan, and carried on. It did not ask the question again, and it did not make
+you approve the plan a second time.
+
+The test found three problems. All three are fixed.
+
 **This is still rough:**
 
-- The first two tries failed before this one worked. Both problems are now fixed. You can
+- The first two tries failed before any build worked. Both problems are now fixed. You can
   read what broke in [docs/case-study-first-run.md](docs/case-study-first-run.md).
-- Restarting a stopped build (`./build.sh --resume`) has not been tested all the way through.
+- We have not yet used `--resume` to finish a job that was left half done. Our test brought
+  back a job that was already complete. So restarting works. Picking up unfinished work is
+  not proven.
 - Bigger jobs have not been finished yet. The largest job tried so far was stopped early.
 
 Tested with Atomic 0.9.12, Herdr 0.8.0, and Ghostty 1.3.1.
