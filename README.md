@@ -1,158 +1,251 @@
-# Agentic Engineering Harness
+# Agentic engineering harness
 
-A reference harness for **agentic engineering**: running multiple autonomous coding agents in parallel, under explicit workflows, with independent verification and human review gates — so one engineer can *supervise* engineering work instead of manually driving every keystroke.
+This project lets you ask AI agents to build software for you.
 
-This repository is documentation and conventions, plus the harness scripts and Atomic extensions that wire them together. It is not a new tool. It composes three existing tools into one operating model:
+You type what you want. A team of AI agents plans it, builds it, and checks the work. You
+watch them and make the big decisions.
 
-| Layer | Tool | Responsibility |
-|-------|------|----------------|
-| **Interaction surface** | [Ghostty](https://ghostty.org/) | A fast, native, terminal-first surface the engineer actually lives in. |
-| **Workspace / operations** | [Herdr](https://herdr.dev/) (`herdrdev/herdr`) | Holds real terminals open, groups agent panes into workspaces, and reports each agent's live state (`working` / `blocked` / `done` / `idle`). |
-| **Orchestration / verification** | [Atomic](https://github.com/bastani-inc/atomic) (`@bastani/atomic`) | Defines the engineering process as an explicit, versioned workflow with stages, parallelism, bounded retries, evidence, and approval gates. |
+## What this does
 
-```text
-Engineer
-   │
-Ghostty            ← native terminal surface the human uses
-   │
-Herdr              ← agent workspace + operations layer (panes, states)
-   │
-Atomic             ← workflow orchestration + verification
-   │
-Claude / Codex / … ← specialized agents, named by responsibility
-   │
-Evidence + Human Gates
-   │
-Pull Request
+You run one command. The computer asks you one question:
+
+> What do you want to build today?
+
+You answer in your own words. For example: *an accessible to do app using shadcn*.
+
+Then:
+
+1. One agent turns your answer into a written plan.
+2. It shows you the plan. **Nothing else happens until you say yes.**
+3. It starts the other agents it needs. A small job gets a small team.
+4. The agents build the software. They talk to each other while they work.
+5. One agent checks the work. It is not the agent that wrote the code.
+
+![A terminal window asks "What do you want to build today?". The answer becomes a written plan. After the person approves it, the window splits into five boxes, one per agent, and the agents send messages to each other.](docs/media/build-demo.gif)
+
+*This picture is a re-creation of a real run. The words in it are real. That run was stopped
+early, so the software was never finished or checked. Read what happened in
+[docs/case-study-first-run.md](docs/case-study-first-run.md).*
+
+## Before you start
+
+You need three things:
+
+- **A Mac.** These steps are tested on macOS. They may not work on Windows or Linux.
+- **A terminal app.** This is a program where you type commands. The setup installs one
+  called Ghostty.
+- **A Claude Pro or Max account.** The agents use it to think. It costs money to run them.
+
+**This is not free.** Each agent uses your Claude account while it works. A team of five
+agents costs about five times as much as one. You can stop them at any time. See
+[How to stop](#how-to-stop).
+
+## Set up (you do this once)
+
+### Step 1: Get the project
+
+Open your terminal app. Type this and press Return:
+
+```bash
+git clone https://github.com/mpaiva/agentic-engineering-harness
+cd agentic-engineering-harness
 ```
 
-## See it run
+**You will see:** lines of text about downloading files.
 
-In one terminal, start the build:
+### Step 2: Install the tools
+
+Type this and press Return:
+
+```bash
+./scripts/setup.sh
+```
+
+**You will see:** a list of green check marks (✓). This can take a few minutes.
+
+If you see a red ✗, the message tells you what to fix. Fix it, then run the command again.
+
+### Step 3: Log in
+
+Type this and press Return:
+
+```bash
+atomic
+```
+
+A program opens. Type `/login` and press Return. Choose **Claude Pro/Max**. Follow the steps
+in your web browser.
+
+**You will see:** a message that says you are logged in.
+
+To leave the program, hold **Control** and press **C**. Do this twice.
+
+**You are now set up.** You will not need to do these three steps again.
+
+## Build something
+
+You need **two terminal windows** for this. The first one runs the build. The second one is
+where you answer questions.
+
+### Step 1: Start the build
+
+In your first terminal window, type this and press Return:
 
 ```bash
 ./build.sh
 ```
 
-In a second terminal, attach to the cockpit to see and answer the question:
+**You will see:** a message telling you to open a second window. The first window then waits.
+This is normal. Leave it open.
+
+### Step 2: Open the second window
+
+Open a new terminal window. Type this and press Return:
 
 ```bash
 herdr --session harness
 ```
 
-You are asked one question — **"What do you want to build today?"** — and the answer becomes
-the project. A lead agent refines it into a mission, hires the roles that mission actually
-needs, and drives the build. A Rust CLI gets a small team; a web app gets a larger one. You
-watch the cockpit grow from one pane to N, and `build/ROSTER.md` records who was hired and why.
+**You will see:** a dark screen with a box in the middle. The box asks:
+*What do you want to build today?*
 
-![Reconstruction of the first build.sh run: the intake question, the human gate, the cockpit growing from one pane to five, and the team coordinating over Intercom before the run was stopped](docs/media/build-demo.gif)
+### Step 3: Answer the question
 
-*Reconstructed from the recorded run in [docs/case-study-first-run.md](docs/case-study-first-run.md)
-— real strings, not an invented demo. That run was stopped before it finished; no success
-criterion was independently verified. Regenerate with `./scripts/render-demo.sh`.*
+Type what you want to build. Use normal words. You do not need to be technical.
 
-## Why
+Good answers look like this:
 
-Adopting coding agents usually starts as *one engineer, one agent, one long prompt loop, many terminal windows*. That does not scale, and — more importantly — it does not stay **trustworthy** as you add agents. Parallelism without observability produces architectural drift, duplicated work, inaccessible UIs, and merge conflicts faster than a human can catch them.
+- *a to do list app I can use with a keyboard only*
+- *a tool that turns a spreadsheet into a web page*
+- *a program that renames my photo files by date*
 
-The core principle of this harness:
+Press Return when you are done.
 
-> **Do not increase agent autonomy unless observability and verification increase with it.** Run as much engineering work autonomously as we can safely observe, verify, and understand — not as many agents as possible.
+**You will see:** the screen change while an agent writes your plan. This takes a minute or
+two.
 
-And the operating stance:
+### Step 4: Read the plan and say yes
 
-> **Do not make humans monitor agents. Make the harness monitor agents and bring humans the decisions that require human judgment.**
+The agent shows you a plan. It asks: *Proceed as written?*
 
-## What each layer does (and does not) do
+Read the plan first. Look for:
 
-- **Ghostty** is the human interaction surface. It does **not** own orchestration.
-- **Herdr** manages *where and how* workers run — panes, workspaces, live agent state, persistence across a closed laptop lid. It does **not** replace Atomic's process definition.
-- **Atomic** defines *what should happen* — the stages, the verification, the gates. It is **not** the UI the engineer stares at all day.
+- **Goal** — what you will have at the end
+- **Success criteria** — how you will know it worked
+- **Non-goals** — what it will *not* build
 
-Atomic defines the process. Herdr runs and observes the workers. Ghostty gives the human a usable surface. Keeping these responsibilities separate is the central design decision (see [docs/architecture.md](docs/architecture.md)).
+If the plan looks right, choose yes.
 
-## Repository layout
+If the plan looks wrong, say what to change. It is much cheaper to fix the plan now than to
+fix the software later.
 
-```text
-agentic-engineering-harness/
-├── README.md                     ← you are here
-├── AGENTS.md                     ← rules for coding agents working in THIS repo
-├── build.sh                      ← the one command you run
-├── team/
-│   ├── ROLES.md                  ← the role library index: what to hire, and when
-│   ├── TRANSPORT.md              ← how agents talk to each other (Atomic Intercom)
-│   ├── lead.md                   ← the orchestrator's brief
-│   └── *.md                      ← one brief per role, domain-neutral
-├── atomic/
-│   ├── README.md                 ← how workflows are defined and run
-│   ├── extensions/
-│   │   ├── build-intake.ts       ← asks what to build; writes build/IDEA.md
-│   │   └── herdr-state.ts        ← projects Atomic session state into Herdr's sidebar
-│   └── workflows/
-│       └── feature-development.ts← the reference feature workflow (process spec)
-├── docs/
-│   ├── architecture.md           ← the three-layer model, in depth
-│   ├── getting-started.md        ← install + first build
-│   ├── operating-model.md        ← goal/scope/context/constraints/verification/approval
-│   ├── monitoring-agents.md      ← supervision by exception, agent states
-│   ├── verification-and-gates.md ← independent verification + human review gates
-│   ├── security.md               ← least privilege + isolation
-│   └── case-study-first-run.md   ← a real run, start to finish
-├── herdr/                        ← setup, workspace conventions, Atomic integration
-├── ghostty/                      ← recommended terminal config
-└── scripts/
-    ├── team.sh                   ← the lead hires with this: team.sh add <role>
-    ├── setup.sh                  ← install Atomic + Herdr + Ghostty
-    ├── new-workspace.sh          ← create a Herdr workspace for an outcome
-    ├── launch-feature.sh         ← drive the feature-development workflow across panes
-    ├── sync-workflows.sh         ← make repo workflows discoverable by Atomic
-    └── status.sh                 ← roll up agent states (supervision by exception)
-```
+**You will see:** the screen split into boxes after you say yes. Each box is one agent.
 
-## Quick start
+### Step 5: Watch the agents work
+
+Each box has a name, like `implementer` or `verifier`. Under each name is a word that tells
+you what that agent is doing:
+
+| Word | What it means |
+|---------|---------------------------------------------|
+| working | The agent is busy. |
+| idle | The agent is waiting for work. |
+| blocked | **The agent needs you.** Read that box. |
+| done | The agent finished its task. |
+
+You do not need to read every box. Watch for the word **blocked**. That is the one that
+needs you.
+
+Your files are saved in a folder called `build`.
+
+## How to stop
+
+You can stop at any time. Type this in any terminal window and press Return:
 
 ```bash
-./scripts/setup.sh    # installs Atomic + Herdr + Ghostty, wires state + syncs workflows
-claude                # run once to log in (optional; only if you use Claude Code directly)
-atomic                # run once, then /login → Claude Pro/Max
-./build.sh            # asks what to build, then builds it
+herdr --session harness server stop
 ```
 
-Full install detail, including the manual steps, is in [docs/getting-started.md](docs/getting-started.md).
+**You will see:** the agent boxes close. The agents stop. Nothing more is charged to your
+account.
 
-## Start here — a reading order
+Your files stay in the `build` folder. Nothing you built is deleted.
 
-New to this repo? Read in this order:
+## If something goes wrong
 
-1. **[docs/architecture.md](docs/architecture.md)** — the three layers and why they stay separate.
-2. **[docs/operating-model.md](docs/operating-model.md)** — how you *supervise* this instead of driving every step (goal · scope · context · constraints · verification · approval).
-3. **[docs/verification-and-gates.md](docs/verification-and-gates.md)** — the half that keeps parallel agents trustworthy: independent verification + human gates.
+| What you see | What to do |
+|--------------|------------|
+| The second window is empty, with no question | Wait 30 seconds. The agent may still be starting. |
+| "atomic has no usable credential" | You are not logged in. Do [Step 3: Log in](#step-3-log-in) again. |
+| "herdr not found" or "atomic not found" | The setup did not finish. Run `./scripts/setup.sh` again. |
+| "build/ already holds a run" | You have an unfinished build. To continue it, run `./build.sh --resume`. To start fresh, rename the `build` folder. |
+| An agent stopped and you do not know why | Its notes are saved in `build/.launch/`. Each agent has a file ending in `.stderr.log`. |
+| You want to start over completely | Run the stop command above. Then rename the `build` folder. Then run `./build.sh`. |
 
-### Getting the best out of Atomic
+## Words used in this project
 
-Atomic is the orchestration/verification engine, and the highest-leverage thing to learn.
+| Word | What it means here |
+|------|--------------------|
+| Agent | An AI that does one job, like writing code or checking work. |
+| Lead | The agent in charge. It writes the plan and starts the other agents. |
+| Mission | The written plan, saved as `build/MISSION.md`. |
+| Roster | The list of agents chosen for your job, saved as `build/ROSTER.md`. |
+| Role | The job an agent does, such as `designer` or `verifier`. |
+| Pane | One box on the screen. Each agent gets one. |
+| Session | One run of the whole team. This one is named `harness`. |
+| Gate | A point where the work stops and waits for your answer. |
 
-1. **[atomic/README.md](atomic/README.md)** — how workflows are defined (TypeScript), the `ctx` primitives, DAG rules, and when to reuse built-ins (`goal`, `ralph`, …) instead of hand-rolling.
-2. **[atomic/workflows/feature-development.ts](atomic/workflows/feature-development.ts)** — an annotated reference workflow: fan-out research → plan → gate → implement → verify → **bounded, DAG-unrolled repair** → gate → PR.
-3. **[docs/case-study-first-run.md](docs/case-study-first-run.md)** — one real run end to end: the question, the refined mission, the roster the lead chose and why, and the evidence it finished with.
+## How it works
 
-The one-line lesson: **describe the outcome and its acceptance criteria, bound the turns, and let independent verifiers — not the author — decide "done."**
+This project joins three tools that already exist. It does not replace them.
 
-## Design principles
+| Tool | What it does here |
+|------|-------------------|
+| [Ghostty](https://ghostty.org/) | The terminal app you type in. |
+| [Herdr](https://herdr.dev/) | Shows each agent in its own box. Tells you what each one is doing. |
+| [Atomic](https://github.com/bastani-inc/atomic) | Runs the agents. Keeps them to the plan. |
 
-1. **Workflows over mega-prompts.** Repeatable engineering behavior belongs in a versioned workflow, not in a prompt you retype.
-2. **Parallelize independent work; synthesize before deciding.** Don't parallelize tightly-coupled work just to raise the agent count.
-3. **Keep agent context small.** Each agent gets only what it needs and returns a concise artifact. The workflow carries the larger context.
-4. **Artifacts are handoffs.** Findings become files (`research/`, `specs/`, `artifacts/`), not conversational memory.
-5. **Independent verification.** The agent that wrote the code is not the only agent that decides it is correct. Evidence beats self-report.
-6. **Human gates where the cost of a wrong decision is high** — product, UX, accessibility, architecture, security, release.
-7. **Bound autonomous loops.** Every retry loop has a max and an escalation path.
-8. **Least privilege.** Prefer isolated environments; scope credentials to the minimum.
-9. **Name agents by responsibility, not model.** The model is an implementation detail.
+The agents send messages to each other while they work. They do not send every message
+through you.
 
-## Status
+## Rules this project follows
 
-- The three-layer operating model, docs, conventions, and the Atomic workflow spec are complete and grounded in the installed tool versions (Atomic `0.9.12`, Herdr `0.8.0`, Ghostty `1.3.1`).
-- A first-class **Atomic ↔ Herdr adapter** (a single command surface that projects Atomic workflow state into the Herdr sidebar) does **not** yet exist in either tool. It is documented as a target in [herdr/atomic-integration.md](herdr/atomic-integration.md) and is not implemented here. `build.sh` and `scripts/team.sh` wire the two layers with scripts today.
-- No remote is configured — this repo is local by default. Clone it, read the [reading order](#start-here--a-reading-order) above, and run `./build.sh`.
-- **The harness builds whatever you point it at.** `./build.sh` asks what you want, refines it with Atomic's `prompt-engineer` skill into a mission, and composes a team to build it. See [docs/case-study-first-run.md](docs/case-study-first-run.md) for a recorded run.
+1. **Ask before spending.** You approve the plan before any team starts.
+2. **The writer does not grade its own work.** A separate agent checks it.
+3. **Show proof, not promises.** "It works" is not enough. The proof is the command that was
+   run and what it printed.
+4. **Only hire who is needed.** A small job gets a small team.
+5. **Stop instead of guessing.** An agent that is stuck asks you. It does not invent an
+   answer.
+6. **Write things down.** Agents share files, not memory.
+
+## Learn more
+
+These pages have more detail. They are written for people who want the full picture.
+
+- [docs/getting-started.md](docs/getting-started.md) — setup, with every step spelled out
+- [docs/case-study-first-run.md](docs/case-study-first-run.md) — a real run, including what broke
+- [docs/architecture.md](docs/architecture.md) — how the three tools fit together
+- [docs/monitoring-agents.md](docs/monitoring-agents.md) — how to watch a team without reading everything
+- [docs/verification-and-gates.md](docs/verification-and-gates.md) — how the work gets checked
+- [docs/security.md](docs/security.md) — how to run this safely
+- [team/ROLES.md](team/ROLES.md) — every agent role, and when it is used
+
+## What is finished and what is not
+
+**This works:**
+
+- The question, the plan, and the approval step.
+- Choosing a team that fits the job.
+- Agents talking to each other while they work.
+- Seeing what each agent is doing.
+
+**This is not proven yet:**
+
+- No run has finished all the way through. One was stopped early. See
+  [docs/case-study-first-run.md](docs/case-study-first-run.md).
+- No software built by this project has been checked against its own success criteria yet.
+- Restarting a stopped build (`./build.sh --resume`) has never been tested from start to
+  finish.
+
+Tested with Atomic 0.9.12, Herdr 0.8.0, and Ghostty 1.3.1.
