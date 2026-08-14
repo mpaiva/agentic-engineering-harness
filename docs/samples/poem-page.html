@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Road Not Taken</title>
+<!--
+  Poem: "The Road Not Taken" by Robert Frost.
+  First published 1916 in the collection "Mountain Interval" (Henry Holt and Company).
+  Public domain in the United States (published before 1929).
+  Source text cross-checked against the Poetry Foundation and Bartleby.com public-domain
+  editions of "Mountain Interval" (1916).
+-->
+<style>
+  :root {
+    color-scheme: light;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+  }
+
+  body {
+    background: #f6f1e7;
+    color: #2b2620;
+    font-family: Georgia, "Times New Roman", serif;
+    display: flex;
+    justify-content: center;
+    padding: 6vh 1.25rem 8vh;
+    line-height: 1.6;
+  }
+
+  main {
+    width: 100%;
+    max-width: 42rem;
+  }
+
+  h1 {
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    text-align: center;
+    margin: 0 0 2.5rem;
+    color: #4a3f2f;
+  }
+
+  .poem {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+
+  .verse {
+    font-size: clamp(1.05rem, 2.4vw, 1.25rem);
+    white-space: pre-line;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 1s ease, transform 1s ease;
+    min-height: 1px;
+  }
+
+  .verse.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .signature {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #d8cdb8;
+    text-align: right;
+    font-style: italic;
+    font-size: clamp(0.95rem, 2.2vw, 1.1rem);
+    color: #6b5d47;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 1s ease, transform 1s ease;
+  }
+
+  .signature.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .credit {
+    margin-top: 3rem;
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 0.75rem;
+    color: #8a7d64;
+    letter-spacing: 0.02em;
+  }
+
+  @media (max-width: 480px) {
+    body {
+      padding: 4vh 1rem 6vh;
+    }
+    .poem {
+      gap: 1.4rem;
+    }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>The Road Not Taken</h1>
+  <div class="poem" id="poem">
+    <p class="verse" data-index="0">Two roads diverged in a yellow wood,
+And sorry I could not travel both
+And be one traveler, long I stood
+And looked down one as far as I could
+To where it bent in the undergrowth;</p>
+
+    <p class="verse" data-index="1">Then took the other, as just as fair,
+And having perhaps the better claim,
+Because it was grassy and wanted wear;
+Though as for that the passing there
+Had worn them really about the same,</p>
+
+    <p class="verse" data-index="2">And both that morning equally lay
+In leaves no step had trodden black.
+Oh, I kept the first for another day!
+Yet knowing how way leads on to way,
+I doubted if I should ever come back.</p>
+
+    <p class="verse" data-index="3">I shall be telling this with a sigh
+Somewhere ages and ages hence:
+Two roads diverged in a wood, and I—
+I took the one less traveled by,
+And that has made all the difference.</p>
+  </div>
+  <p class="signature" id="signature">&mdash; Robert Frost, &ldquo;The Road Not Taken,&rdquo; <em>Mountain Interval</em> (1916, public domain)</p>
+  <p class="credit">Public-domain text: Robert Frost, &ldquo;The Road Not Taken,&rdquo; first published 1916 in <em>Mountain Interval</em> (Henry Holt and Company). Pre-1929 U.S. publication — in the public domain.</p>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  var REVEAL_INTERVAL_MS = 10000;
+  var verses = Array.prototype.slice.call(document.querySelectorAll(".verse"));
+  var signature = document.getElementById("signature");
+
+  var nextIndex = 0; // index of next verse to reveal
+  var signatureRevealed = false;
+
+  function revealVerse(el) {
+    el.classList.add("visible");
+  }
+
+  // Show the first verse immediately on load.
+  if (verses.length > 0) {
+    revealVerse(verses[0]);
+    nextIndex = 1;
+  }
+
+  var timer = setInterval(function () {
+    if (nextIndex < verses.length) {
+      revealVerse(verses[nextIndex]);
+      nextIndex += 1;
+      return;
+    }
+
+    if (!signatureRevealed) {
+      signature.classList.add("visible");
+      signatureRevealed = true;
+      clearInterval(timer);
+    }
+  }, REVEAL_INTERVAL_MS);
+})();
+</script>
+</body>
+</html>

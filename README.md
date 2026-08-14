@@ -249,6 +249,9 @@ Here is what happened:
 
 ![The finished page. The whole poem is shown, ending with the line "Robert Frost, The Road Not Taken, Mountain Interval, 1916, public domain".](docs/media/poem-page-verified.jpg)
 
+You can open the page the agents built: [docs/samples/poem-page.html](docs/samples/poem-page.html).
+Save it and open it in a web browser. Wait about 40 seconds to see the whole poem.
+
 Read the full story in [docs/case-study-poem-page.md](docs/case-study-poem-page.md).
 
 **This works:**

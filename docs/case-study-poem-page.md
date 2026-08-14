@@ -50,6 +50,9 @@ verse, the author's signature appears and the timer stops:
 
 > — Robert Frost, "The Road Not Taken," *Mountain Interval* (1916, public domain)
 
+The page itself is kept at [docs/samples/poem-page.html](samples/poem-page.html), byte for
+byte as the agents produced it.
+
 ## The proof
 
 The `verifier` agent tested the page on its own. It did not read the builder's notes. It
