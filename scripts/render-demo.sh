@@ -242,7 +242,7 @@ frame 1.0 "$BODY"
 # The intake dialog (build-intake.ts, session_start). Visually a popup: bordered box.
 # Tall enough for a multi-line answer, since this run's real answer is a full sentence.
 INTAKE_X=90
-INTAKE_Y=180
+INTAKE_Y=220
 INTAKE_W=780
 INTAKE_H=280
 INTAKE_WRAP=58
@@ -311,7 +311,7 @@ frame 1.7 "$BODY"
 # no source preserves the gate's full literal wording verbatim.
 WINDOW_TITLE="lead — ask_user_question"
 GATE_X=90
-GATE_Y=150
+GATE_Y=190
 GATE_W=780
 GATE_H=340
 
@@ -514,7 +514,7 @@ frame 2.6 "$BODY"
 # ── the built page itself: real colors and real text from docs/samples/poem-page.html ──
 WINDOW_TITLE="poem-page.html — file://"
 PAGE_X=140
-PAGE_Y=90
+PAGE_Y=120
 PAGE_W=680
 PAGE_H=440
 PAGE_CREAM="#f6f1e7"

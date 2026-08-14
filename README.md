@@ -25,8 +25,10 @@ Then:
 
 *This picture is a re-creation of a real run. The words in it are real. This run finished:
 all 8 goals passed, checked by a separate agent and then by a person. It also stalled for 19
-minutes partway through — the team could not find its own lead. That is fixed now. Read what
-happened in [docs/case-study-poem-page.md](docs/case-study-poem-page.md).*
+minutes partway through — the team could not find its own lead. The status list showed a
+healthy team the whole time; the problem was only visible in the pane text itself, not in the
+status word. That is fixed now. Read what happened in
+[docs/case-study-poem-page.md](docs/case-study-poem-page.md).*
 
 ## Before you start
 
