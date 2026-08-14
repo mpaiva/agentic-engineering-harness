@@ -28,7 +28,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT="$REPO_ROOT/docs/media/build-demo.gif"
 WIDTH=960
-HEIGHT=600
+HEIGHT=640
 FPS=12
 
 command -v rsvg-convert >/dev/null 2>&1 || { echo "render-demo.sh: rsvg-convert not found (brew install librsvg)" >&2; exit 1; }
@@ -135,15 +135,18 @@ SVGEOF
   FRAME_DURATIONS+=("$duration")
 }
 
-# pane_box X Y W H ROLE STATE — one cockpit pane, styled like a Herdr sidebar entry.
+# pane_box X Y W H ROLE STATE [HIGHLIGHT] — one cockpit pane, styled like a Herdr
+# sidebar entry. HIGHLIGHT, if given, overrides the state-colored border — used to
+# mark a pane as sender/receiver of an in-flight Intercom message.
 pane_box() {
-  local x="$1" y="$2" w="$3" h="$4" role="$5" state="$6"
+  local x="$1" y="$2" w="$3" h="$4" role="$5" state="$6" highlight="${7:-}"
   local border="$OVERLAY0" sw=1 dot="$OVERLAY0"
   if [ "$state" = "working" ]; then border="$BLUE"; sw=2; dot="$GREEN"; fi
+  if [ -n "$highlight" ]; then border="$highlight"; sw=3; fi
   rect "$x" "$y" "$w" "$h" 8 "$SURFACE0" "$border" "$sw"
-  line $((x+14)) $((y+30)) 17 "$TEXT" bold normal "$role"
-  circ $((x+18)) $((y+55)) 5 "$dot"
-  line $((x+32)) $((y+60)) 13 "$OVERLAY0" normal normal "$state"
+  line $((x+16)) $((y+32)) 18 "$TEXT" bold normal "$role"
+  circ $((x+18)) $((y+58)) 5 "$dot"
+  line $((x+32)) $((y+63)) 13 "$OVERLAY0" normal normal "$state"
 }
 
 # ════════════════════════════════════════════════════════════════════════════════════
@@ -160,11 +163,11 @@ frame 1.0 "$BODY"
 BODY="$(line 40 90 20 "$TEXT" normal normal '$ ./build.sh')
 $(line 40 140 16 "$OVERLAY0" normal normal 'In a second terminal, attach to the cockpit:')
 $(line 40 168 18 "$BLUE" normal normal '  herdr --session harness')"
-frame 1.4 "$BODY"
+frame 1.2 "$BODY"
 
 # The intake dialog (build-intake.ts, session_start). Visually a popup: bordered box.
 INTAKE_X=90
-INTAKE_Y=210
+INTAKE_Y=230
 INTAKE_W=780
 INTAKE_H=200
 
@@ -218,7 +221,7 @@ frame 1.8 "$BODY"
 # The human gate — made visually distinct: peach canvas border + peach dialog.
 WINDOW_TITLE="lead — ask_user_question"
 GATE_X=90
-GATE_Y=160
+GATE_Y=190
 GATE_W=780
 GATE_H=280
 
@@ -245,71 +248,194 @@ $(line $((GATE_X+24)) $((GATE_Y+230)) 17 "$GREEN" bold normal '[ approved ] — 
 
 gate_frame "" 0 1.1 1
 gate_frame "yes" 0 1.0 1
-gate_frame "yes" 1 2.2 0
+gate_frame "yes" 1 2.0 0
 
 # ════════════════════════════════════════════════════════════════════════════════════
-# ACT 3 — the cockpit grows
+# ACT 3 — the cockpit grows, and the team talks over Intercom
 # ════════════════════════════════════════════════════════════════════════════════════
+# All four message exchanges below are verbatim (or near-verbatim, hand-wrapped for
+# width) from docs/case-study-first-run.md. No dialogue is invented. One exchange the
+# coordinator asked for — a "lead, waiting" line quoting a specific expectation about
+# implementer's build report — does not appear anywhere in that document or in this
+# repo's git history (checked with `git log --all -S`); it has been dropped rather than
+# paraphrased, since a paraphrase would still attribute an unsourced expectation to the
+# lead. What *is* documented and IS shown: the lead going idle once it has delegated,
+# with the specialists still working and no reply in flight — see the final Act 3 beat.
 WINDOW_TITLE="harness — cockpit (herdr --session harness)"
 
-PANE_Y=110
-PANE_W=168
-PANE_H=110
-PANE_GAP=14
-LOG_TOP=260
+# 2-column x 3-row grid: lead spans the top row alone; the four specialists fill the
+# two rows beneath it, matching the real cockpit's layout (lead across the top, then
+# implementer/designer, then accessibility/verifier).
+GX=40
+GROW1_Y=90;  GROW1_H=80
+GROW2_Y=186; GROW2_H=90
+GROW3_Y=292; GROW3_H=90
+GCOL_W=430
+GCOL2_X=490
+LEAD_W=880
+REGION_Y=400
+
+subtitle() { line 40 70 13 "$OVERLAY0" normal normal 'Act 3 — the cockpit grows (build/ROSTER.md)'; }
+
+# grid LEAD_SPEC IMPLEMENTER_SPEC DESIGNER_SPEC ACCESSIBILITY_SPEC VERIFIER_SPEC
+# Each *_SPEC is "-" (not hired yet) or "STATE" or "STATE:HIGHLIGHT_COLOR".
+grid() {
+  local lead="$1" impl="$2" des="$3" a11y="$4" ver="$5"
+  local out=""
+  local spec state hl
+  if [ "$lead" != "-" ]; then
+    spec="$lead"; state="${spec%%:*}"; hl=""; case "$spec" in *:*) hl="${spec#*:}";; esac
+    out="$out
+$(pane_box "$GX" "$GROW1_Y" "$LEAD_W" "$GROW1_H" "lead" "$state" "$hl")"
+  fi
+  if [ "$impl" != "-" ]; then
+    spec="$impl"; state="${spec%%:*}"; hl=""; case "$spec" in *:*) hl="${spec#*:}";; esac
+    out="$out
+$(pane_box "$GX" "$GROW2_Y" "$GCOL_W" "$GROW2_H" "implementer" "$state" "$hl")"
+  fi
+  if [ "$des" != "-" ]; then
+    spec="$des"; state="${spec%%:*}"; hl=""; case "$spec" in *:*) hl="${spec#*:}";; esac
+    out="$out
+$(pane_box "$GCOL2_X" "$GROW2_Y" "$GCOL_W" "$GROW2_H" "designer" "$state" "$hl")"
+  fi
+  if [ "$a11y" != "-" ]; then
+    spec="$a11y"; state="${spec%%:*}"; hl=""; case "$spec" in *:*) hl="${spec#*:}";; esac
+    out="$out
+$(pane_box "$GX" "$GROW3_Y" "$GCOL_W" "$GROW3_H" "accessibility" "$state" "$hl")"
+  fi
+  if [ "$ver" != "-" ]; then
+    spec="$ver"; state="${spec%%:*}"; hl=""; case "$spec" in *:*) hl="${spec#*:}";; esac
+    out="$out
+$(pane_box "$GCOL2_X" "$GROW3_Y" "$GCOL_W" "$GROW3_H" "verifier" "$state" "$hl")"
+  fi
+  printf '%s' "$out"
+}
+
+skip_lines() {
+  local y="$1"
+  printf '%s\n%s' \
+    "$(line 40 "$y" 13 "$OVERLAY0" normal italic 'Skipped pm/researcher/architect — small, fully-specified single-page app,')" \
+    "$(line 40 $((y+18)) 13 "$OVERLAY0" normal italic 'no product ambiguity or unfamiliar tech.')"
+}
+
+# banner Y HEADER COLOR LINE...  — a real Intercom exchange: "who -> whom" plus the
+# quoted line(s) of the message, hand-wrapped to fit the ~880px content width.
+banner() {
+  local y="$1" header="$2" color="$3"; shift 3
+  local out; out="$(line 40 "$y" 19 "$color" bold normal "$header")"
+  local ly=$((y+28))
+  local l
+  for l in "$@"; do
+    out="$out
+$(line 40 "$ly" 16 "$TEXT" normal normal "$l")"
+    ly=$((ly+24))
+  done
+  printf '%s' "$out"
+}
 
 HIRE_LINE_1="+ implementer — builds the React + shadcn/ui to-do app"
 HIRE_LINE_2="+ designer — interaction and information design"
 HIRE_LINE_3="+ accessibility — WCAG 2.1 AA conformance"
 HIRE_LINE_4="+ verifier — independent fresh-context proof"
 
-# cockpit_frame DUR PANES(csv role:state) HIRE_LINES_SHOWN SKIP_SHOWN
-cockpit_frame() {
-  local dur="$1" panes_csv="$2" hire_shown="$3" skip_shown="$4"
-  local body="$(line 40 70 13 "$OVERLAY0" normal normal 'Act 3 -- the cockpit grows (build/ROSTER.md)')"
-  local x=40
-  local old_ifs="$IFS"
-  IFS=','
-  local p
-  for p in $panes_csv; do
-    local role="${p%%:*}"
-    local state="${p##*:}"
-    body="$body
-$(pane_box "$x" "$PANE_Y" "$PANE_W" "$PANE_H" "$role" "$state")"
-    x=$((x+PANE_W+PANE_GAP))
-  done
-  IFS="$old_ifs"
+# ── the roster fills in, one hire at a time (newly hired = idle, not yet briefed) ──
+BODY="$(subtitle)
+$(grid working - - - -)"
+frame 1.0 "$BODY"
 
-  local logy=$LOG_TOP
-  local n=1
-  local lines=("$HIRE_LINE_1" "$HIRE_LINE_2" "$HIRE_LINE_3" "$HIRE_LINE_4")
-  while [ "$n" -le "$hire_shown" ]; do
-    body="$body
-$(line 40 "$logy" 16 "$GREEN" normal normal "${lines[$((n-1))]}")"
-    logy=$((logy+30))
-    n=$((n+1))
-  done
-  if [ "$skip_shown" = "1" ]; then
-    logy=$((logy+16))
-    body="$body
-$(line 40 "$logy" 15 "$OVERLAY0" normal italic 'Skipped pm/researcher/architect — small, fully-specified single-page app,')
-$(line 40 $((logy+22)) 15 "$OVERLAY0" normal italic 'no product ambiguity or unfamiliar tech.')"
-  fi
-  frame "$dur" "$body"
-}
+BODY="$(subtitle)
+$(grid working idle - - -)
+$(line 40 $REGION_Y 16 "$GREEN" normal normal "$HIRE_LINE_1")"
+frame 1.0 "$BODY"
 
-cockpit_frame 1.2 "lead:working" 0 0
-cockpit_frame 1.6 "lead:working,implementer:working" 1 0
-cockpit_frame 1.6 "lead:working,implementer:working,designer:working" 2 0
-cockpit_frame 1.6 "lead:working,implementer:working,designer:working,accessibility:working" 3 0
-cockpit_frame 1.7 "lead:working,implementer:working,designer:working,accessibility:working,verifier:working" 4 0
-cockpit_frame 2.4 "lead:working,implementer:working,designer:working,accessibility:working,verifier:working" 4 1
+BODY="$(subtitle)
+$(grid working idle idle - -)
+$(line 40 $REGION_Y 16 "$GREEN" normal normal "$HIRE_LINE_1")
+$(line 40 $((REGION_Y+24)) 16 "$GREEN" normal normal "$HIRE_LINE_2")"
+frame 1.0 "$BODY"
 
-# State changes over time — real per-agent state, sourced from herdr-state.ts in the
-# actual harness. The verifier is intentionally left "working" in every frame: the
-# case study is explicit that it never finished and EVIDENCE.md was never written.
-cockpit_frame 1.0 "lead:idle,implementer:working,designer:working,accessibility:idle,verifier:working" 4 1
-cockpit_frame 1.3 "lead:idle,implementer:working,designer:idle,accessibility:working,verifier:working" 4 1
+BODY="$(subtitle)
+$(grid working idle idle idle -)
+$(line 40 $REGION_Y 16 "$GREEN" normal normal "$HIRE_LINE_1")
+$(line 40 $((REGION_Y+24)) 16 "$GREEN" normal normal "$HIRE_LINE_2")
+$(line 40 $((REGION_Y+48)) 16 "$GREEN" normal normal "$HIRE_LINE_3")"
+frame 1.0 "$BODY"
+
+BODY="$(subtitle)
+$(grid working idle idle idle idle)
+$(line 40 $REGION_Y 15 "$GREEN" normal normal "$HIRE_LINE_1")
+$(line 40 $((REGION_Y+22)) 15 "$GREEN" normal normal "$HIRE_LINE_2")
+$(line 40 $((REGION_Y+44)) 15 "$GREEN" normal normal "$HIRE_LINE_3")
+$(line 40 $((REGION_Y+66)) 15 "$GREEN" normal normal "$HIRE_LINE_4")
+$(skip_lines $((REGION_Y+96)))"
+frame 1.6 "$BODY"
+
+# ── exchange 1: the lead broadcasts scope to each of the four, in turn ─────────────
+# Verbatim, from the lead's own words in the case study: "All four briefed over
+# intercom with their scope and told to talk to each other directly rather than
+# routing everything through me." Hand-wrapped across two lines to fit the banner.
+BC_L1='"All four briefed over intercom with their scope and told to talk to'
+BC_L2='each other directly rather than routing everything through me."'
+
+BODY="$(subtitle)
+$(grid "working:$BLUE" "working:$BLUE" idle idle idle)
+$(skip_lines $REGION_Y)
+$(banner $((REGION_Y+50)) 'lead -> implementer' "$BLUE" "$BC_L1" "$BC_L2")"
+frame 0.7 "$BODY"
+
+BODY="$(subtitle)
+$(grid "working:$BLUE" working "working:$BLUE" idle idle)
+$(skip_lines $REGION_Y)
+$(banner $((REGION_Y+50)) 'lead -> designer' "$BLUE" "$BC_L1" "$BC_L2")"
+frame 0.7 "$BODY"
+
+BODY="$(subtitle)
+$(grid "working:$BLUE" working working "working:$BLUE" idle)
+$(skip_lines $REGION_Y)
+$(banner $((REGION_Y+50)) 'lead -> accessibility' "$BLUE" "$BC_L1" "$BC_L2")"
+frame 0.7 "$BODY"
+
+BODY="$(subtitle)
+$(grid "working:$BLUE" working working working "working:$BLUE")
+$(skip_lines $REGION_Y)
+$(banner $((REGION_Y+50)) 'lead -> verifier' "$BLUE" "$BC_L1" "$BC_L2")"
+frame 0.9 "$BODY"
+
+# ── exchange 2: the lead writes and shares the contract ────────────────────────────
+# Verbatim from CONTRACT.md's own opening line, quoted in the case study (Oxford
+# comma preserved as written): "shared shape for the to-do app, so implementer,
+# designer, and accessibility don't diverge." verifier is not a party to this one.
+CT_L1='"shared shape for the to-do app, so implementer, designer, and'
+CT_L2="accessibility don't diverge\""
+
+BODY="$(subtitle)
+$(grid "working:$YELLOW" "working:$YELLOW" "working:$YELLOW" "working:$YELLOW" working)
+$(skip_lines $REGION_Y)
+$(banner $((REGION_Y+50)) 'lead -> implementer, designer, accessibility' "$YELLOW" "$CT_L1" "$CT_L2")"
+frame 2.0 "$BODY"
+
+# ── exchange 3: accessibility avoids duplicating verifier's tooling, unprompted ────
+# The best evidence in the whole run: one agent catching a collision with another
+# agent's work through the contract, without being told to. Verbatim from A11Y.md,
+# quoted in the case study (semicolon preserved as written). Longest hold in the GIF.
+A11Y_L1='"coordinate with verifier before adding a second, duplicate'
+A11Y_L2='tooling setup; see build/CONTRACT.md"'
+
+BODY="$(subtitle)
+$(grid working working working "working:$RED" "working:$RED")
+$(skip_lines $REGION_Y)
+$(banner $((REGION_Y+50)) 'accessibility -> verifier' "$RED" "$A11Y_L1" "$A11Y_L2")"
+frame 2.9 "$BODY"
+
+# ── Act 3 close: the lead goes idle once it has delegated. Specialists — including
+# verifier — are still working. No message is in flight and no reply is animated:
+# the case study is explicit that implementer's build report never arrived; the run
+# was stopped before it finished. This is the honest state to end on, not a quoted
+# line that isn't in the source. ──────────────────────────────────────────────────
+BODY="$(subtitle)
+$(grid idle working working working working)
+$(skip_lines $REGION_Y)"
+frame 1.6 "$BODY"
 
 # ════════════════════════════════════════════════════════════════════════════════════
 # FINAL — honesty
@@ -317,10 +443,10 @@ cockpit_frame 1.3 "lead:idle,implementer:working,designer:idle,accessibility:wor
 WINDOW_TITLE="reconstruction note"
 
 BODY="$(rect 0 40 "$WIDTH" $((HEIGHT-40)) 0 "$MANTLE" none 0)
-$(line 60 260 20 "$TEXT" bold normal 'Reconstructed from a real run — see docs/case-study-first-run.md.')
-$(line 60 300 18 "$OVERLAY0" normal normal 'That run was stopped before it finished; no success criterion was')
-$(line 60 326 18 "$OVERLAY0" normal normal 'independently verified.')"
-frame 4.2 "$BODY"
+$(line 60 280 20 "$TEXT" bold normal 'Reconstructed from a real run — see docs/case-study-first-run.md.')
+$(line 60 320 18 "$OVERLAY0" normal normal 'That run was stopped before it finished; no success criterion was')
+$(line 60 346 18 "$OVERLAY0" normal normal 'independently verified.')"
+frame 2.7 "$BODY"
 
 # ── assemble the GIF ─────────────────────────────────────────────────────────────────
 CONCAT="$TMPDIR/concat.txt"

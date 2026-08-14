@@ -45,7 +45,7 @@ the project. A lead agent refines it into a mission, hires the roles that missio
 needs, and drives the build. A Rust CLI gets a small team; a web app gets a larger one. You
 watch the cockpit grow from one pane to N, and `build/ROSTER.md` records who was hired and why.
 
-![Reconstruction of the first build.sh run: the intake question, the human gate, and the cockpit growing from one pane to five](docs/media/build-demo.gif)
+![Reconstruction of the first build.sh run: the intake question, the human gate, the cockpit growing from one pane to five, and the team coordinating over Intercom before the run was stopped](docs/media/build-demo.gif)
 
 *Reconstructed from the recorded run in [docs/case-study-first-run.md](docs/case-study-first-run.md)
 — real strings, not an invented demo. That run was stopped before it finished; no success
