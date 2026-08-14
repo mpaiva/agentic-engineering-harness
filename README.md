@@ -21,14 +21,18 @@ Then:
 4. The agents build the software. They talk to each other while they work.
 5. One agent checks the work. It is not the agent that wrote the code.
 
-![A terminal window asks "What do you want to build today?". The typed answer becomes a written plan with seven checks, and everything stops at a dialog until a person approves it. Four agents are then hired one at a time and the window splits from one pane into five. They work. A separate checking agent reports all seven checks pass. Finally a browser shows the finished page revealing a poem line by line, ending with the author's signature.](docs/media/build-demo.gif)
-
-*This is not a drawing or a re-creation. These are screenshots of the screen, taken every two
-seconds while this actually happened on 14 August 2026. The run finished: all 7 checks passed,
-proved by an agent that did not write the code, then watched by a person. It cost $4.21. It
-also turned up four things that were wrong, one of which needed a human to work around it
-mid-run. All of it — the good and the bad — is written down in
-[docs/case-study-ozymandias.md](docs/case-study-ozymandias.md).*
+<figure>
+  <img src="docs/media/build-demo.gif" width="1200"
+       alt="A 40-second animation of one real run. It moves through eight stages: a single terminal pane asking what to build; the typed answer; a written plan with seven checks; a dialog that halts everything until a person approves; four agents hired one at a time as the window splits from one pane into five; the team working; a separate agent reporting all seven checks pass; and a browser showing the finished page, a poem revealed line by line, ending with the author's signature." />
+  <figcaption>
+    <em>Not a drawing and not a re-creation: these are screenshots of the screen, taken every
+    two seconds while this actually happened on 14 August 2026. The run finished — all 7
+    checks passed, proved by an agent that did not write the code, then watched by a person.
+    It cost $4.21. It also turned up four things that were wrong, one of which needed a human
+    to work around it mid-run. Every stage above is described in words, with still pictures,
+    in <a href="docs/case-study-ozymandias.md">docs/case-study-ozymandias.md</a>.</em>
+  </figcaption>
+</figure>
 
 ## Before you start
 
@@ -251,10 +255,15 @@ Here is what happened:
 - The checking agent tested all 8 goals. **All 8 passed.** Nothing had to be fixed.
 - A person then opened the page and watched it, to be sure.
 
-![The finished page. The whole poem is shown, ending with the line "Robert Frost, The Road Not Taken, Mountain Interval, 1916, public domain".](docs/media/poem-page-verified.jpg)
-
-You can open the page the agents built: [docs/samples/poem-page.html](docs/samples/poem-page.html).
-Save it and open it in a web browser. Wait about 40 seconds to see the whole poem.
+<figure>
+  <img src="docs/media/poem-page-verified.jpg" width="1200"
+       alt="A finished web page on a cream background: the last two verses of The Road Not Taken, ending with the line 'I took the one less traveled by, And that has made all the difference.' Below a rule sits the signature 'Robert Frost, The Road Not Taken, Mountain Interval (1916, public domain)' and a note that the text is a pre-1929 U.S. publication." />
+  <figcaption>
+    <em>The end of the page the first finished run built, in a browser. You can open the file
+    yourself: <a href="docs/samples/poem-page.html">docs/samples/poem-page.html</a> — save it,
+    open it in a web browser, and wait about 40 seconds to see the whole poem.</em>
+  </figcaption>
+</figure>
 
 Read the full story in [docs/case-study-poem-page.md](docs/case-study-poem-page.md).
 
@@ -265,11 +274,16 @@ was asked for on 14 August 2026. This time the lead hired **four** agents, not t
 that mission put presentation and readability in its checks. All 7 checks passed, proved by an
 agent that did not write the code. It cost $4.21 in total.
 
-![The finished page. All fourteen lines of Ozymandias on a dark background, ending with the signature "— Percy Bysshe Shelley".](docs/media/steps/11-the-page-itself.png)
-
-This is a photograph of that page, taken from the screen after the reveal finished. You can
-open the file the agents built: [docs/samples/ozymandias.html](docs/samples/ozymandias.html).
-Save it and open it in a web browser. Wait about 30 seconds to see the whole poem.
+<figure>
+  <img src="docs/media/steps/11-the-page-itself.png" width="1200"
+       alt="A finished web page on a near-black background. The heading OZYMANDIAS in gold small capitals, then all fourteen lines of the sonnet in a cream serif, from 'I met a traveller from an antique land' to 'The lone and level sands stretch far away.' Underneath, right-aligned in gold italics, the signature 'Percy Bysshe Shelley'." />
+  <figcaption>
+    <em>The page the second run built, photographed from the screen the moment the reveal
+    finished and the timer stopped. You can open the file yourself:
+    <a href="docs/samples/ozymandias.html">docs/samples/ozymandias.html</a> — save it, open it
+    in a web browser, and wait about 30 seconds to see the whole poem.</em>
+  </figcaption>
+</figure>
 
 That run is the picture at the top of this page, and it is written up screenshot by screenshot
 in [docs/case-study-ozymandias.md](docs/case-study-ozymandias.md), including the four things
