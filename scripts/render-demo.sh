@@ -38,7 +38,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT="$REPO_ROOT/docs/media/build-demo.gif"
 WIDTH=960
-HEIGHT=640
+HEIGHT=720
 FPS=12
 
 command -v rsvg-convert >/dev/null 2>&1 || { echo "render-demo.sh: rsvg-convert not found (brew install librsvg)" >&2; exit 1; }
@@ -163,22 +163,64 @@ SVGEOF
   FRAME_DURATIONS+=("$duration")
 }
 
-# pane_box X Y W H ROLE STATE [HIGHLIGHT] — one cockpit pane, styled like a Herdr
-# sidebar entry. STATE is one of working/idle/blocked (the vocabulary this repo's own
-# herdr-state.ts adapter reports). HIGHLIGHT, if given, overrides the state-colored
-# border — used to mark a pane as sender/receiver of an in-flight Intercom message.
+# pane_box X Y W H ROLE STATE [HIGHLIGHT] [CONTENT] — one cockpit pane, rendered as a
+# real Herdr pane (a live terminal running Atomic's TUI), not an empty status box.
+# STATE is one of working/idle/blocked (the vocabulary herdr-state.ts reports).
+# HIGHLIGHT, if given, overrides the state-colored border. CONTENT, if given, is a
+# newline-separated list of "COLOR::text" pairs rendered as terminal output inside the
+# pane (an empty "text" half renders a blank spacer line); an empty CONTENT falls back
+# to a bare prompt, because an empty-but-real pane beats a plausible fake one. The
+# `❯` prompt char, `esc to interrupt`, `MCP: 0/1 servers`, and the model/cwd status
+# line are real Atomic TUI chrome that appears in every pane — not invented per-pane.
 pane_box() {
-  local x="$1" y="$2" w="$3" h="$4" role="$5" state="$6" highlight="${7:-}"
+  local x="$1" y="$2" w="$3" h="$4" role="$5" state="$6" highlight="${7:-}" content="${8:-}"
   local border="$OVERLAY0" sw=1 dot="$OVERLAY0"
   case "$state" in
     working) border="$BLUE"; sw=2; dot="$GREEN";;
     blocked) border="$RED";  sw=2; dot="$RED";;
   esac
   if [ -n "$highlight" ]; then border="$highlight"; sw=3; fi
-  rect "$x" "$y" "$w" "$h" 8 "$SURFACE0" "$border" "$sw"
-  line $((x+16)) $((y+32)) 18 "$TEXT" bold normal "$role"
-  circ $((x+18)) $((y+58)) 5 "$dot"
-  line $((x+32)) $((y+63)) 13 "$OVERLAY0" normal normal "$state"
+  local out
+  out="$(rect "$x" "$y" "$w" "$h" 8 "$SURFACE0" "$border" "$sw")"
+  out="$out
+$(line $((x+14)) $((y+24)) 15 "$TEXT" bold normal "$role")
+$(circ $((x+16)) $((y+38)) 4 "$dot")
+$(line $((x+26)) $((y+42)) 11 "$OVERLAY0" normal normal "$state")"
+
+  # Model/cwd status line — real chrome, truncated with an ellipsis (never paraphrased)
+  # if the pane is too narrow for it.
+  local modelline="claude-sonnet-5 medium • ~/git-repos/agentic-engineering-harness"
+  local budget=$(( (w-28)/6 ))
+  if [ ${#modelline} -gt "$budget" ] && [ "$budget" -gt 4 ]; then
+    modelline="${modelline:0:$((budget-3))}..."
+  fi
+  out="$out
+$(line $((x+14)) $((y+58)) 10 "$OVERLAY0" normal normal "$modelline")"
+
+  local cy=$((y+80))
+  if [ -z "$content" ]; then
+    out="$out
+$(line $((x+14)) "$cy" 14 "$OVERLAY0" normal normal '❯')
+$(cursor_block $((x+30)) "$cy" 14 "$OVERLAY0")"
+  else
+    local old_ifs="$IFS"
+    IFS=$'\n'
+    local l color text
+    for l in $content; do
+      color="${l%%::*}"
+      text="${l#*::}"
+      if [ -n "$text" ]; then
+        out="$out
+$(line $((x+14)) "$cy" 13 "$color" normal normal "$text")"
+      fi
+      cy=$((cy+17))
+    done
+    IFS="$old_ifs"
+  fi
+
+  out="$out
+$(line $((x+14)) $((y+h-12)) 10 "$OVERLAY0" normal normal 'esc to interrupt   ·   MCP: 0/1 servers')"
+  printf '%s' "$out"
 }
 
 # ════════════════════════════════════════════════════════════════════════════════════
@@ -195,7 +237,7 @@ frame 1.0 "$BODY"
 BODY="$(line 40 90 20 "$TEXT" normal normal '$ ./build.sh')
 $(line 40 140 16 "$OVERLAY0" normal normal 'In a second terminal, attach to the cockpit:')
 $(line 40 168 18 "$BLUE" normal normal '  herdr --session harness')"
-frame 1.2 "$BODY"
+frame 1.0 "$BODY"
 
 # The intake dialog (build-intake.ts, session_start). Visually a popup: bordered box.
 # Tall enough for a multi-line answer, since this run's real answer is a full sentence.
@@ -307,17 +349,19 @@ gate_frame "yes" 1 1.8 0
 WINDOW_TITLE="harness — cockpit (herdr --session harness)"
 
 GX=40
-GROW1_Y=90;  GROW1_H=80
-GROW2_Y=186; GROW2_H=90
+GROW1_Y=90;  GROW1_H=124
+GROW2_Y=228; GROW2_H=124
 GCOL_W=430
 GCOL2_X=490
 LEAD_W=880
-REGION2_Y=304
+REGION2_Y=372
 
 subtitle() { line 40 70 13 "$OVERLAY0" normal normal "$1"; }
 
 # grid2 LEAD_SPEC IMPLEMENTER_SPEC VERIFIER_SPEC — lead on its own row, the two
 # specialists side by side beneath it. Each *_SPEC is "-" or "STATE[:HIGHLIGHT]".
+# Panes are sparse here (chrome only, no content) — there is no sourced pane dump
+# for these moments, and a sparse-but-real pane beats an invented one.
 grid2() {
   local lead="$1" impl="$2" ver="$3"
   local out=""
@@ -337,20 +381,6 @@ $(pane_box "$GX" "$GROW2_Y" "$GCOL_W" "$GROW2_H" "implementer" "$state" "$hl")"
     out="$out
 $(pane_box "$GCOL2_X" "$GROW2_Y" "$GCOL_W" "$GROW2_H" "verifier" "$state" "$hl")"
   fi
-  printf '%s' "$out"
-}
-
-# banner Y HEADER COLOR LINE...
-banner() {
-  local y="$1" header="$2" color="$3"; shift 3
-  local out; out="$(line 40 "$y" 19 "$color" bold normal "$header")"
-  local ly=$((y+28))
-  local l
-  for l in "$@"; do
-    out="$out
-$(line 40 "$ly" 16 "$TEXT" normal normal "$l")"
-    ly=$((ly+24))
-  done
   printf '%s' "$out"
 }
 
@@ -388,35 +418,70 @@ frame 1.7 "$BODY"
 # ACT 4 — the stall, the fix, and the proof
 # ════════════════════════════════════════════════════════════════════════════════════
 # Real strings from docs/case-study-poem-page.md's "What went wrong on the way" and
-# "The proof" sections. The ✗ glyph in the real terminal output is rendered here as a
-# plain red dot instead of the Unicode U+2717 character, to avoid a tofu-glyph risk in
-# JetBrains Mono that was never actually tested — the *text* is verbatim either way.
+# "The cockpit showed nothing wrong" sections — added to the case study after this
+# GIF's first cut showed the stall as `implementer: blocked` in red. That was wrong,
+# and wrong in the flattering direction: the real status list during the stall was
+# lead=idle, implementer=working, verifier=working. Nothing showed blocked. The
+# implementer was in a `sleep 300` loop, and sleeping counts as working; `blocked`
+# only appears when an agent asks a question and waits for an answer, and an agent
+# that decides to wait quietly never asks. Showing red would have implied the cockpit
+# caught the problem. It did not — that is the whole point of this act.
+
+# A vertical stack, not the 2-column grid: the implementer's real pane content (below)
+# needs far more room than a sparse pane, and lead/verifier have no sourced content for
+# this moment, so they stay compact either side of it.
+STK_Y=90
+STK_W=880
+STK_LEAD_H=124
+STK_IMPL_H=232
+STK_GAP=14
+STK_IMPL_Y=$((STK_Y+STK_LEAD_H+STK_GAP))
+STK_VER_Y=$((STK_IMPL_Y+STK_IMPL_H+STK_GAP))
+STK_CAPTION_Y=$((STK_VER_Y+STK_LEAD_H+34))
+
+# stack3 LEAD_SPEC IMPLEMENTER_SPEC VERIFIER_SPEC [IMPLEMENTER_CONTENT]
+stack3() {
+  local lead="$1" impl="$2" ver="$3" implcontent="${4:-}"
+  local out=""
+  local spec state hl
+  spec="$lead"; state="${spec%%:*}"; hl=""; case "$spec" in *:*) hl="${spec#*:}";; esac
+  out="$(pane_box "$GX" "$STK_Y" "$STK_W" "$STK_LEAD_H" "lead" "$state" "$hl" "")"
+  spec="$impl"; state="${spec%%:*}"; hl=""; case "$spec" in *:*) hl="${spec#*:}";; esac
+  out="$out
+$(pane_box "$GX" "$STK_IMPL_Y" "$STK_W" "$STK_IMPL_H" "implementer" "$state" "$hl" "$implcontent")"
+  spec="$ver"; state="${spec%%:*}"; hl=""; case "$spec" in *:*) hl="${spec#*:}";; esac
+  out="$out
+$(pane_box "$GX" "$STK_VER_Y" "$STK_W" "$STK_LEAD_H" "verifier" "$state" "$hl" "")"
+  printf '%s' "$out"
+}
+
+# The implementer's actual pane during the stall, verbatim from the case study's new
+# section (one sentence truncated with "..." to fit the pane, per instructions: shorten
+# by truncation, never by paraphrase). The ✗ and ❯ glyphs were test-rendered with
+# rsvg-convert + JetBrains Mono before use and render correctly at this size.
+IMPL_STALL_CONTENT="$TEXT::❯ intercom send lead
+$RED::✗ Message to \"lead\" was not delivered: Session not found
+$OVERLAY0::
+$TEXT::Lead still hasn't come online after ~14 minutes of waiting...
+$OVERLAY0::
+$TEXT::\$ sleep 300
+$OVERLAY0::Elapsed 3m 47s"
 
 BODY="$(subtitle 'Act 4 — the stall')
-$(grid2 idle blocked idle)
-$(line 40 $REGION2_Y 18 "$OVERLAY0" normal normal '$ intercom send lead')
-$(circ 48 $((REGION2_Y+34)) 4 "$RED")
-$(line 62 $((REGION2_Y+39)) 16 "$RED" normal normal 'Message to "lead" was not delivered: Session not found')"
-frame 1.2 "$BODY"
-
-IMPL_WAIT_LINE="\"Lead still hasn't come online after ~14 minutes of waiting.\""
-BODY="$(subtitle 'Act 4 — the stall')
-$(grid2 idle blocked idle)
-$(banner $REGION2_Y 'implementer -> lead' "$RED" "$IMPL_WAIT_LINE")"
-frame 1.5 "$BODY"
+$(stack3 idle working working "$IMPL_STALL_CONTENT")"
+frame 3.2 "$BODY"
 
 BODY="$(subtitle 'Act 4 — the stall')
-$(grid2 idle blocked idle)
-$(line 40 $REGION2_Y 20 "$PEACH" bold normal 'Stalled for 19 minutes.')
-$(line 40 $((REGION2_Y+30)) 15 "$OVERLAY0" normal italic 'A session joins Atomic'"'"'s message bus only once it sends its')
-$(line 40 $((REGION2_Y+52)) 15 "$OVERLAY0" normal italic 'first message — the lead had never sent one, so it was invisible.')"
-frame 1.4 "$BODY"
+$(stack3 idle working working "$IMPL_STALL_CONTENT")
+$(line 40 $STK_CAPTION_Y 19 "$PEACH" bold normal 'Nothing showed blocked — sleeping counts as working.')
+$(line 40 $((STK_CAPTION_Y+26)) 15 "$OVERLAY0" normal italic 'Stalled 19 minutes. The pane had the clue; the status word did not.')"
+frame 2.4 "$BODY"
 
 BODY="$(subtitle 'Act 4 — the fix')
-$(grid2 "working:$GREEN" idle idle)
-$(line 40 $REGION2_Y 18 "$GREEN" bold normal 'Fixed: the lead now registers its name the moment')
-$(line 40 $((REGION2_Y+26)) 18 "$GREEN" bold normal 'the question box closes.')"
-frame 1.3 "$BODY"
+$(stack3 "working:$GREEN" working working)
+$(line 40 $STK_CAPTION_Y 18 "$GREEN" bold normal 'Fixed: the lead now registers its name the moment')
+$(line 40 $((STK_CAPTION_Y+26)) 18 "$GREEN" bold normal 'the question box closes.')"
+frame 1.4 "$BODY"
 
 BODY="$(subtitle 'Act 4 — the build')
 $(grid2 working working working)"
@@ -485,7 +550,7 @@ $(line 60 292 18 "$OVERLAY0" normal normal 'This run finished: all 8 criteria pa
 $(line 60 318 18 "$OVERLAY0" normal normal 'then checked by a person.')
 $(line 60 360 18 "$PEACH" normal normal 'It stalled for 19 minutes — the team could not find its own lead.')
 $(line 60 386 18 "$OVERLAY0" normal normal 'That is fixed now.')"
-frame 2.6 "$BODY"
+frame 2.3 "$BODY"
 
 # ── assemble the GIF ─────────────────────────────────────────────────────────────────
 CONCAT="$TMPDIR/concat.txt"
