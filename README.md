@@ -30,9 +30,14 @@ Then:
     checks passed, proved by an agent that did not write the code, then watched by a person.
     It cost $4.21. It also turned up four things that were wrong, one of which needed a human
     to work around it mid-run. Every stage above is described in words, with still pictures,
-    in <a href="docs/case-study-ozymandias.md">docs/case-study-ozymandias.md</a>.</em>
+    in <a href="https://mpaiva.github.io/agentic-engineering-harness/docs/case-study-ozymandias.html">the
+    case study</a>.</em>
   </figcaption>
 </figure>
+
+Everything here is also published as a website:
+**[mpaiva.github.io/agentic-engineering-harness](https://mpaiva.github.io/agentic-engineering-harness/)**.
+The pages the agents built run there, so you can watch one instead of reading its HTML.
 
 ## Before you start
 
