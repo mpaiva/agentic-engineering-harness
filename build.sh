@@ -210,9 +210,10 @@ herdr pane send-keys "$LEAD" Enter >/dev/null
 # .../lead.sh". The title never changes, so the poll always timed out, deleted lead.pane, and
 # exited — leaving a live popup with no script left to send the kickoff once it was answered.
 #
-# The poll existed only to gate a `/name lead` send that no longer happens: `-n lead` at
-# launch (above) already sets the session name. The wait for IDEA.md below IS the readiness
-# signal — it cannot be satisfied unless Atomic booted, rendered the popup, and got an answer.
+# The poll existed to gate a `/name lead` send. That send is still needed (see below, where it
+# now happens once IDEA.md exists) — but it does not need a poll: the wait for IDEA.md below IS
+# the readiness signal, since it cannot be satisfied unless Atomic booted, rendered the popup,
+# and got an answer.
 #
 # Nothing may be sent to this pane before IDEA.md exists: anything typed while the dialog is
 # open lands IN the popup and is submitted as the human's answer.

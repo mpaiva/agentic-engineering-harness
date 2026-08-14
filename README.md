@@ -233,19 +233,37 @@ These pages have more detail. They are written for people who want the full pict
 
 ## What is finished and what is not
 
+**A full build has now worked, start to finish.**
+
+Someone asked for *"a single HTML landing page that reveals one verse of a public-domain poem
+every 10 seconds until the whole poem is shown, ending with the author signature."*
+
+Here is what happened:
+
+- Two agents were started for the job: one to build, one to check.
+- The page was built as one HTML file.
+- It shows Robert Frost's poem *The Road Not Taken*, one verse every 10 seconds.
+- It ends with the author's signature, then stops.
+- The checking agent tested all 8 goals. **All 8 passed.** Nothing had to be fixed.
+- A person then opened the page and watched it, to be sure.
+
+![The finished page. The whole poem is shown, ending with the line "Robert Frost, The Road Not Taken, Mountain Interval, 1916, public domain".](docs/media/poem-page-verified.jpg)
+
+Read the full story in [docs/case-study-poem-page.md](docs/case-study-poem-page.md).
+
 **This works:**
 
 - The question, the plan, and the approval step.
-- Choosing a team that fits the job.
+- Choosing a team that fits the job. A small job gets two agents. A bigger one gets more.
 - Agents talking to each other while they work.
 - Seeing what each agent is doing.
+- Building real, working software and proving it works.
 
-**This is not proven yet:**
+**This is still rough:**
 
-- No run has finished all the way through. One was stopped early. See
-  [docs/case-study-first-run.md](docs/case-study-first-run.md).
-- No software built by this project has been checked against its own success criteria yet.
-- Restarting a stopped build (`./build.sh --resume`) has never been tested from start to
-  finish.
+- The first two tries failed before this one worked. Both problems are now fixed. You can
+  read what broke in [docs/case-study-first-run.md](docs/case-study-first-run.md).
+- Restarting a stopped build (`./build.sh --resume`) has not been tested all the way through.
+- Bigger jobs have not been finished yet. The largest job tried so far was stopped early.
 
 Tested with Atomic 0.9.12, Herdr 0.8.0, and Ghostty 1.3.1.
