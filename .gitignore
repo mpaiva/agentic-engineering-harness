@@ -28,3 +28,6 @@ node_modules/
 
 # subagent-driven-development scratch (ledger, briefs, review packages)
 .superpowers/
+
+# playwright-cli scratch, written by verifier agents during a run
+.playwright-cli/
