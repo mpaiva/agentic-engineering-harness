@@ -259,9 +259,10 @@ Here is what happened:
   <img src="docs/media/poem-page-verified.jpg" width="1200"
        alt="A finished web page on a cream background: the last two verses of The Road Not Taken, ending with the line 'I took the one less traveled by, And that has made all the difference.' Below a rule sits the signature 'Robert Frost, The Road Not Taken, Mountain Interval (1916, public domain)' and a note that the text is a pre-1929 U.S. publication." />
   <figcaption>
-    <em>The end of the page the first finished run built, in a browser. You can open the file
-    yourself: <a href="docs/samples/poem-page.html">docs/samples/poem-page.html</a> — save it,
-    open it in a web browser, and wait about 40 seconds to see the whole poem.</em>
+    <em>The end of the page the first finished run built, in a browser.
+    <a href="https://mpaiva.github.io/agentic-engineering-harness/docs/samples/poem-page.html">Watch
+    it run</a> — it takes about 40 seconds to reveal the whole poem. The file itself is
+    <a href="docs/samples/poem-page.html">docs/samples/poem-page.html</a>.</em>
   </figcaption>
 </figure>
 
@@ -279,9 +280,10 @@ agent that did not write the code. It cost $4.21 in total.
        alt="A finished web page on a near-black background. The heading OZYMANDIAS in gold small capitals, then all fourteen lines of the sonnet in a cream serif, from 'I met a traveller from an antique land' to 'The lone and level sands stretch far away.' Underneath, right-aligned in gold italics, the signature 'Percy Bysshe Shelley'." />
   <figcaption>
     <em>The page the second run built, photographed from the screen the moment the reveal
-    finished and the timer stopped. You can open the file yourself:
-    <a href="docs/samples/ozymandias.html">docs/samples/ozymandias.html</a> — save it, open it
-    in a web browser, and wait about 30 seconds to see the whole poem.</em>
+    finished and the timer stopped.
+    <a href="https://mpaiva.github.io/agentic-engineering-harness/docs/samples/ozymandias.html">Watch
+    it run</a> — it takes about 30 seconds, and there is a Pause button while it goes. The file
+    itself is <a href="docs/samples/ozymandias.html">docs/samples/ozymandias.html</a>.</em>
   </figcaption>
 </figure>
 

@@ -3,6 +3,13 @@
 Files in this folder were **built by the agents**, not written by hand. They are kept as
 evidence, not as maintained examples. Nobody edits them to make them nicer.
 
+Both pages are served live, so you can watch them work without downloading anything:
+
+- [ozymandias.html](https://mpaiva.github.io/agentic-engineering-harness/docs/samples/ozymandias.html)
+  — one line every 2 seconds, about 30 seconds in all
+- [poem-page.html](https://mpaiva.github.io/agentic-engineering-harness/docs/samples/poem-page.html)
+  — one verse every 10 seconds, about 40 seconds in all
+
 ## ozymandias.html
 
 A single HTML page. It shows one line of a poem every 2 seconds until all fourteen lines are

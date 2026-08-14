@@ -1,0 +1,23 @@
+# GitHub Pages configuration.
+#
+# The site is served from the repository root on the main branch, so that:
+#   - README.md becomes the front page (GitHub Pages enables jekyll-readme-index, which
+#     serves a directory's README as its index when there is no index.md or index.html);
+#   - every relative link already in the README and the docs keeps working, because the
+#     site layout matches the repository layout;
+#   - docs/samples/*.html are served as real web pages instead of as source listings, which
+#     is the point: those files are the output of a run and are meant to be looked at
+#     running, not read.
+#
+# Nothing is excluded. Shell scripts and TypeScript extensions are copied to the site
+# unrendered, which is harmless, and excluding them would break the README's links to
+# team/ROLES.md, atomic/README.md and the rest.
+#
+# Markdown files here have no YAML front matter on purpose — GitHub Pages runs
+# jekyll-optional-front-matter, so they render anyway and stay readable in a plain editor.
+
+title: Agentic engineering harness
+description: >-
+  Ask AI agents to build software for you. They plan it, build it, and check each other's
+  work. You watch, and you make the big decisions.
+theme: jekyll-theme-primer
