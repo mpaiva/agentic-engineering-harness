@@ -1,0 +1,21 @@
+# steps.tsv — the stills used by docs/case-study-ozymandias.md.
+#
+#   ./scripts/assemble-demo.sh --frames .captures/run --edit docs/media/steps.tsv \
+#       --stills docs/media/steps --crop 2936x1835+2+75 --width 1400
+#
+# Columns: <frame file>  <output basename>  [# note]
+#
+# Same capture, same crop, same run as docs/media/build-demo.edit.tsv — these are the
+# beats that needed to be looked at rather than watched. Nothing here is staged, retaken,
+# or composed: each one is the whole cockpit window as it stood at that second.
+
+frame-00120.png	01-the-question	# one pane, one question, and an answer waiting on Enter
+frame-00168.png	02-answer-captured	# IDEA.md written, the lead starts refining
+frame-00184.png	03-the-mission	# the mission comes back as something checkable
+frame-00189.png	04-the-gate	# nothing is hired until a person picks an option here
+frame-00198.png	05-hiring	# four roles named, and why each one
+frame-00216.png	06-team-of-five	# the cockpit has grown from one pane to five
+frame-00423.png	07-the-team-working	# five agents, talking to each other over Intercom
+frame-00576.png	08-the-verdict	# all 7 criteria PASS, proven by the agent that did not build it
+frame-00590.png	09-page-revealing	# the deliverable, four lines in
+frame-00599.png	10-page-complete	# fourteen lines, the signature, and a stopped timer

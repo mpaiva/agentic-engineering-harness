@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ozymandias — Percy Bysshe Shelley</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #16130f;
+    --fg: #ece4d6;
+    --accent: #c9a86a;
+    --max-width: 40rem;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 3rem 1.25rem 5rem;
+  }
+
+  main {
+    width: 100%;
+    max-width: var(--max-width);
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--accent);
+    margin: 0 0 2.5rem;
+  }
+
+  .poem {
+    font-size: 1.25rem;
+    line-height: 1.9;
+    margin: 0;
+  }
+
+  .line {
+    opacity: 0;
+    transform: translateY(0.35em);
+    transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+  }
+
+  .line.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .signature {
+    margin-top: 2.5rem;
+    font-size: 1.1rem;
+    font-style: italic;
+    text-align: right;
+    color: var(--accent);
+    opacity: 0;
+    transform: translateY(0.35em);
+    transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+  }
+
+  .signature.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .line,
+    .signature {
+      transition: opacity 0.01ms linear;
+      transform: none;
+    }
+  }
+
+  @media (max-width: 30rem) {
+    .poem {
+      font-size: 1.05rem;
+    }
+    h1 {
+      font-size: 1.15rem;
+    }
+  }
+
+  .reveal-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 0.3rem;
+    padding: 0.5rem 0.9rem;
+    cursor: pointer;
+  }
+
+  .reveal-toggle:hover,
+  .reveal-toggle:focus-visible {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .reveal-toggle:focus-visible {
+    outline: 2px solid var(--fg);
+    outline-offset: 2px;
+  }
+
+  .reveal-toggle[hidden] {
+    display: none;
+  }
+
+  .noscript-poem {
+    font-size: 1.25rem;
+    line-height: 1.9;
+  }
+
+  .noscript-poem p {
+    margin: 0;
+  }
+
+  .noscript-poem .signature {
+    opacity: 1;
+    transform: none;
+  }
+</style>
+</head>
+<body>
+<button type="button" class="reveal-toggle" id="revealToggle" aria-pressed="false" aria-label="Pause poem reveal">Pause</button>
+<main>
+  <h1>Ozymandias</h1>
+  <p class="poem" id="poem"></p>
+  <p class="signature" id="signature">— Percy Bysshe Shelley</p>
+</main>
+
+<noscript>
+  <style>.reveal-toggle { display: none; }</style>
+  <main class="noscript-poem" style="max-width: 40rem; margin: 3rem auto; padding: 0 1.25rem;">
+    <h1>Ozymandias</h1>
+    <p>I met a traveller from an antique land</p>
+    <p>Who said: Two vast and trunkless legs of stone</p>
+    <p>Stand in the desert . . . Near them, on the sand,</p>
+    <p>Half sunk, a shattered visage lies, whose frown,</p>
+    <p>And wrinkled lip, and sneer of cold command,</p>
+    <p>Tell that its sculptor well those passions read</p>
+    <p>Which yet survive, stamped on these lifeless things,</p>
+    <p>The hand that mocked them and the heart that fed:</p>
+    <p>And on the pedestal these words appear:</p>
+    <p>"My name is Ozymandias, King of Kings:</p>
+    <p>Look on my works, ye Mighty, and despair!"</p>
+    <p>Nothing beside remains. Round the decay</p>
+    <p>Of that colossal wreck, boundless and bare,</p>
+    <p>The lone and level sands stretch far away.</p>
+    <p class="signature">— Percy Bysshe Shelley</p>
+  </main>
+</noscript>
+
+<script>
+  (function () {
+    var lines = [
+      "I met a traveller from an antique land",
+      "Who said: Two vast and trunkless legs of stone",
+      "Stand in the desert . . . Near them, on the sand,",
+      "Half sunk, a shattered visage lies, whose frown,",
+      "And wrinkled lip, and sneer of cold command,",
+      "Tell that its sculptor well those passions read",
+      "Which yet survive, stamped on these lifeless things,",
+      "The hand that mocked them and the heart that fed:",
+      "And on the pedestal these words appear:",
+      "\"My name is Ozymandias, King of Kings:",
+      "Look on my works, ye Mighty, and despair!\"",
+      "Nothing beside remains. Round the decay",
+      "Of that colossal wreck, boundless and bare,",
+      "The lone and level sands stretch far away."
+    ];
+
+    var poemEl = document.getElementById("poem");
+    var signatureEl = document.getElementById("signature");
+    var toggleEl = document.getElementById("revealToggle");
+    var intervalMs = 2000;
+
+    var lineEls = lines.map(function (text) {
+      var span = document.createElement("span");
+      span.className = "line";
+      span.textContent = text;
+      poemEl.appendChild(span);
+      poemEl.appendChild(document.createElement("br"));
+      return span;
+    });
+
+    function revealLine(index) {
+      if (index < lineEls.length) {
+        lineEls[index].classList.add("visible");
+      } else {
+        signatureEl.classList.add("visible");
+      }
+    }
+
+    // Line 1 at t=0.
+    revealLine(0);
+
+    var nextIndex = 1;
+    var totalSteps = lineEls.length + 1; // 14 lines + 1 signature.
+    var timer = null;
+    var paused = false;
+    var finished = false;
+
+    function tick() {
+      revealLine(nextIndex);
+      nextIndex += 1;
+      if (nextIndex >= totalSteps) {
+        finish();
+      }
+    }
+
+    function start() {
+      if (timer !== null || finished) {
+        return;
+      }
+      timer = window.setInterval(tick, intervalMs);
+    }
+
+    function stop() {
+      if (timer !== null) {
+        window.clearInterval(timer);
+        timer = null;
+      }
+    }
+
+    function finish() {
+      stop();
+      finished = true;
+      toggleEl.setAttribute("hidden", "");
+    }
+
+    start();
+
+    toggleEl.addEventListener("click", function () {
+      if (finished) {
+        return;
+      }
+      paused = !paused;
+      if (paused) {
+        stop();
+        toggleEl.textContent = "Resume";
+        toggleEl.setAttribute("aria-pressed", "true");
+        toggleEl.setAttribute("aria-label", "Resume poem reveal");
+      } else {
+        start();
+        toggleEl.textContent = "Pause";
+        toggleEl.setAttribute("aria-pressed", "false");
+        toggleEl.setAttribute("aria-label", "Pause poem reveal");
+      }
+    });
+  })();
+</script>
+</body>
+</html>

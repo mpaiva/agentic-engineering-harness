@@ -31,3 +31,7 @@ node_modules/
 
 # playwright-cli scratch, written by verifier agents during a run
 .playwright-cli/
+
+# Raw screenshots from scripts/capture-demo.sh. Hundreds of full-resolution PNGs per run —
+# the GIF and any doc screenshots cut from them are committed, the negatives are not.
+.captures/

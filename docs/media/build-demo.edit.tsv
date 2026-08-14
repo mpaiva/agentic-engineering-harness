@@ -1,0 +1,55 @@
+# build-demo.edit.tsv — the cut used for docs/media/build-demo.gif.
+#
+#   ./scripts/assemble-demo.sh --frames .captures/run \
+#       --edit docs/media/build-demo.edit.tsv \
+#       --crop 2936x1835+2+75 --width 1200
+#
+# Columns: <frame file>  <hold seconds>  [# note]
+#
+# The frames are real screenshots of one real run, taken by scripts/capture-demo.sh on
+# 2026-08-14 between 05:58 and 06:43 local time (619 kept of 1103 taken; the rest were
+# pixel-identical to the frame before them). The negatives are NOT committed — 418 MB of
+# full-resolution PNGs — so this file plus the capture directory's manifest.tsv is the
+# record of what was used and what was left on the floor.
+#
+# What is cut and why: the run took 45 minutes, most of it four agents working in silence.
+# Everything a person decides — the question, the answer, the gate, each hire — is held
+# for seconds. The 14 minutes of building is a 3-second timelapse. Nothing is reordered;
+# frame numbers only ever increase.
+#
+# Two honest gaps, stated rather than patched:
+#   - There is no frame of the question with an empty answer box. By the time the cockpit
+#     was attached at 06:06:29 the answer was already typed, so the run opens on both.
+#   - Frames where the operator switched to another window (a second terminal, Mission
+#     Control) are skipped. They are still in the capture directory; they are just not the
+#     build.
+
+frame-00120.png	2.5	# the cockpit, one pane: "What do you want to build today?" and the answer
+frame-00144.png	1.2	# still waiting on a human — nothing has been built yet
+frame-00168.png	1.8	# Enter. "Captured. Refining into build/MISSION.md"
+frame-00176.png	1.5	# the lead reads IDEA.md, loads prompt-engineer, reads team/ROLES.md
+frame-00184.png	1.2	# a mission appears: Ozymandias, 2s cadence, one self-contained file
+frame-00189.png	3.0	# THE GATE — "Proceed as written?" Nothing is hired until a person answers
+frame-00198.png	2.5	# "Hiring the team now — small scope: implementer, designer, accessibility, verifier"
+frame-00201.png	1.2	# implementer hired — two panes
+frame-00204.png	1.2	# designer hired — three panes
+frame-00210.png	1.2	# accessibility hired — four panes
+frame-00216.png	1.6	# verifier hired — five panes, and that is the whole team
+frame-00222.png	1.4	# the contract is shared; the team starts talking to each other
+frame-00240.png	0.3	# fourteen minutes of building, in three seconds
+frame-00280.png	0.3
+frame-00320.png	0.3
+frame-00360.png	0.3
+frame-00400.png	0.3
+frame-00440.png	0.3
+frame-00480.png	0.3
+frame-00512.png	0.3
+frame-00544.png	1.2	# the verifier runs its own headless browser against the file on disk
+frame-00560.png	1.2	# criteria coming back PASS, one at a time
+frame-00576.png	3.2	# "all 7 MISSION.md success criteria PASS" — verified by an agent that did not build it
+frame-00584.png	1.5	# mission closed, every role signed off, EVIDENCE.md written
+frame-00587.png	1.0	# the page itself, opened from disk: line one
+frame-00590.png	0.8	# line four
+frame-00593.png	0.8	# line eight
+frame-00596.png	0.8	# line twelve
+frame-00599.png	3.5	# all fourteen lines and the signature — the timer stops, the page settles

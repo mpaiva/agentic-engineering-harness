@@ -21,14 +21,14 @@ Then:
 4. The agents build the software. They talk to each other while they work.
 5. One agent checks the work. It is not the agent that wrote the code.
 
-![A terminal window asks "What do you want to build today?". The answer becomes a written plan, then a person approves it. Two agents are hired, not five. The team stalls, then recovers. The checking agent proves all 8 goals pass, and the finished page is shown.](docs/media/build-demo.gif)
+![A terminal window asks "What do you want to build today?". The typed answer becomes a written plan with seven checks, and everything stops at a dialog until a person approves it. Four agents are then hired one at a time and the window splits from one pane into five. They work. A separate checking agent reports all seven checks pass. Finally a browser shows the finished page revealing a poem line by line, ending with the author's signature.](docs/media/build-demo.gif)
 
-*This picture is a re-creation of a real run. The words in it are real. This run finished:
-all 8 goals passed, checked by a separate agent and then by a person. It also stalled for 19
-minutes partway through — the team could not find its own lead. The status list showed a
-healthy team the whole time; the problem was only visible in the pane text itself, not in the
-status word. That is fixed now. Read what happened in
-[docs/case-study-poem-page.md](docs/case-study-poem-page.md).*
+*This is not a drawing or a re-creation. These are screenshots of the screen, taken every two
+seconds while this actually happened on 14 August 2026. The run finished: all 7 checks passed,
+proved by an agent that did not write the code, then watched by a person. It cost $4.21. It
+also turned up four things that were wrong, one of which needed a human to work around it
+mid-run. All of it — the good and the bad — is written down in
+[docs/case-study-ozymandias.md](docs/case-study-ozymandias.md).*
 
 ## Before you start
 
@@ -227,6 +227,7 @@ through you.
 These pages have more detail. They are written for people who want the full picture.
 
 - [docs/getting-started.md](docs/getting-started.md) — setup, with every step spelled out
+- [docs/case-study-ozymandias.md](docs/case-study-ozymandias.md) — the run in the picture above, screenshot by screenshot
 - [docs/case-study-first-run.md](docs/case-study-first-run.md) — a real run, including what broke
 - [docs/architecture.md](docs/architecture.md) — how the three tools fit together
 - [docs/monitoring-agents.md](docs/monitoring-agents.md) — how to watch a team without reading everything
@@ -257,6 +258,18 @@ Save it and open it in a web browser. Wait about 40 seconds to see the whole poe
 
 Read the full story in [docs/case-study-poem-page.md](docs/case-study-poem-page.md).
 
+**It has now worked twice, with a different sized team each time.**
+
+A second job — the same idea, but one *line* every 2 seconds instead of one verse every 10 —
+was asked for on 14 August 2026. This time the lead hired **four** agents, not two, because
+that mission put presentation and readability in its checks. All 7 checks passed, proved by an
+agent that did not write the code. It cost $4.21 in total.
+
+That run is the picture at the top of this page, and it is written up screenshot by screenshot
+in [docs/case-study-ozymandias.md](docs/case-study-ozymandias.md), including the four things
+that went wrong. The page it built is
+[docs/samples/ozymandias.html](docs/samples/ozymandias.html).
+
 **This works:**
 
 - The question, the plan, and the approval step.
@@ -283,6 +296,11 @@ The test found three problems. All three are fixed.
 
 - The first two tries failed before any build worked. Both problems are now fixed. You can
   read what broke in [docs/case-study-first-run.md](docs/case-study-first-run.md).
+- **`build.sh` stops waiting for your answer after ten minutes.** If you take longer to answer
+  the opening question, the script exits. The agent itself keeps running with your question on
+  screen, but the two messages that get it moving never arrive, and `--resume` is not a safe
+  fix at that point — it restarts the server and would throw away the answer you just typed.
+  This happened in the run pictured above and needed a human to work around it. Not fixed yet.
 - We have not yet used `--resume` to finish a job that was left half done. Our test brought
   back a job that was already complete. So restarting works. Picking up unfinished work is
   not proven.

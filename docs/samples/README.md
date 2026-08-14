@@ -3,6 +3,32 @@
 Files in this folder were **built by the agents**, not written by hand. They are kept as
 evidence, not as maintained examples. Nobody edits them to make them nicer.
 
+## ozymandias.html
+
+A single HTML page. It shows one line of a poem every 2 seconds until all fourteen lines are
+up, then shows the author's signature and stops. There is a Pause button while it is running;
+it hides itself when there is nothing left to pause.
+
+**To see it:** open `ozymandias.html` in a web browser. Wait about 30 seconds.
+
+**Where it came from.** Someone typed this answer to the question *What do you want to build
+today?*:
+
+> a single HTML landing page that reveals one line of a public-domain poem every 2 seconds
+> until the whole poem is shown, ending with the author signature
+
+Four agents did the work: one built it, one owned how it looked, one checked it against WCAG
+2.2, and a fourth — which did not read any of their notes — tested the finished file in a
+headless browser and found all 7 goals passed. The full story, with screenshots, is in
+[docs/case-study-ozymandias.md](../case-study-ozymandias.md).
+
+**The poem.** "Ozymandias" by Percy Bysshe Shelley, first published in 1818. It is in the
+public domain. The agents chose it, checked it was free to use, and reproduced all 14 lines
+unaltered.
+
+**This file is an exact copy.** It has not been changed since the agents produced it. Its
+checksum matches the original: `49facb384e65c7bd26c29f1e9ae1d10cba06d255`.
+
 ## poem-page.html
 
 A single HTML page. It shows one verse of a poem every 10 seconds until the poem is complete,
