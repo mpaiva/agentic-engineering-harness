@@ -236,6 +236,22 @@ for _ in $(seq 1 600); do
 done
 
 if [ -f "$BUILD/IDEA.md" ]; then
+  # Register the lead on the Intercom broker, NOW — the popup has closed (IDEA.md exists), so
+  # this lands at Atomic's prompt instead of inside the dialog.
+  #
+  # This send is required, and an earlier version deleted it on the theory that `-n lead` at
+  # launch already set the Intercom name. A real run disproved that: specialists could not
+  # reach the lead at all, and the implementer sat in a `sleep` loop for 19 minutes reporting
+  # "Lead still hasn't come online", with `intercom send lead` returning
+  # "Message to \"lead\" was not delivered: Session not found". `-n` sets the session's display
+  # name; only `/name` registers the Intercom presence name. Both are needed.
+  #
+  # Timing is the whole trick: sent any earlier it is typed into the intake popup and becomes
+  # the human's answer. Sent here, it works. Do not move it in either direction.
+  herdr pane send-text "$LEAD" "/name lead" >/dev/null
+  herdr pane send-keys "$LEAD" Enter >/dev/null
+  sleep 2
+
   if [ -f "$BUILD/MISSION.md" ]; then
     # A mission already exists — this is a resume. It may already be human-confirmed, so do
     # NOT re-refine IDEA.md or re-run the confirmation gate; that would silently rewrite a
