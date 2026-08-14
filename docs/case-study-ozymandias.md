@@ -115,6 +115,8 @@ agent that ran the tests.
 
 ![The finished page: all fourteen lines and the signature "— Percy Bysshe Shelley". The pause button is gone.](media/steps/10-page-complete.png)
 
+![The same page without the browser around it: fourteen lines of Ozymandias and the signature, on a dark background.](media/steps/11-the-page-itself.png)
+
 One HTML file, 6,649 bytes, `md5 dd88f5ce3751aa11942750e4244a8180`. The first line shows at
 once, another every two seconds, and after the fourteenth the signature appears and the timer
 stops. The pause button hides itself once there is nothing left to pause.

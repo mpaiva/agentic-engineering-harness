@@ -3,7 +3,11 @@
 #   ./scripts/assemble-demo.sh --frames .captures/run --edit docs/media/steps.tsv \
 #       --stills docs/media/steps --crop 2936x1835+2+75 --width 1400
 #
-# Columns: <frame file>  <output basename>  [# note]
+# Columns: <frame file>  <output basename>  [crop geometry | # note]
+#
+# A third field that looks like a geometry crops that row instead of --crop. Only one row
+# needs it: the finished page is worth showing without the browser's toolbar wrapped
+# around it, the way the earlier run's outcome shot is framed.
 #
 # Same capture, same crop, same run as docs/media/build-demo.edit.tsv — these are the
 # beats that needed to be looked at rather than watched. Nothing here is staged, retaken,
@@ -19,3 +23,4 @@ frame-00423.png	07-the-team-working	# five agents, talking to each other over In
 frame-00576.png	08-the-verdict	# all 7 criteria PASS, proven by the agent that did not build it
 frame-00590.png	09-page-revealing	# the deliverable, four lines in
 frame-00599.png	10-page-complete	# fourteen lines, the signature, and a stopped timer
+frame-00599.png	11-the-page-itself	2900x1555+18+292

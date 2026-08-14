@@ -88,15 +88,20 @@ if [ -n "$STILLS" ]; then
   [ -f "$EDIT" ] || { echo "assemble-demo.sh: no such stills list: $EDIT" >&2; exit 2; }
   mkdir -p "$STILLS"
   N=0
-  while IFS=$'\t' read -r NAME BASE _; do
+  while IFS=$'\t' read -r NAME BASE THIRD; do
     # Only act on rows that actually name a frame. Testing for a leading '#' instead would
     # send any indented or reflowed comment line into magick as a filename.
     case "$NAME" in frame-*) ;; *) continue ;; esac
     [ -n "$BASE" ] || { echo "assemble-demo.sh: no output name for $NAME" >&2; exit 2; }
     SRC="$FRAMES/$NAME"
     [ -f "$SRC" ] || { echo "assemble-demo.sh: missing frame $SRC" >&2; exit 2; }
-    if [ -n "$CROP" ]; then
-      magick "$SRC" -crop "$CROP" +repage -resize "${WIDTH}x" -colors "$COLORS" "PNG8:$STILLS/$BASE.png"
+    # A third field that looks like a geometry overrides --crop for this row alone. One shot
+    # in a set usually wants different framing — the finished page without the browser's
+    # toolbar around it, say — and that beats keeping a second list for one line.
+    ROW_CROP="$CROP"
+    case "$THIRD" in [0-9]*x[0-9]*[+-][0-9]*[+-][0-9]*) ROW_CROP="${THIRD%%[!0-9x+-]*}" ;; esac
+    if [ -n "$ROW_CROP" ]; then
+      magick "$SRC" -crop "$ROW_CROP" +repage -resize "${WIDTH}x" -colors "$COLORS" "PNG8:$STILLS/$BASE.png"
     else
       magick "$SRC" -resize "${WIDTH}x" -colors "$COLORS" "PNG8:$STILLS/$BASE.png"
     fi

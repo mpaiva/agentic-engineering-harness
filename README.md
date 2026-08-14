@@ -265,10 +265,15 @@ was asked for on 14 August 2026. This time the lead hired **four** agents, not t
 that mission put presentation and readability in its checks. All 7 checks passed, proved by an
 agent that did not write the code. It cost $4.21 in total.
 
+![The finished page. All fourteen lines of Ozymandias on a dark background, ending with the signature "— Percy Bysshe Shelley".](docs/media/steps/11-the-page-itself.png)
+
+This is a photograph of that page, taken from the screen after the reveal finished. You can
+open the file the agents built: [docs/samples/ozymandias.html](docs/samples/ozymandias.html).
+Save it and open it in a web browser. Wait about 30 seconds to see the whole poem.
+
 That run is the picture at the top of this page, and it is written up screenshot by screenshot
 in [docs/case-study-ozymandias.md](docs/case-study-ozymandias.md), including the four things
-that went wrong. The page it built is
-[docs/samples/ozymandias.html](docs/samples/ozymandias.html).
+that went wrong.
 
 **This works:**
 
