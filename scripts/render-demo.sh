@@ -7,17 +7,27 @@
 # files with no generator. Nobody but their author could tell what had gone stale, and
 # nobody could regenerate them after the flow changed. This script is the fix: it is
 # the *only* thing committed. The GIF is a build artifact of this script, not a source
-# file — re-run it whenever the reconstructed run in docs/case-study-first-run.md changes.
+# file — re-run it whenever the reconstructed run changes.
+#
+# This reconstructs docs/case-study-poem-page.md — the first run that went all the way
+# through (question -> plan -> gate -> a two-agent team -> a 19-minute stall -> a fix
+# -> 8/8 criteria independently verified). It supersedes an earlier version of this GIF
+# that depicted docs/case-study-first-run.md, a run that was stopped before it finished;
+# that story is still real and still linked from the README, but it is no longer the
+# lead image, because the lead image should not show a run staler than the truth.
 #
 # What it does:
 #   1. Emits one SVG frame per beat of the case study (real strings from
-#      docs/case-study-first-run.md — no invented content).
+#      docs/case-study-poem-page.md — no invented content; see the comments inline
+#      for the few places a quote could not be verified and was dropped rather than
+#      paraphrased).
 #   2. Rasterises each SVG to PNG with rsvg-convert (the only renderer that handles
 #      SVG <text> correctly here — `magick` fails on SVG text with "unable to read
 #      font").
 #   3. Assembles the PNGs into a GIF with ffmpeg (palettegen/paletteuse for a small,
 #      good-looking palette), respecting a per-frame hold duration so important beats
-#      (the answer, the gate, each hire) get more screen time than transitions.
+#      (the answer, the gate, each hire, the 8/8 proof) get more screen time than
+#      transitions.
 #
 # All intermediate frames live in a temp dir that is cleaned up on exit — nothing but
 # the final GIF is written outside of it.
@@ -105,6 +115,24 @@ text_width_px() {
   printf '%s' $(( size*6*n/10 ))
 }
 
+# wrap_lines TEXT MAXCHARS — greedy word-wrap, newline-separated lines out.
+wrap_lines() {
+  local text="$1" maxchars="$2"
+  local out="" cur="" w
+  for w in $text; do
+    if [ -z "$cur" ]; then
+      cur="$w"
+    elif [ $(( ${#cur} + 1 + ${#w} )) -le "$maxchars" ]; then
+      cur="$cur $w"
+    else
+      if [ -n "$out" ]; then out="$out"$'\n'"$cur"; else out="$cur"; fi
+      cur="$w"
+    fi
+  done
+  if [ -n "$out" ]; then out="$out"$'\n'"$cur"; else out="$cur"; fi
+  printf '%s' "$out"
+}
+
 WINDOW_TITLE=""
 
 # frame DURATION BODY [BORDER_COLOR]
@@ -136,12 +164,16 @@ SVGEOF
 }
 
 # pane_box X Y W H ROLE STATE [HIGHLIGHT] — one cockpit pane, styled like a Herdr
-# sidebar entry. HIGHLIGHT, if given, overrides the state-colored border — used to
-# mark a pane as sender/receiver of an in-flight Intercom message.
+# sidebar entry. STATE is one of working/idle/blocked (the vocabulary this repo's own
+# herdr-state.ts adapter reports). HIGHLIGHT, if given, overrides the state-colored
+# border — used to mark a pane as sender/receiver of an in-flight Intercom message.
 pane_box() {
   local x="$1" y="$2" w="$3" h="$4" role="$5" state="$6" highlight="${7:-}"
   local border="$OVERLAY0" sw=1 dot="$OVERLAY0"
-  if [ "$state" = "working" ]; then border="$BLUE"; sw=2; dot="$GREEN"; fi
+  case "$state" in
+    working) border="$BLUE"; sw=2; dot="$GREEN";;
+    blocked) border="$RED";  sw=2; dot="$RED";;
+  esac
   if [ -n "$highlight" ]; then border="$highlight"; sw=3; fi
   rect "$x" "$y" "$w" "$h" 8 "$SURFACE0" "$border" "$sw"
   line $((x+16)) $((y+32)) 18 "$TEXT" bold normal "$role"
@@ -166,40 +198,52 @@ $(line 40 168 18 "$BLUE" normal normal '  herdr --session harness')"
 frame 1.2 "$BODY"
 
 # The intake dialog (build-intake.ts, session_start). Visually a popup: bordered box.
+# Tall enough for a multi-line answer, since this run's real answer is a full sentence.
 INTAKE_X=90
-INTAKE_Y=230
+INTAKE_Y=180
 INTAKE_W=780
-INTAKE_H=200
+INTAKE_H=280
+INTAKE_WRAP=58
 
 intake_frame() {
   local answer="$1" dur="$2" show_cursor="$3"
   local body
   body="$(line 40 90 20 "$TEXT" normal normal '$ ./build.sh')
 $(rect $INTAKE_X $INTAKE_Y $INTAKE_W $INTAKE_H 10 "$MANTLE" "$BLUE" 2)
-$(line $((INTAKE_X+28)) $((INTAKE_Y+50)) 20 "$TEXT" bold normal 'What do you want to build today?')
-$(line $((INTAKE_X+28)) $((INTAKE_Y+110)) 20 "$GREEN" normal normal "> $answer")"
-  if [ "$show_cursor" = "1" ]; then
-    local aw; aw=$(text_width_px 20 "> $answer")
+$(line $((INTAKE_X+28)) $((INTAKE_Y+50)) 20 "$TEXT" bold normal 'What do you want to build today?')"
+  local wrapped; wrapped="$(wrap_lines "> $answer" "$INTAKE_WRAP")"
+  local ly=$((INTAKE_Y+100))
+  local lastline="" l
+  local old_ifs="$IFS"
+  IFS=$'\n'
+  for l in $wrapped; do
     body="$body
-$(cursor_block $((INTAKE_X+28+aw)) $((INTAKE_Y+110)) 20 "$GREEN")"
+$(line $((INTAKE_X+28)) "$ly" 18 "$GREEN" normal normal "$l")"
+    lastline="$l"
+    ly=$((ly+26))
+  done
+  IFS="$old_ifs"
+  if [ "$show_cursor" = "1" ]; then
+    local aw; aw=$(text_width_px 18 "$lastline")
+    body="$body
+$(cursor_block $((INTAKE_X+28+aw)) $((ly-26)) 18 "$GREEN")"
   fi
   frame "$dur" "$body"
 }
 
-intake_frame "" 1.0 1
+intake_frame "" 0.9 1
 
-# Type the real answer in progressively, a few characters per frame.
-intake_frame "a" 0.12 1
-intake_frame "an " 0.12 1
-intake_frame "an ac" 0.12 1
-intake_frame "an acce" 0.12 1
-intake_frame "an accessi" 0.12 1
-intake_frame "an accessible " 0.12 1
-intake_frame "an accessible to" 0.12 1
-intake_frame "an accessible to do " 0.12 1
-intake_frame "an accessible to do app " 0.12 1
-intake_frame "an accessible to do app using " 0.12 1
-intake_frame "an accessible to do app using shadcn" 1.8 1
+# Type the real answer in progressively, a few words per frame. Verbatim from
+# docs/case-study-poem-page.md: "What was asked for."
+intake_frame "a" 0.10 1
+intake_frame "a single HTML" 0.10 1
+intake_frame "a single HTML landing page that" 0.10 1
+intake_frame "a single HTML landing page that reveals one verse" 0.10 1
+intake_frame "a single HTML landing page that reveals one verse of a public-domain" 0.10 1
+intake_frame "a single HTML landing page that reveals one verse of a public-domain poem every 10" 0.10 1
+intake_frame "a single HTML landing page that reveals one verse of a public-domain poem every 10 seconds until the whole" 0.10 1
+intake_frame "a single HTML landing page that reveals one verse of a public-domain poem every 10 seconds until the whole poem is shown, ending with" 0.10 1
+intake_frame "a single HTML landing page that reveals one verse of a public-domain poem every 10 seconds until the whole poem is shown, ending with the author signature" 1.6 1
 
 # ════════════════════════════════════════════════════════════════════════════════════
 # ACT 2 — refinement and the gate
@@ -208,22 +252,26 @@ WINDOW_TITLE="lead — atomic"
 
 BODY="$(line 40 70 13 "$OVERLAY0" normal normal 'Act 2 — refinement')
 $(line 40 110 20 "$TEXT" normal normal '$ /skill:prompt-engineer')"
-frame 0.9 "$BODY"
+frame 0.8 "$BODY"
 
 BODY="$(line 40 70 13 "$OVERLAY0" normal normal 'Act 2 — refinement')
 $(line 40 110 20 "$TEXT" normal normal '$ /skill:prompt-engineer')
 $(circ 48 152 4 "$GREEN")
 $(line 62 158 18 "$GREEN" normal normal 'build/MISSION.md written')
-$(line 40 200 15 "$OVERLAY0" normal italic 'Eleven words became a spec with 10 numbered success criteria')
-$(line 40 224 15 "$OVERLAY0" normal italic 'and an explicit Non-goals section.')"
-frame 1.8 "$BODY"
+$(line 40 200 15 "$OVERLAY0" normal italic 'The plan has 8 success criteria — plus two rules nobody asked for:')
+$(line 40 224 15 "$OVERLAY0" normal italic 'public domain with the source named, and zero network calls.')"
+frame 1.7 "$BODY"
 
 # The human gate — made visually distinct: peach canvas border + peach dialog.
+# "Proceed as written?" is verbatim (docs/case-study-poem-page.md, "What the lead did
+# with it"). The two constraint bullets are the same document's real content, shown
+# as a plain description rather than dressed up as a single quoted sentence, because
+# no source preserves the gate's full literal wording verbatim.
 WINDOW_TITLE="lead — ask_user_question"
 GATE_X=90
-GATE_Y=190
+GATE_Y=150
 GATE_W=780
-GATE_H=280
+GATE_H=340
 
 gate_frame() {
   local answer="$1" approved="$2" dur="$3" show_cursor="$4"
@@ -231,56 +279,47 @@ gate_frame() {
   body="$(rect $GATE_X $GATE_Y $GATE_W $GATE_H 10 "$MANTLE" "$PEACH" 3)
 $(rect $((GATE_X+24)) $((GATE_Y+20)) 150 30 6 "$PEACH" none 0)
 $(line $((GATE_X+36)) $((GATE_Y+41)) 14 "$MANTLE" bold normal 'HUMAN GATE')
-$(line $((GATE_X+24)) $((GATE_Y+92)) 19 "$TEXT" normal normal 'ask_user_question:')
-$(line $((GATE_X+24)) $((GATE_Y+122)) 20 "$TEXT" bold normal 'Proceed as written?')
-$(line $((GATE_X+24)) $((GATE_Y+186)) 19 "$YELLOW" normal normal "> $answer")"
+$(line $((GATE_X+24)) $((GATE_Y+92)) 19 "$TEXT" normal normal 'ask_user_question: 8 success criteria, including —')
+$(line $((GATE_X+24)) $((GATE_Y+118)) 16 "$OVERLAY0" normal normal '  public domain with the source named, and zero network calls')
+$(line $((GATE_X+24)) $((GATE_Y+166)) 22 "$TEXT" bold normal 'Proceed as written?')
+$(line $((GATE_X+24)) $((GATE_Y+236)) 19 "$YELLOW" normal normal "> $answer")"
   if [ "$show_cursor" = "1" ]; then
     local aw; aw=$(text_width_px 19 "> $answer")
     body="$body
-$(cursor_block $((GATE_X+24+aw)) $((GATE_Y+186)) 19 "$YELLOW")"
+$(cursor_block $((GATE_X+24+aw)) $((GATE_Y+236)) 19 "$YELLOW")"
   fi
   if [ "$approved" = "1" ]; then
     body="$body
-$(line $((GATE_X+24)) $((GATE_Y+230)) 17 "$GREEN" bold normal '[ approved ] — autonomous spend begins here')"
+$(line $((GATE_X+24)) $((GATE_Y+284)) 17 "$GREEN" bold normal '[ approved ] — autonomous spend begins here')"
   fi
   frame "$dur" "$body" "$PEACH"
 }
 
-gate_frame "" 0 1.1 1
-gate_frame "yes" 0 1.0 1
-gate_frame "yes" 1 2.0 0
+gate_frame "" 0 1.0 1
+gate_frame "yes" 0 0.9 1
+gate_frame "yes" 1 1.8 0
 
 # ════════════════════════════════════════════════════════════════════════════════════
-# ACT 3 — the cockpit grows, and the team talks over Intercom
+# ACT 3 — a two-agent team
 # ════════════════════════════════════════════════════════════════════════════════════
-# All four message exchanges below are verbatim (or near-verbatim, hand-wrapped for
-# width) from docs/case-study-first-run.md. No dialogue is invented. One exchange the
-# coordinator asked for — a "lead, waiting" line quoting a specific expectation about
-# implementer's build report — does not appear anywhere in that document or in this
-# repo's git history (checked with `git log --all -S`); it has been dropped rather than
-# paraphrased, since a paraphrase would still attribute an unsourced expectation to the
-# lead. What *is* documented and IS shown: the lead going idle once it has delegated,
-# with the specialists still working and no reply in flight — see the final Act 3 beat.
+# Only two agents this time — the contrast with the earlier (stopped) run, which hired
+# four for a bigger job, is the point: the same role library sizes the team to the work.
 WINDOW_TITLE="harness — cockpit (herdr --session harness)"
 
-# 2-column x 3-row grid: lead spans the top row alone; the four specialists fill the
-# two rows beneath it, matching the real cockpit's layout (lead across the top, then
-# implementer/designer, then accessibility/verifier).
 GX=40
 GROW1_Y=90;  GROW1_H=80
 GROW2_Y=186; GROW2_H=90
-GROW3_Y=292; GROW3_H=90
 GCOL_W=430
 GCOL2_X=490
 LEAD_W=880
-REGION_Y=400
+REGION2_Y=304
 
-subtitle() { line 40 70 13 "$OVERLAY0" normal normal 'Act 3 — the cockpit grows (build/ROSTER.md)'; }
+subtitle() { line 40 70 13 "$OVERLAY0" normal normal "$1"; }
 
-# grid LEAD_SPEC IMPLEMENTER_SPEC DESIGNER_SPEC ACCESSIBILITY_SPEC VERIFIER_SPEC
-# Each *_SPEC is "-" (not hired yet) or "STATE" or "STATE:HIGHLIGHT_COLOR".
-grid() {
-  local lead="$1" impl="$2" des="$3" a11y="$4" ver="$5"
+# grid2 LEAD_SPEC IMPLEMENTER_SPEC VERIFIER_SPEC — lead on its own row, the two
+# specialists side by side beneath it. Each *_SPEC is "-" or "STATE[:HIGHLIGHT]".
+grid2() {
+  local lead="$1" impl="$2" ver="$3"
   local out=""
   local spec state hl
   if [ "$lead" != "-" ]; then
@@ -293,33 +332,15 @@ $(pane_box "$GX" "$GROW1_Y" "$LEAD_W" "$GROW1_H" "lead" "$state" "$hl")"
     out="$out
 $(pane_box "$GX" "$GROW2_Y" "$GCOL_W" "$GROW2_H" "implementer" "$state" "$hl")"
   fi
-  if [ "$des" != "-" ]; then
-    spec="$des"; state="${spec%%:*}"; hl=""; case "$spec" in *:*) hl="${spec#*:}";; esac
-    out="$out
-$(pane_box "$GCOL2_X" "$GROW2_Y" "$GCOL_W" "$GROW2_H" "designer" "$state" "$hl")"
-  fi
-  if [ "$a11y" != "-" ]; then
-    spec="$a11y"; state="${spec%%:*}"; hl=""; case "$spec" in *:*) hl="${spec#*:}";; esac
-    out="$out
-$(pane_box "$GX" "$GROW3_Y" "$GCOL_W" "$GROW3_H" "accessibility" "$state" "$hl")"
-  fi
   if [ "$ver" != "-" ]; then
     spec="$ver"; state="${spec%%:*}"; hl=""; case "$spec" in *:*) hl="${spec#*:}";; esac
     out="$out
-$(pane_box "$GCOL2_X" "$GROW3_Y" "$GCOL_W" "$GROW3_H" "verifier" "$state" "$hl")"
+$(pane_box "$GCOL2_X" "$GROW2_Y" "$GCOL_W" "$GROW2_H" "verifier" "$state" "$hl")"
   fi
   printf '%s' "$out"
 }
 
-skip_lines() {
-  local y="$1"
-  printf '%s\n%s' \
-    "$(line 40 "$y" 13 "$OVERLAY0" normal italic 'Skipped pm/researcher/architect — small, fully-specified single-page app,')" \
-    "$(line 40 $((y+18)) 13 "$OVERLAY0" normal italic 'no product ambiguity or unfamiliar tech.')"
-}
-
-# banner Y HEADER COLOR LINE...  — a real Intercom exchange: "who -> whom" plus the
-# quoted line(s) of the message, hand-wrapped to fit the ~880px content width.
+# banner Y HEADER COLOR LINE...
 banner() {
   local y="$1" header="$2" color="$3"; shift 3
   local out; out="$(line 40 "$y" 19 "$color" bold normal "$header")"
@@ -333,120 +354,138 @@ $(line 40 "$ly" 16 "$TEXT" normal normal "$l")"
   printf '%s' "$out"
 }
 
-HIRE_LINE_1="+ implementer — builds the React + shadcn/ui to-do app"
-HIRE_LINE_2="+ designer — interaction and information design"
-HIRE_LINE_3="+ accessibility — WCAG 2.1 AA conformance"
-HIRE_LINE_4="+ verifier — independent fresh-context proof"
+# Verbatim from docs/case-study-poem-page.md's roster table.
+HIRE_LINE_1A="+ implementer — Ships the single-file HTML/CSS/JS poem reveal page —"
+HIRE_LINE_1B="  the entire deliverable."
+HIRE_LINE_2="+ verifier — Independent evidence that all 8 success criteria pass."
 
-# ── the roster fills in, one hire at a time (newly hired = idle, not yet briefed) ──
-BODY="$(subtitle)
-$(grid working - - - -)"
-frame 1.0 "$BODY"
+# Paraphrased from the case study's own sentence ("The lead skipped the designer, the
+# researcher, the accessibility agent, and the rest ... a small job gets a small
+# team.") — hand-wrapped, not a fabricated quote.
+DECLINED_L1="Skipped designer, researcher, accessibility, and the rest —"
+DECLINED_L2="a small job gets a small team."
 
-BODY="$(subtitle)
-$(grid working idle - - -)
-$(line 40 $REGION_Y 16 "$GREEN" normal normal "$HIRE_LINE_1")"
-frame 1.0 "$BODY"
-
-BODY="$(subtitle)
-$(grid working idle idle - -)
-$(line 40 $REGION_Y 16 "$GREEN" normal normal "$HIRE_LINE_1")
-$(line 40 $((REGION_Y+24)) 16 "$GREEN" normal normal "$HIRE_LINE_2")"
-frame 1.0 "$BODY"
-
-BODY="$(subtitle)
-$(grid working idle idle idle -)
-$(line 40 $REGION_Y 16 "$GREEN" normal normal "$HIRE_LINE_1")
-$(line 40 $((REGION_Y+24)) 16 "$GREEN" normal normal "$HIRE_LINE_2")
-$(line 40 $((REGION_Y+48)) 16 "$GREEN" normal normal "$HIRE_LINE_3")"
-frame 1.0 "$BODY"
-
-BODY="$(subtitle)
-$(grid working idle idle idle idle)
-$(line 40 $REGION_Y 15 "$GREEN" normal normal "$HIRE_LINE_1")
-$(line 40 $((REGION_Y+22)) 15 "$GREEN" normal normal "$HIRE_LINE_2")
-$(line 40 $((REGION_Y+44)) 15 "$GREEN" normal normal "$HIRE_LINE_3")
-$(line 40 $((REGION_Y+66)) 15 "$GREEN" normal normal "$HIRE_LINE_4")
-$(skip_lines $((REGION_Y+96)))"
-frame 1.6 "$BODY"
-
-# ── exchange 1: the lead broadcasts scope to each of the four, in turn ─────────────
-# Verbatim, from the lead's own words in the case study: "All four briefed over
-# intercom with their scope and told to talk to each other directly rather than
-# routing everything through me." Hand-wrapped across two lines to fit the banner.
-BC_L1='"All four briefed over intercom with their scope and told to talk to'
-BC_L2='each other directly rather than routing everything through me."'
-
-BODY="$(subtitle)
-$(grid "working:$BLUE" "working:$BLUE" idle idle idle)
-$(skip_lines $REGION_Y)
-$(banner $((REGION_Y+50)) 'lead -> implementer' "$BLUE" "$BC_L1" "$BC_L2")"
-frame 0.7 "$BODY"
-
-BODY="$(subtitle)
-$(grid "working:$BLUE" working "working:$BLUE" idle idle)
-$(skip_lines $REGION_Y)
-$(banner $((REGION_Y+50)) 'lead -> designer' "$BLUE" "$BC_L1" "$BC_L2")"
-frame 0.7 "$BODY"
-
-BODY="$(subtitle)
-$(grid "working:$BLUE" working working "working:$BLUE" idle)
-$(skip_lines $REGION_Y)
-$(banner $((REGION_Y+50)) 'lead -> accessibility' "$BLUE" "$BC_L1" "$BC_L2")"
-frame 0.7 "$BODY"
-
-BODY="$(subtitle)
-$(grid "working:$BLUE" working working working "working:$BLUE")
-$(skip_lines $REGION_Y)
-$(banner $((REGION_Y+50)) 'lead -> verifier' "$BLUE" "$BC_L1" "$BC_L2")"
+BODY="$(subtitle 'Act 3 — a two-agent team (build/ROSTER.md)')
+$(grid2 working - -)"
 frame 0.9 "$BODY"
 
-# ── exchange 2: the lead writes and shares the contract ────────────────────────────
-# Verbatim from CONTRACT.md's own opening line, quoted in the case study (Oxford
-# comma preserved as written): "shared shape for the to-do app, so implementer,
-# designer, and accessibility don't diverge." verifier is not a party to this one.
-CT_L1='"shared shape for the to-do app, so implementer, designer, and'
-CT_L2="accessibility don't diverge\""
+BODY="$(subtitle 'Act 3 — a two-agent team (build/ROSTER.md)')
+$(grid2 working idle -)
+$(line 40 $REGION2_Y 16 "$GREEN" normal normal "$HIRE_LINE_1A")
+$(line 40 $((REGION2_Y+22)) 16 "$GREEN" normal normal "$HIRE_LINE_1B")"
+frame 1.1 "$BODY"
 
-BODY="$(subtitle)
-$(grid "working:$YELLOW" "working:$YELLOW" "working:$YELLOW" "working:$YELLOW" working)
-$(skip_lines $REGION_Y)
-$(banner $((REGION_Y+50)) 'lead -> implementer, designer, accessibility' "$YELLOW" "$CT_L1" "$CT_L2")"
-frame 2.0 "$BODY"
-
-# ── exchange 3: accessibility avoids duplicating verifier's tooling, unprompted ────
-# The best evidence in the whole run: one agent catching a collision with another
-# agent's work through the contract, without being told to. Verbatim from A11Y.md,
-# quoted in the case study (semicolon preserved as written). Longest hold in the GIF.
-A11Y_L1='"coordinate with verifier before adding a second, duplicate'
-A11Y_L2='tooling setup; see build/CONTRACT.md"'
-
-BODY="$(subtitle)
-$(grid working working working "working:$RED" "working:$RED")
-$(skip_lines $REGION_Y)
-$(banner $((REGION_Y+50)) 'accessibility -> verifier' "$RED" "$A11Y_L1" "$A11Y_L2")"
-frame 2.9 "$BODY"
-
-# ── Act 3 close: the lead goes idle once it has delegated. Specialists — including
-# verifier — are still working. No message is in flight and no reply is animated:
-# the case study is explicit that implementer's build report never arrived; the run
-# was stopped before it finished. This is the honest state to end on, not a quoted
-# line that isn't in the source. ──────────────────────────────────────────────────
-BODY="$(subtitle)
-$(grid idle working working working working)
-$(skip_lines $REGION_Y)"
-frame 1.6 "$BODY"
+BODY="$(subtitle 'Act 3 — a two-agent team (build/ROSTER.md)')
+$(grid2 working idle idle)
+$(line 40 $REGION2_Y 16 "$GREEN" normal normal "$HIRE_LINE_1A")
+$(line 40 $((REGION2_Y+22)) 16 "$GREEN" normal normal "$HIRE_LINE_1B")
+$(line 40 $((REGION2_Y+48)) 16 "$GREEN" normal normal "$HIRE_LINE_2")
+$(line 40 $((REGION2_Y+84)) 15 "$OVERLAY0" normal italic "$DECLINED_L1")
+$(line 40 $((REGION2_Y+106)) 15 "$OVERLAY0" normal italic "$DECLINED_L2")"
+frame 1.7 "$BODY"
 
 # ════════════════════════════════════════════════════════════════════════════════════
-# FINAL — honesty
+# ACT 4 — the stall, the fix, and the proof
+# ════════════════════════════════════════════════════════════════════════════════════
+# Real strings from docs/case-study-poem-page.md's "What went wrong on the way" and
+# "The proof" sections. The ✗ glyph in the real terminal output is rendered here as a
+# plain red dot instead of the Unicode U+2717 character, to avoid a tofu-glyph risk in
+# JetBrains Mono that was never actually tested — the *text* is verbatim either way.
+
+BODY="$(subtitle 'Act 4 — the stall')
+$(grid2 idle blocked idle)
+$(line 40 $REGION2_Y 18 "$OVERLAY0" normal normal '$ intercom send lead')
+$(circ 48 $((REGION2_Y+34)) 4 "$RED")
+$(line 62 $((REGION2_Y+39)) 16 "$RED" normal normal 'Message to "lead" was not delivered: Session not found')"
+frame 1.2 "$BODY"
+
+IMPL_WAIT_LINE="\"Lead still hasn't come online after ~14 minutes of waiting.\""
+BODY="$(subtitle 'Act 4 — the stall')
+$(grid2 idle blocked idle)
+$(banner $REGION2_Y 'implementer -> lead' "$RED" "$IMPL_WAIT_LINE")"
+frame 1.5 "$BODY"
+
+BODY="$(subtitle 'Act 4 — the stall')
+$(grid2 idle blocked idle)
+$(line 40 $REGION2_Y 20 "$PEACH" bold normal 'Stalled for 19 minutes.')
+$(line 40 $((REGION2_Y+30)) 15 "$OVERLAY0" normal italic 'A session joins Atomic'"'"'s message bus only once it sends its')
+$(line 40 $((REGION2_Y+52)) 15 "$OVERLAY0" normal italic 'first message — the lead had never sent one, so it was invisible.')"
+frame 1.4 "$BODY"
+
+BODY="$(subtitle 'Act 4 — the fix')
+$(grid2 "working:$GREEN" idle idle)
+$(line 40 $REGION2_Y 18 "$GREEN" bold normal 'Fixed: the lead now registers its name the moment')
+$(line 40 $((REGION2_Y+26)) 18 "$GREEN" bold normal 'the question box closes.')"
+frame 1.3 "$BODY"
+
+BODY="$(subtitle 'Act 4 — the build')
+$(grid2 working working working)"
+frame 0.9 "$BODY"
+
+# ── the proof: verifier's own checklist, verbatim from the case study's table ──────
+PROOF_ROWS_1="1. Opens from a file, no console errors — PASS"
+PROOF_ROWS_2="2. Only the first verse shows on load — PASS"
+PROOF_ROWS_3="3. One verse every 10 seconds, in order — PASS"
+PROOF_ROWS_4="4. Signature appears last, then the timer stops — PASS"
+PROOF_ROWS_5="5. Poem is public domain, and the source is named — PASS"
+PROOF_ROWS_6="6. Readable from 375 px to 1920 px, nothing cut off — PASS"
+PROOF_ROWS_7="7. No network calls, works offline — PASS"
+PROOF_ROWS_8="8. Once a verse appears, it never disappears — PASS"
+
+WINDOW_TITLE="verifier — independent check"
+BODY="$(line 40 70 13 "$OVERLAY0" normal normal 'Act 4 — the proof (build/EVIDENCE.md)')
+$(line 40 108 15 "$OVERLAY0" normal italic 'independent check — fresh context, file:// load, via playwright-cli:')
+$(line 40 140 15 "$GREEN" normal normal "$PROOF_ROWS_1")
+$(line 40 162 15 "$GREEN" normal normal "$PROOF_ROWS_2")
+$(line 40 184 15 "$GREEN" normal normal "$PROOF_ROWS_3")
+$(line 40 206 15 "$GREEN" normal normal "$PROOF_ROWS_4")
+$(line 40 228 15 "$GREEN" normal normal "$PROOF_ROWS_5")
+$(line 40 250 15 "$GREEN" normal normal "$PROOF_ROWS_6")
+$(line 40 272 15 "$GREEN" normal normal "$PROOF_ROWS_7")
+$(line 40 294 15 "$GREEN" normal normal "$PROOF_ROWS_8")
+$(line 40 336 20 "$GREEN" bold normal 'All 8 passed. No repair cycles were needed.')"
+frame 2.6 "$BODY"
+
+# ── the built page itself: real colors and real text from docs/samples/poem-page.html ──
+WINDOW_TITLE="poem-page.html — file://"
+PAGE_X=140
+PAGE_Y=90
+PAGE_W=680
+PAGE_H=440
+PAGE_CREAM="#f6f1e7"
+PAGE_INK="#2b2620"
+PAGE_TITLE_INK="#4a3f2f"
+PAGE_SIG_INK="#6b5d47"
+SERIF="Georgia, Times New Roman, serif"
+
+BODY="$(rect $PAGE_X $PAGE_Y $PAGE_W $PAGE_H 10 "$PAGE_CREAM" none 0)
+<text x=\"$((WIDTH/2))\" y=\"$((PAGE_Y+60))\" font-family=\"$SERIF\" font-size=\"26\" fill=\"$PAGE_TITLE_INK\" text-anchor=\"middle\">The Road Not Taken</text>
+<text x=\"$((PAGE_X+48))\" y=\"$((PAGE_Y+120))\" font-family=\"$SERIF\" font-size=\"17\" fill=\"$PAGE_INK\">Two roads diverged in a yellow wood,</text>
+<text x=\"$((PAGE_X+48))\" y=\"$((PAGE_Y+146))\" font-family=\"$SERIF\" font-size=\"17\" fill=\"$PAGE_INK\">And sorry I could not travel both</text>
+$(line $((PAGE_X+48)) $((PAGE_Y+190)) 14 "$OVERLAY0" normal italic '(three more verses, one revealed every 10 seconds)')"
+frame 1.0 "$BODY"
+
+BODY="$(rect $PAGE_X $PAGE_Y $PAGE_W $PAGE_H 10 "$PAGE_CREAM" none 0)
+<text x=\"$((WIDTH/2))\" y=\"$((PAGE_Y+60))\" font-family=\"$SERIF\" font-size=\"26\" fill=\"$PAGE_TITLE_INK\" text-anchor=\"middle\">The Road Not Taken</text>
+<text x=\"$((PAGE_X+48))\" y=\"$((PAGE_Y+120))\" font-family=\"$SERIF\" font-size=\"17\" fill=\"$PAGE_INK\">Two roads diverged in a yellow wood,</text>
+<text x=\"$((PAGE_X+48))\" y=\"$((PAGE_Y+146))\" font-family=\"$SERIF\" font-size=\"17\" fill=\"$PAGE_INK\">And sorry I could not travel both</text>
+<text x=\"$((PAGE_X+PAGE_W-48))\" y=\"$((PAGE_Y+PAGE_H-60))\" font-family=\"$SERIF\" font-size=\"16\" fill=\"$PAGE_SIG_INK\" font-style=\"italic\" text-anchor=\"end\">— Robert Frost, \"The Road Not Taken,\" Mountain Interval (1916, public domain)</text>
+$(line $((PAGE_X+48)) $((PAGE_Y+PAGE_H-20)) 13 "$GREEN" normal normal 'timer stopped')
+$(line $PAGE_X $((PAGE_Y+PAGE_H+30)) 14 "$OVERLAY0" normal italic '(shown here at rest — the real reveal takes about 40 seconds)')"
+frame 2.0 "$BODY"
+
+# ════════════════════════════════════════════════════════════════════════════════════
+# FINAL — honesty (updated: this run finished, but it did not go smoothly)
 # ════════════════════════════════════════════════════════════════════════════════════
 WINDOW_TITLE="reconstruction note"
 
 BODY="$(rect 0 40 "$WIDTH" $((HEIGHT-40)) 0 "$MANTLE" none 0)
-$(line 60 280 20 "$TEXT" bold normal 'Reconstructed from a real run — see docs/case-study-first-run.md.')
-$(line 60 320 18 "$OVERLAY0" normal normal 'That run was stopped before it finished; no success criterion was')
-$(line 60 346 18 "$OVERLAY0" normal normal 'independently verified.')"
-frame 2.7 "$BODY"
+$(line 60 250 20 "$TEXT" bold normal 'Reconstructed from a real run — see docs/case-study-poem-page.md.')
+$(line 60 292 18 "$OVERLAY0" normal normal 'This run finished: all 8 criteria passed, verified independently,')
+$(line 60 318 18 "$OVERLAY0" normal normal 'then checked by a person.')
+$(line 60 360 18 "$PEACH" normal normal 'It stalled for 19 minutes — the team could not find its own lead.')
+$(line 60 386 18 "$OVERLAY0" normal normal 'That is fixed now.')"
+frame 2.6 "$BODY"
 
 # ── assemble the GIF ─────────────────────────────────────────────────────────────────
 CONCAT="$TMPDIR/concat.txt"

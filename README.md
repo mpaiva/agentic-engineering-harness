@@ -21,11 +21,12 @@ Then:
 4. The agents build the software. They talk to each other while they work.
 5. One agent checks the work. It is not the agent that wrote the code.
 
-![A terminal window asks "What do you want to build today?". The answer becomes a written plan. After the person approves it, the window splits into five boxes, one per agent, and the agents send messages to each other.](docs/media/build-demo.gif)
+![A terminal window asks "What do you want to build today?". The answer becomes a written plan, then a person approves it. Two agents are hired, not five. The team stalls, then recovers. The checking agent proves all 8 goals pass, and the finished page is shown.](docs/media/build-demo.gif)
 
-*This picture is a re-creation of a real run. The words in it are real. That run was stopped
-early, so the software was never finished or checked. Read what happened in
-[docs/case-study-first-run.md](docs/case-study-first-run.md).*
+*This picture is a re-creation of a real run. The words in it are real. This run finished:
+all 8 goals passed, checked by a separate agent and then by a person. It also stalled for 19
+minutes partway through — the team could not find its own lead. That is fixed now. Read what
+happened in [docs/case-study-poem-page.md](docs/case-study-poem-page.md).*
 
 ## Before you start
 
