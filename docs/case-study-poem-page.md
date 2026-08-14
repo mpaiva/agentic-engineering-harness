@@ -96,6 +96,40 @@ intercom send lead
 The implementer waited. It wrote: *"Lead still hasn't come online after ~14 minutes of
 waiting."* The lead sat idle, waiting for reports that could never arrive. Nothing was built.
 
+### The cockpit showed nothing wrong
+
+This is the part worth remembering. While the team was stuck, the status list read:
+
+```
+lead           idle
+implementer    working
+verifier       working
+```
+
+Not one agent showed `blocked`. The implementer was in a `sleep 300` loop, and sleeping counts
+as working. `blocked` only appears when an agent asks a question and waits for an answer — and
+an agent that decides to wait quietly never asks.
+
+So the screen looked like a busy team. Here is what the implementer's pane actually held
+during those minutes:
+
+```
+ intercom send lead
+ ✗ Message to "lead" was not delivered: Session not found
+
+ Lead still hasn't come online after ~14 minutes of waiting. I'll continue
+ waiting and periodically retry registration since messaging is my only path
+ to coordination.
+
+ $ sleep 300
+
+ Elapsed 3m 47s
+```
+
+Everything needed to spot the problem was on screen. The status word, which is the thing you
+are told to watch, said nothing was wrong. A person reading the panes would have caught it in
+seconds; a person watching the status list would not have caught it at all.
+
 **Why it happened.** An earlier fix removed the line that registers the lead's name. That fix
 was made for a good reason — the line was being typed into the opening question box by
 mistake — but it was removed on the belief that a startup flag already did the same job. It
