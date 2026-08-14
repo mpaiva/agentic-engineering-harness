@@ -89,7 +89,9 @@ if [ -n "$STILLS" ]; then
   mkdir -p "$STILLS"
   N=0
   while IFS=$'\t' read -r NAME BASE _; do
-    case "$NAME" in ''|'#'*) continue ;; esac
+    # Only act on rows that actually name a frame. Testing for a leading '#' instead would
+    # send any indented or reflowed comment line into magick as a filename.
+    case "$NAME" in frame-*) ;; *) continue ;; esac
     [ -n "$BASE" ] || { echo "assemble-demo.sh: no output name for $NAME" >&2; exit 2; }
     SRC="$FRAMES/$NAME"
     [ -f "$SRC" ] || { echo "assemble-demo.sh: missing frame $SRC" >&2; exit 2; }
@@ -111,7 +113,9 @@ PLAN="$TMPDIR/plan.tsv"
 if [ -n "$EDIT" ]; then
   [ -f "$EDIT" ] || { echo "assemble-demo.sh: no such edit list: $EDIT" >&2; exit 2; }
   # Strip comments and blanks; keep the first two fields.
-  awk -F'\t' '!/^[[:space:]]*#/ && NF >= 1 && $1 !~ /^[[:space:]]*$/ {
+  # Same rule as stills mode: a row counts only if its first field names a frame. Comment
+  # and prose lines in the edit list are then impossible to mistake for filenames.
+  awk -F'\t' '$1 ~ /^frame-/ {
         hold = ($2 == "" ? "'"$DEFAULT_HOLD"'" : $2); print $1 "\t" hold }' "$EDIT" > "$PLAN"
 else
   MANIFEST="$FRAMES/manifest.tsv"
