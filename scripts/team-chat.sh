@@ -55,7 +55,7 @@ render() {
     function pad(n,   s){ s=""; while(n-- > 0) s=s" "; return s }
     function rule(n,   s){ s=""; while(n-- > 0) s=s"─"; return s }
     function chip(name,   i,su,code){ su=0; for(i=1;i<=length(name);i++) su+=ord(substr(name,i,1)); code=PAL[(su % NP)+1]; return E"[1;38;5;16;48;5;" code "m " name " " R }
-    function badge(a){ if(a=="ask") return E"[1;30;43m ASK " R; else if(a=="reply") return E"[1;30;42m REPLY " R; else if(a=="send") return E"[1;30;44m SEND " R; else return E"[1;30;47m " a " " R }
+    function badge(a){ if(a=="ask") return E"[1;30;43m ASK " R; else if(a=="reply") return E"[1;30;42m REPLY " R; else if(a=="send") return E"[1;38;5;250;48;5;238m SEND " R; else return E"[1;30;47m " a " " R }
     function ul(s){ gsub(/((https?|file):\/\/[^ )]+)|([A-Za-z0-9_.~{}-]*\/[A-Za-z0-9_.~{},\/-]*\.[A-Za-z0-9]+)/, U "&" UO, s); return s }
     function boxline(styled,   v){ v=cwidth(styled); if(v>INNER) v=INNER; return GREY VBAR R " " styled pad(INNER-v) " " GREY VBAR R }
     function wrap(text,width,arr,   nw,words,i,cur,cnt){ cnt=0; cur=""; nw=split(text,words," ");
@@ -70,7 +70,7 @@ render() {
       print "";
       print GREY "╭" rule(BW-2) "╮" R;
       # header pieces, trimmed from the right if the pane is too narrow to fit them all
-      pt = (to!="") ? " " DIM "→" R " " B to BO : "";
+      pt = (to!="") ? " " DIM "→" R " " chip(to) : "";      # recipient gets the same per-name colour pill as the sender
       pb = "  " badge(act);
       pr = (act=="ask") ? " " E"[33m(needs a reply)" R : "";
       ptime = "  " DIM t R;
