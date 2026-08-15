@@ -179,12 +179,15 @@ the kind of message (SEND, ASK, REPLY), and the time. The first sentence is bold
 You can:
 
 - **Scroll** with `j`/`k` or the arrow keys (`Space`/`b` for a page, `g`/`G` for top/bottom).
+- **Send a message** to the team: press `i`, type who it is for (default `lead`), then your message.
+  It goes to that agent and appears here as one of the messages.
 - **Preview a document** an agent mentions: press `p`, pick the file by number, and it opens
   inside the pane (Markdown is rendered). Press `q` or `Esc` to go back.
 - **Close** the viewer with `q`. Reopen it any time with `./scripts/team-chat.sh`.
 
-The pane reflows cleanly when you resize the window or change the font size. It shows the agents'
-messages to each other; messages you type yourself in Atomic's popup are not shown yet.
+The pane reflows cleanly when you resize the window or change the font size. Sending needs `bun`
+or `node` on your machine. Note: messages you type into an agent's own popup are not shown here —
+use `i` in this pane so the message is captured.
 
 ## How to stop
 

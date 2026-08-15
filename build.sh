@@ -337,8 +337,9 @@ sys.exit(0 if any(p.get('label') == 'team-chat' for p in panes) else 1)
   if [ -n "$CHATPANE" ]; then
     herdr pane rename "$CHATPANE" team-chat >/dev/null 2>&1 || true
     echo "$CHATPANE" > "$LAUNCHDIR/team-chat.pane"
-    # Pass the feed explicitly so the viewer matches the agents even if BUILD_DIR is custom.
-    herdr pane send-text "$CHATPANE" "TEAMCHAT_FEED=$BUILD/team-chat.log ./scripts/team-chat.sh" >/dev/null 2>&1 || true
+    # Pass the feed and the team's intercom group so the viewer's "chat" peer joins the same group
+    # as the agents (otherwise the human could not message them).
+    herdr pane send-text "$CHATPANE" "TEAMCHAT_FEED=$BUILD/team-chat.log ATOMIC_INTERCOM_GROUP=$GROUP ./scripts/team-chat.sh" >/dev/null 2>&1 || true
     herdr pane send-keys "$CHATPANE" Enter >/dev/null 2>&1 || true
   fi
 fi

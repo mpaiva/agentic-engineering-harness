@@ -1,14 +1,14 @@
 # Design spec — a "team chat" Herdr pane over Atomic intercom
 
-> **Status: PHASE 1 + VIEWER SHIPPED; HUMAN-SEND CAPTURE (PHASE 2) PENDING.** Built and in use:
-> `atomic/extensions/intercom-bridge.ts` (outbound intercom → feed file) and `scripts/team-chat.sh`,
-> now a live TUI that reflows on resize (SIGWINCH), draws a dark-grey box per message with sender
-> colour-chips, SEND/ASK/REPLY badges, a bold-white first sentence, underlined paths, scroll
-> (j/k, g/G, space/b), and a keyboard document-preview modal (`p`) with a dependency-free markdown
-> renderer. build.sh loads the extension in every teammate and auto-opens the pane. Still a design:
-> capturing the human's own ALT+M overlay sends (the `chat` broker client, Phase 2 / §3) and
-> external fan-out (§11). Every unbuilt "the client does X" is a proposal; every "intercom/Herdr
-> does Y" is verified against the installed tools and cited.
+> **Status: PHASES 1 + 2 SHIPPED.** Built and in use: `atomic/extensions/intercom-bridge.ts`
+> (agents' outbound intercom → feed file), `scripts/team-chat.sh` (live TUI: reflows on resize,
+> per-message dark-grey boxes, sender colour-chips, SEND/ASK/REPLY badges, bold-white first
+> sentence, underlined paths, scroll, a `p` markdown document-preview modal, and an `i` compose
+> line), and `scripts/team-chat-client.mjs` (the human's `chat` broker peer: sends your typed
+> lines to the team and mirrors both directions into the feed). build.sh loads the extension in
+> every teammate, auto-opens the pane, and passes the team's intercom group. Still a design only:
+> external fan-out to Slack/Telegram (§11). One known gap: messages the human types into another
+> session's ALT+M popup are still not captured — send from the pane's `i` compose instead.
 >
 > Verified against: Atomic `0.9.13` (`docs/intercom.md`, `docs/extensions.md`, `atomic --help`),
 > Herdr `0.8.0` (`herdr --help`, `herdr integration status`, `herdr notification --help`), and
@@ -196,6 +196,7 @@ plainly:
 | build.sh auto-open: split → rename `team-chat` → run `team-chat.sh`, feed renders in the pane | **Proven live** — ran the exact build.sh sequence against a real headless Herdr server (throwaway session); pane opened, `send-keys Enter` executed headlessly, two appended lines rendered as formatted chat |
 | Live TUI reflows the boxed feed on resize / font-change | **Confirmed** — repaints at current width on SIGWINCH; render width-audited at 44/64 cols; reflow/scroll confirmed in the live pane by the user |
 | Markdown preview modal: `p` → pick a link → scroll the rendered doc | **Confirmed** — link resolution + markdown render/wrap tested; reads keys from /dev/tty; no glow/pandoc needed |
+| Human `chat` peer: send to team + capture both directions | **Proven** — `team-chat-client.mjs` tested with the real broker: outbox line reached `lead` (as `chat`) and logged `from:you`; an agent→`chat` message logged `from:<agent> to:you`; isolated agent dir, real broker untouched |
 
 ## 9. Open questions
 
@@ -220,8 +221,10 @@ plainly:
    `TEAMCHAT_FEED` (default `build/team-chat.log`); `scripts/team-chat.sh` tails it (jq-formatted
    when jq is present, raw JSON otherwise). Smoke-tested against a fake `pi`. Delivers a real-time
    **agent** chat view at zero protocol risk. Not yet run across live multi-session teammates.
-2. **Chat client (human send + inbound).** Add the peer-`chat` client so the human participates and
-   human sends land in the feed. Now "capture human sends" is satisfied, locally.
+2. **Chat client (human send + inbound) — DONE.** `scripts/team-chat-client.mjs` registers as
+   peer `chat` in the team group, sends the human's composed lines (viewer `i` → outbox), and
+   mirrors sent + received messages into the feed. Protocol proven in Phase 0; tested end to end
+   with the real broker (human→agent and agent→human both captured). Remaining: reply-into-`ask`.
 3. **View polish — DONE.** Live TUI: reflows on resize, per-message boxes, sender colour-chips,
    SEND/ASK/REPLY badges, bold-white first sentence, underlined paths, scroll, and a `p` markdown
    preview modal. Confirmed working in the live pane.

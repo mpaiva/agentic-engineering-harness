@@ -6,8 +6,9 @@
 #
 # The feed is written by the intercom-bridge extension (atomic/extensions/intercom-bridge.ts),
 # loaded in each teammate with `atomic -e .../intercom-bridge.ts`. Each session appends its own
-# outbound intercom sends, so this shows the AGENT side of the chat (Phase 1 of
-# specs/2026-08-14-intercom-team-chat-pane.md). Human overlay sends are Phase 2.
+# outbound intercom sends, so the feed shows the agents' side of the chat. You take part by
+# pressing `i` to compose: scripts/team-chat-client.mjs (the "chat" peer) sends your line to the
+# team and mirrors both directions into the same feed. See specs/2026-08-14-intercom-team-chat-pane.md.
 #
 # WHY A LIVE TUI (and not `tail -f`)
 #
@@ -99,11 +100,22 @@ fi
 # ---- live TUI ----
 TMP="$(mktemp "${TMPDIR:-/tmp}/teamchat.XXXXXX")"
 LINKS="$(mktemp "${TMPDIR:-/tmp}/teamchat-links.XXXXXX")"
-cleanup(){ printf '\033[?25h\033[?1049l'; rm -f "$TMP" "$TMP.prev" "$TMP.links" "$LINKS"; }
+cleanup(){ printf '\033[?25h\033[?1049l'; [ -n "${CLIENT_PID:-}" ] && kill "$CLIENT_PID" 2>/dev/null; rm -f "$TMP" "$TMP.prev" "$TMP.links" "$LINKS" "$FEED.outbox"; }
 trap cleanup EXIT
 trap 'printf "\033[?25h\033[?1049l"; exit 0' INT TERM
 trap 'RESIZED=1' WINCH
 printf '\033[?1049h\033[?25l'                 # alt screen + hide cursor
+
+# Start the human's "chat" peer (Phase 2) so you can take part — press i to compose. It registers
+# with the broker, sends your lines to the team, and mirrors both directions into this same feed.
+# Runs under bun or node; if neither is present, the viewer is read-only.
+CLIENT_PID=""
+if command -v bun >/dev/null 2>&1; then RT=bun; elif command -v node >/dev/null 2>&1; then RT=node; else RT=""; fi
+if [ -n "$RT" ] && [ -f "$HERE/scripts/team-chat-client.mjs" ]; then
+  : > "$FEED.outbox"
+  TEAMCHAT_FEED="$FEED" "$RT" "$HERE/scripts/team-chat-client.mjs" >/dev/null 2>&1 &
+  CLIENT_PID=$!
+fi
 
 ROWS=24; COLS=80
 term_size(){ local s; s="$(stty size </dev/tty 2>/dev/null)"; ROWS="${s%% *}"; COLS="${s##* }"
@@ -123,7 +135,7 @@ paint(){
   # left below, then the status bar — all in ONE write, with NO full-screen clear (that flashes).
   local body
   body="$(sed -n "${start},${end}p" "$TMP" | awk -v k="$K" '{print $0 k}')"
-  printf '\033[H%s\033[J\033[%d;1H\033[7m team-chat  [%sx%s]  j/k ↓/↑ · space/b · g/G · p preview · q quit \033[0m%s' \
+  printf '\033[H%s\033[J\033[%d;1H\033[7m team-chat  [%sx%s]  j/k · space/b · g/G · p preview · i send · q quit \033[0m%s' \
     "$body" "$ROWS" "$COLS" "$K"
 }
 
@@ -246,6 +258,20 @@ pick_link(){
   esac
 }
 
+# Compose: read a target and a message from /dev/tty (cooked, echoed) and queue them for the chat
+# client to send. The client mirrors the sent line back into the feed, so it appears in the view.
+compose(){
+  if [ -z "${CLIENT_PID:-}" ]; then
+    printf '\033[%d;1H\033[7m chat client not running (needs bun or node) — any key \033[0m' "$ROWS"; IFS= read -rsn1 _ </dev/tty || true; return
+  fi
+  local to msg
+  printf '\033[%d;1H\033[K\033[?25h' "$ROWS"
+  printf 'to (default lead): '; IFS= read -r to </dev/tty || true; [ -z "$to" ] && to="lead"
+  printf '\033[%d;1H\033[Kmessage (empty cancels): ' "$ROWS"; IFS= read -r msg </dev/tty || true
+  printf '\033[?25l'
+  [ -n "$msg" ] && printf '%s\t%s\n' "$to" "$msg" >> "$FEED.outbox"
+}
+
 RESIZED=1; lastsize=-1
 while :; do
   sz="$(wc -c < "$FEED" 2>/dev/null || echo 0)"; sz="${sz// /}"
@@ -262,6 +288,7 @@ while :; do
     g) offset=$((total)); paint ;;                          # top (clamped)
     G) offset=0; paint ;;                                   # bottom / follow
     p|P) pick_link; RESIZED=1 ;;                            # preview a document link
+    i|I) compose; RESIZED=1 ;;                              # compose and send a message
     "$(printf '\033')")
       seq=""; read -rsn2 -t 1 seq </dev/tty || true
       case "$seq" in
