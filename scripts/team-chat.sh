@@ -33,6 +33,10 @@ printf '\033[2magent messages only — your own typed messages arrive in Phase 2
 
 R=$'\033[0m'; DIM=$'\033[2m'; BOLD=$'\033[1m'; YEL=$'\033[33m'
 PAL=(39 213 46 214 123 208 220 141)   # stable colour per sender (an extra cue, never the only one)
+# Body text uses Atomic's intercom "accent" colour so this feed matches how intercom messages
+# render inside a session (Atomic paints the whole message box with theme.fg("accent", …)).
+# Default is the #8abeb7 teal accent; override TEAMCHAT_ACCENT_RGB="r;g;b" for another theme.
+MSG=$'\033[38;2;'"${TEAMCHAT_ACCENT_RGB:-138;190;183}"'m'
 
 # Sum the name's bytes to pick a stable palette slot, so a sender keeps one colour.
 idx_for(){ local n="$1" s=0 i c; for ((i=0; i<${#n}; i++)); do printf -v c '%d' "'${n:i:1}"; s=$((s + c)); done; printf '%s' "$((s % ${#PAL[@]}))"; }
@@ -59,7 +63,7 @@ if command -v jq >/dev/null 2>&1; then
       hdr="${hdr}  $(badge_for "$act")"
       if [ "$act" = "ask" ]; then hdr="${hdr} ${YEL}(needs a reply)${R}"; fi
       hdr="${hdr}  ${DIM}${t}${R}"
-      printf '\n%s\n%s\n' "$hdr" "$msg"     # blank line before = clear break; body flush-left
+      printf '\n%s\n%s%s%s\n' "$hdr" "$MSG" "$msg" "$R"   # blank line = clear break; body in accent colour
     done
 else
   echo "team-chat: install jq for the readable view; showing raw JSON lines" >&2
