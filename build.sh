@@ -52,6 +52,7 @@ if [ "$MODE" = "dry-run" ]; then
   echo "Would create ONE pane named 'lead' running Atomic with:"
   echo "  -e $HERE/atomic/extensions/herdr-state.ts"
   echo "  -e $HERE/atomic/extensions/build-intake.ts"
+  echo "  -e $HERE/atomic/extensions/intercom-bridge.ts"
   echo "  --append-system-prompt <team/lead.md>"
   echo "  --append-system-prompt <team/TRANSPORT.md>"
   echo
@@ -87,13 +88,15 @@ mkdir -p "$BUILD" "$LAUNCHDIR"
   printf 'export ATOMIC_ROLE=%q\n' "lead"
   printf 'export ATOMIC_INTERCOM_GROUP=%q\n' "$GROUP"
   printf 'export BUILD_DIR=%q\n' "$BUILD"
+  printf 'export TEAMCHAT_FEED=%q\n' "$BUILD/team-chat.log"
   printf 'export ATOMIC_PROVIDER=%q\n' "$PROVIDER"
   printf 'export ATOMIC_MODEL=%q\n' "$MODEL"
   printf 'export HERDR_SESSION=%q\n' "$SESSION"
   echo "cd \"$HERE\""
-  printf 'atomic -e %q -e %q --provider %q --model %q -n lead \\\n' \
+  printf 'atomic -e %q -e %q -e %q --provider %q --model %q -n lead \\\n' \
     "$HERE/atomic/extensions/herdr-state.ts" \
-    "$HERE/atomic/extensions/build-intake.ts" "$PROVIDER" "$MODEL"
+    "$HERE/atomic/extensions/build-intake.ts" \
+    "$HERE/atomic/extensions/intercom-bridge.ts" "$PROVIDER" "$MODEL"
   printf '  --append-system-prompt "$(cat %q)" \\\n' "$HERE/team/lead.md"
   printf '  --append-system-prompt "$(cat %q)" \\\n' "$HERE/team/TRANSPORT.md"
   printf '  2> >(tee -a %q >&2)\n' "$LAUNCHDIR/lead.stderr.log"
@@ -333,6 +336,7 @@ $HEADLINE
  ROSTER:   cat $BUILD/ROSTER.md
  MISSION:  cat $BUILD/MISSION.md
  STOP:     herdr --session $SESSION server stop
+ CHAT:     ./scripts/team-chat.sh   (or in a pane: herdr pane split --current --direction right; herdr pane run <id> ./scripts/team-chat.sh)
 
  Output lands in: $BUILD
 EOF

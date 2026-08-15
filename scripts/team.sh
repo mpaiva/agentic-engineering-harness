@@ -106,9 +106,11 @@ echo "$PANE" > "$LAUNCHDIR/$ROLE.pane"
   printf 'export ATOMIC_ROLE=%q\n' "$ROLE"
   printf 'export ATOMIC_INTERCOM_GROUP=%q\n' "$GROUP"
   printf 'export BUILD_DIR=%q\n' "$BUILD"
+  printf 'export TEAMCHAT_FEED=%q\n' "$BUILD/team-chat.log"
   echo "cd \"$HERE\""
-  printf 'atomic -e %q --provider %q --model %q -n %q \\\n' \
-    "$HERE/atomic/extensions/herdr-state.ts" "$PROVIDER" "$MODEL" "$ROLE"
+  printf 'atomic -e %q -e %q --provider %q --model %q -n %q \\\n' \
+    "$HERE/atomic/extensions/herdr-state.ts" \
+    "$HERE/atomic/extensions/intercom-bridge.ts" "$PROVIDER" "$MODEL" "$ROLE"
   printf '  --append-system-prompt "$(cat %q)" \\\n' "$HERE/team/$ROLE.md"
   printf '  --append-system-prompt "$(cat %q)" \\\n' "$HERE/team/TRANSPORT.md"
   printf '  2> >(tee -a %q >&2)\n' "$LAUNCHDIR/$ROLE.stderr.log"
