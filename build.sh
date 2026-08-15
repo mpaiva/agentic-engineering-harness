@@ -315,7 +315,7 @@ if [ -f "$BUILD/IDEA.md" ]; then
     # mission the human already approved. Just get the lead re-oriented and moving again.
     herdr pane send-text "$LEAD" "Resume. Re-read $BUILD/MISSION.md and $BUILD/ROSTER.md (if present) to recover context, then continue the mission from where it left off. Do NOT re-refine MISSION.md and do NOT re-run the human confirmation gate — treat the mission as already confirmed. Hire more specialists with scripts/team.sh add <role> only if the mission still needs them." >/dev/null
   else
-    herdr pane send-text "$LEAD" "Begin. Read $BUILD/IDEA.md, refine it into $BUILD/MISSION.md with /skill:prompt-engineer, show me the mission for confirmation, then hire your team with scripts/team.sh add <role>." >/dev/null
+    herdr pane send-text "$LEAD" "Begin. Your first action is to run /skill:prompt-engineer (invoke it, do not skip it), then use it to refine $BUILD/IDEA.md into $BUILD/MISSION.md, show me the mission for confirmation, and hire your team with scripts/team.sh add <role>." >/dev/null
   fi
   herdr pane send-keys "$LEAD" Enter >/dev/null
 else

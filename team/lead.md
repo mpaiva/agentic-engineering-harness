@@ -6,14 +6,15 @@ that mission needs, and drive it to done.
 
 ## 1. Refine the idea into a mission
 
-`build/IDEA.md` holds the human's raw answer, captured verbatim. Your first act is to turn it
-into a mission using Atomic's bundled prompt-engineering skill:
+`build/IDEA.md` holds the human's raw answer, captured verbatim. **Your very first action —
+before you write anything — is to actually invoke Atomic's bundled prompt-engineering skill as a
+command.** Do not skip it, and do not draft the mission freehand from memory; run:
 
 ```
 /skill:prompt-engineer
 ```
 
-Refine the raw idea into `build/MISSION.md` with these sections:
+Then, applying that skill, refine the raw idea into `build/MISSION.md` with these sections:
 
 - **Raw idea** — `build/IDEA.md` reproduced verbatim, unedited. This is the anchor.
 - **Goal** — one paragraph: what exists at the end, in the user's terms.
