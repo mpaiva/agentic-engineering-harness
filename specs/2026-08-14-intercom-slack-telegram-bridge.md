@@ -19,37 +19,43 @@ Decisions taken (2026-08-14):
 | Deliverable | Design spec first (this document) |
 | Direction | **Two-way** — read on Slack/Telegram, and reply back into intercom |
 | Scope | **All intercom traffic** — every `send` / `ask` / `reply` |
-| Mechanism | **Atomic extension** (the documented extension API) |
+| Mechanism | **Transport-layer broker tap** — extension demoted to optional complement (see §1a/§5a) |
 
-The rest of the spec is honest about where those four choices fight each other. Two of them
-(**all traffic** + **extension**) do not compose cleanly; §4 and §5 say exactly how far the
-extension model reaches and where a gap remains.
+The four choices do not fully compose. **All traffic** now explicitly includes **human ALT+M
+overlay sends** (decided 2026-08-14), and those are a UI action, not a model tool call — no
+extension event fires for them (§3). So the documented **extension** API cannot satisfy the
+scope on its own. Capturing everything means tapping the **broker transport** every send routes
+through. §5a is the new center of the design; the extension drops to an optional complement.
 
-## 1a. Recommended path (2026-08-14)
+## 1a. Recommended path (2026-08-14, revised for "capture human sends too")
 
-**Build the extension in this repo, keep the relay out of it, and prove the pipe with Telegram
-first — outbound-only.** Rationale, ranked:
+**Capture at the broker, not in-session. Point Atomic's configurable `brokerCommand` at a custom
+broker that mirrors every routed message to a relay, then fan out to Telegram first, Slack
+second.** Rationale, ranked:
 
-1. **Relay lives in a separate project, not here.** It is a networked daemon holding bot tokens;
-   this repo is intentionally docs + light TS/shell and AGENTS.md forbids unasked runtime deps.
-   The **extension** is the opposite — dependency-free (`fetch` to a URL), and it slots next to
-   `atomic/extensions/herdr-state.ts`. The extension belongs here; the relay does not.
-2. **Telegram before Slack.** One @BotFather token, `getUpdates` long-poll, no public URL —
-   testable on a laptop in minutes. Slack two-way needs a bot app + Socket Mode. Prove the pipe
-   on the cheap platform, add Slack once the shape holds.
-3. **Outbound-only first.** Skip reply-into-a-live-`ask` (the 10-minute race) and the
-   relay-as-broker-peer path (undocumented protocol, breaks on Atomic upgrades). Ship
-   "all traffic → Telegram" and confirm capture is complete and correctly formatted before
-   going two-way.
+1. **Only a transport tap sees human sends.** A human typing in ALT+M sends through the broker
+   with no model turn, so no `tool_call`/`tool_result` fires (§3). The broker is the one place
+   every message — agent and human — passes through. `~/.atomic/agent/intercom/config.json`
+   exposes `brokerCommand` / `brokerArgs` (verified: `dist/builtin/intercom/config.ts`,
+   `broker/spawn.ts`), so swapping the broker is a supported config edit, not a patch.
+2. **Two tap shapes, both heavy — pick in a spike (§5a):** (a) a **replacement broker** that
+   implements the wire protocol and mirrors traffic; (b) a **socket-interposition proxy** that
+   owns `broker.sock`, forwards frames to a relocated real broker, and copies each frame to the
+   relay. (a) is protocol-aware and cleaner but reimplements routing/ask-correlation; (b) is
+   protocol-opaque but must win the socket + auto-spawn race.
+3. **Telegram before Slack, outbound before two-way.** Once the tap emits messages, fan-out is
+   the easy half: prove it to a Telegram chat (@BotFather token, `getUpdates` long-poll, no
+   public URL) before adding Slack Socket Mode or reply-back.
 
-Concrete order: (1) `atomic/extensions/intercom-bridge.ts` hooks `tool_execution_start` for
-`toolName === "intercom"`, POSTs `{from,to,action,message,ts}` to a relay URL, fire-and-forget,
-inert with no URL; (2) a throwaway relay stub → Telegram `sendMessage`; (3) 2-session intercom
-test; (4) then Slack, mapping, inbound.
+**This is materially harder and riskier than the extension route.** The broker wire protocol is
+undocumented, standalone Atomic binaries **bypass `brokerCommand`** (internal handoff — so a
+config tap may be npm/node-install-only), and every Atomic upgrade can break the tap. AGENTS.md's
+stability warning applies at full force. **Budget a verification spike first (§5a)** before
+committing to build.
 
-**Caveat that could change everything:** "all traffic" still misses what a human types in the
-ALT+M overlay (§3). If that must be captured, the whole design shifts to the broker-peer relay —
-the harder path. Decide this before building.
+The extension (`atomic/extensions/intercom-bridge.ts`, outbound tool-call capture) is still worth
+building as a **low-risk complement** — it reliably captures agent sends today and can run while
+the broker tap is proven — but it is no longer sufficient alone.
 
 ## 2. Ground truth (the constraints the design must obey)
 
@@ -88,16 +94,18 @@ its own extension can read cleanly. Therefore:
 > **If every session runs the bridge extension, the union of each session's outbound captures
 > equals all traffic — each message captured exactly once, at its source.**
 
-This is the design's spine. It sidesteps the private-routing limit and the unstable inbound
-`context` format. It has one honest gap:
+This spine works for **agent-to-agent** traffic: it sidesteps the private-routing limit and the
+unstable inbound `context` format. But it does **not** cover the case this design must handle:
 
-- **A sender that does not run the extension is invisible.** That includes a human typing in
-  the intercom overlay (ALT+M), any Atomic session launched without the extension, and the
-  bridge's own inbound-relay sends (§5). Coverage is only as complete as extension adoption.
+- **A sender that does not run the extension is invisible.** Above all, a human typing in the
+  intercom overlay (ALT+M) sends with no model turn and no extension event (§5a); likewise any
+  Atomic session launched without the extension, and the bridge's own inbound-relay sends.
+  Because capturing human sends is **required** (2026-08-14), the extension route is insufficient
+  and capture moves to the broker transport — see §5a.
 
-In this harness, adoption is enforceable: `build.sh` / `scripts/team.sh` launch every teammate
-with `atomic -e <ext>` (the same slot `herdr-state.ts` uses today), so every teammate would
-carry the bridge. The human-in-overlay case stays a documented blind spot.
+In this harness the extension would still run in every teammate (launched via `build.sh` /
+`scripts/team.sh` at the same `-e` slot as `herdr-state.ts`) as a reliable **complement** for
+agent sends — but the human-overlay requirement is what forces the §5a broker tap.
 
 ## 4. Architecture
 
@@ -167,6 +175,40 @@ as *new* intercom sends from a relay-peer named `slack`/`telegram` (not replies 
 proven. This delivers "two-way" in the useful sense (you can inject messages back) without
 betting the design on the 10-minute `ask` race.
 
+## 5a. Capturing human sends: the transport-layer tap (the new center)
+
+Requirement (2026-08-14): human ALT+M overlay sends must be mirrored too. They never surface to
+an extension, so capture moves to the broker. Facts and the two candidate designs:
+
+**Verified:**
+- `brokerCommand` / `brokerArgs` are user-configurable in `~/.atomic/agent/intercom/config.json`
+  (`dist/builtin/intercom/config.ts`); the extension spawns the broker via
+  `spawnBrokerIfNeeded(config.brokerCommand, config.brokerArgs)` (`broker/spawn.ts`).
+- The socket path comes from `getBrokerSocketPath()` (`broker/paths.ts`); default
+  `~/.atomic/agent/intercom/broker.sock`.
+
+**Not verified — spike these before building:**
+- Does Atomic append the bundled broker **script path** after `brokerArgs` (so a custom command
+  wraps rather than replaces it)? What exact argv does the broker receive, including the socket?
+- Docs say standalone Atomic runs the broker via an **internal handoff of the same executable** —
+  confirm whether `brokerCommand` is honored on standalone builds at all. If not, the config tap
+  is npm/node-install-only and proxy route (b) is the only standalone option.
+- Is the wire framing (length-prefixed JSON + request correlation) enough to forward transparently?
+
+**Design (a) — replacement broker.** Custom `brokerCommand` → your process implements registration,
+1:1 routing, ask-reply correlation, and session listing, and mirrors every message to the relay.
+Sees everything including human sends. Cost: reimplement + maintain the protocol; version-coupled;
+likely npm-install-only.
+
+**Design (b) — socket-interposition proxy.** A proxy owns the default `broker.sock`, starts the real
+broker on a relocated socket, pipes frames both ways, and copies each frame to the relay.
+Protocol-opaque (frames only), but must relocate the real broker's socket, win the auto-spawn race,
+and survive the broker's ~5-second idle exit. More fragile, but does not reimplement routing.
+
+**Recommendation:** a short spike answering the three unverified questions, then prefer (a) if
+`brokerCommand` is honored and the protocol is tractable, else (b). This is the high-risk core —
+build and prove it before the easy Telegram/Slack fan-out.
+
 ## 6. Message and identity mapping
 
 | intercom | Slack | Telegram |
@@ -231,33 +273,41 @@ code comments as fact until exercised.
 | Intercom is local-only, no log, private 1:1 routing | **Proven** — `docs/intercom.md` |
 | No `intercom_message` event; inbound arrives via `context` | **Proven** — `docs/extensions.md` events catalog |
 | No *documented* public intercom client SDK | **Partly verified** — `dist/builtin/intercom` exposes only config/backoff; broker internals under `dist/core`/`dist/bun` not inspected as a client surface |
-| Union-of-outbound = all traffic when every sender runs the extension | **Reasoned, not run** — needs a live multi-session test |
+| Union-of-outbound = **agent** traffic (not human sends) when every session runs the extension | **Reasoned, not run** — covers agent-to-agent only; human overlay sends excluded |
 | Relay-as-broker-peer can inject inbound sends | **Unproven** — internal protocol, not attempted |
 | Slack Socket Mode / Telegram long-poll specifics | **Unverified** — must run against real APIs |
+| `brokerCommand`/`brokerArgs` configurable → custom broker feasible | **Proven** — `dist/builtin/intercom/config.ts`; spawned via `spawnBrokerIfNeeded` in `broker/spawn.ts` |
+| Human ALT+M sends are invisible to extensions | **Proven** — overlay send is UI, not a model tool call; no intercom event fires |
+| `brokerCommand` honored on standalone Atomic builds | **Unverified** — docs note standalone uses an internal handoff; spike needed |
+| Broker argv/script path + wire framing tappable | **Unverified** — spike before building |
 
 ## 11. Open questions
 
-1. Is the human-in-overlay blind spot (§3) acceptable, or must the human's ALT+M sends also
-   mirror? (They can't, via the extension route.)
-2. Do we need reply-into-a-live-`ask` (the 10-min race), or is "inject a new message back" enough?
-3. One relay per machine, or per run? Where does it live — a `scripts/` daemon, a Herdr pane, or
-   outside the harness entirely?
-4. Slack: incoming-webhook (outbound-only, trivial) vs bot+Socket Mode (two-way, more setup) —
-   pick per how much reply-back matters.
-5. Is the relay in-scope for this repo at all, or does it belong in a separate project (this repo
-   is intentionally docs + light TS/shell)?
+1. **Resolved:** human ALT+M sends must be captured, so the design uses a transport tap (§5a),
+   not the extension alone.
+2. Which tap shape — replacement broker (a) or socket proxy (b)? Decide from the §5a spike.
+3. Is `brokerCommand` honored on the Atomic build you actually run (npm vs standalone)? Blocks (a).
+4. Do we need reply-into-a-live-`ask` (the 10-min race), or is "inject a new message back" enough?
+5. Where does the relay/broker-tap live — a `scripts/` daemon, a Herdr pane, or a separate project?
+   It holds bot tokens and (for the tap) couples to Atomic internals, so it likely does not belong
+   in this docs-first repo; the thin extension complement can.
+6. Slack: incoming-webhook (outbound-only) vs bot + Socket Mode (two-way) — pick per reply-back need.
 
 ## 12. Phasing (when we build)
 
-1. **Extension, outbound-only, one platform.** Hook intercom tool events → POST to a stub relay
-   → Telegram `sendMessage` (long-poll not yet needed). Proves capture + formatting end to end.
-2. **Second platform + mapping.** Add Slack (incoming webhook first), the name↔channel/chat map,
-   and attachment rendering.
-3. **Inbound as relay-peer sends.** Stand up the relay as a broker peer named `slack`/`telegram`;
-   inbound chat → new intercom `send`. Verify the internal protocol; pin the Atomic version.
-4. **(Stretch) reply-into-`ask`.** Only after phase 3 is stable and the 10-min window is handled.
+0. **Spike the broker tap (§5a).** Answer the three unverified questions; confirm `brokerCommand`
+   is honored on your Atomic build and the framing is tappable. This gates everything.
+1. **Broker tap → stub relay.** Custom broker (a) or socket proxy (b) mirrors every routed message
+   — agent and human — to a local stub. Prove human ALT+M sends appear. Pin the Atomic version.
+2. **Fan out to Telegram, outbound.** Relay → Telegram `sendMessage` (@BotFather token, long-poll).
+   Prove all traffic lands in a chat, correctly formatted.
+3. **Add Slack + mapping.** Slack (Socket Mode for two-way), name↔channel/chat map, attachments.
+4. **Inbound reply-back.** Chat message → intercom `send` from a relay-peer named `slack`/`telegram`.
+5. **(Stretch) reply-into-`ask`.** Only after inbound is stable and the 10-min window is handled.
+
+Low-risk and parallel: the outbound-only extension complement (`intercom-bridge.ts`) for agent
+sends, which needs no spike.
 
 Each phase must leave a runnable, documented state and record what was exercised against the real
 tools — not "should work."
-```
 
