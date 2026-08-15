@@ -44,7 +44,7 @@ COLS="$(tput cols 2>/dev/null || echo 80)"; case "$COLS" in ''|*[!0-9]*) COLS=80
 if command -v jq >/dev/null 2>&1; then
   tail -n +1 -f "$FEED" \
   | jq -r --unbuffered '[ (if (.ts|type)=="string" and (.ts|length)>=16 then .ts[11:16] else (.ts//"") end), (.from//"?"), (.to//""), (.action//"?"), (.message//""|gsub("[\n\t]";" ")) ] | join("\u001f")' \
-  | awk -v W="$COLS" -v sep="$SEP" -v teal="${TEAMCHAT_ACCENT_RGB:-138;190;183}" -v palstr="39 213 46 214 123 208 220 141" '
+  | awk -v W="$COLS" -v margin="${TEAMCHAT_MARGIN:-5}" -v sep="$SEP" -v teal="${TEAMCHAT_ACCENT_RGB:-138;190;183}" -v palstr="39 213 46 214 123 208 220 141" '
     function ord(ch){ return ORDT[ch]+0 }
     # visible column count: strip ANSI, then count UTF-8 lead bytes (continuation bytes 0x80-0xBF skipped)
     function cwidth(s,   t,i,b,w){ t=s; gsub(reESC,"",t); w=0; for(i=1;i<=length(t);i++){ b=ord(substr(t,i,1)); if(b>=128 && b<192) continue; w++ } return w }
@@ -61,7 +61,7 @@ if command -v jq >/dev/null 2>&1; then
     BEGIN{ E=sprintf("%c",27); R=E"[0m"; reESC=E"\\[[0-9;]*m";
       GREY=E"[38;5;240m"; MSG=E"[38;2;" teal "m"; B=E"[1m"; BO=E"[22m"; U=E"[4m"; UO=E"[24m"; VBAR="│";
       NP=split(palstr,PAL," "); for(i=0;i<256;i++) ORDT[sprintf("%c",i)]=i;
-      FS=sep; W=W+0; if(W<28) W=80; BW=W-1; INNER=BW-4; if(INNER<12) INNER=12 }
+      FS=sep; W=W+0; if(W<28) W=80; BW=W-(margin+0); if(BW<20) BW=20; INNER=BW-4; if(INNER<12) INNER=12 }
     { t=$1; from=$2; to=$3; act=$4; msg=$5;
       print "";                                         # blank line = clear gap between boxes
       print GREY "╭" rule(BW-2) "╮" R;                  # top border
