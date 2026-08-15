@@ -158,7 +158,7 @@ preview_doc(){
     body="$(sed -n "$((off+1)),$((off+view))p" "$f" 2>/dev/null | cut -c "1-$((COLS-1))" | awk -v k="$K" '{print $0 k}')"
     printf '\033[H%s\n%s\033[J\033[%d;1H\033[7m preview: %s   j/k ↓/↑ · space/b · g/G · q/Esc back \033[0m%s' \
       "$title" "$body" "$ROWS" "$disp" "$K"
-    key=""; IFS= read -rsn1 key || true
+    key=""; IFS= read -rsn1 key </dev/tty || true
     case "$key" in
       q|Q) return ;;
       j) off=$((off+1)) ;;
@@ -168,13 +168,13 @@ preview_doc(){
       g) off=0 ;;
       G) off=$total ;;
       "$(printf '\033')")
-        seq=""; read -rsn2 -t 1 seq || true
+        seq=""; read -rsn2 -t 1 seq </dev/tty || true
         case "$seq" in
           '') return ;;                                        # bare Esc closes
           '[A') off=$((off-1)) ;;
           '[B') off=$((off+1)) ;;
-          '[5') read -rsn1 -t 1 _ || true; off=$((off-view)) ;;
-          '[6') read -rsn1 -t 1 _ || true; off=$((off+view)) ;;
+          '[5') read -rsn1 -t 1 _ </dev/tty || true; off=$((off-view)) ;;
+          '[6') read -rsn1 -t 1 _ </dev/tty || true; off=$((off+view)) ;;
         esac ;;
     esac
   done
@@ -184,7 +184,7 @@ preview_doc(){
 pick_link(){
   build_links
   if [ "$LINKCOUNT" -eq 0 ]; then
-    printf '\033[%d;1H\033[7m no document links in the feed — press any key \033[0m' "$ROWS"; IFS= read -rsn1 _ || true; return
+    printf '\033[%d;1H\033[7m no document links in the feed — press any key \033[0m' "$ROWS"; IFS= read -rsn1 _ </dev/tty || true; return
   fi
   printf '\033[H\033[2J\033[1mPreview which document?\033[0m\n\n'
   local i=1 abs disp
@@ -193,10 +193,12 @@ pick_link(){
     printf '  \033[7m %d \033[0m  \033[4m%s\033[0m\n' "$i" "$disp"; i=$((i+1))
   done < "$LINKS"
   printf '\n\033[2mtype a number (1-%d), or Esc to cancel\033[0m' "$((i-1))"
-  local key=""; IFS= read -rsn1 key || true
+  local key=""; IFS= read -rsn1 key </dev/tty || true
+  # Pick the Nth link with sed (NOT a `while read < $LINKS` loop — that would steal preview_doc's stdin).
   case "$key" in
     [1-9]) if [ "$key" -le "$((i-1))" ]; then
-             local n=0; while IFS="$(printf '\t')" read -r abs disp; do n=$((n+1)); if [ "$n" -eq "$key" ]; then preview_doc "$abs" "$disp"; break; fi; done < "$LINKS"
+             local sel; sel="$(sed -n "${key}p" "$LINKS")"
+             [ -n "$sel" ] && preview_doc "${sel%%$'\t'*}" "${sel#*$'\t'}"
            fi ;;
   esac
 }
@@ -207,7 +209,7 @@ while :; do
   if [ "$RESIZED" = 1 ] || [ "$sz" != "$lastsize" ]; then
     RESIZED=0; lastsize="$sz"; rerender; paint
   fi
-  key=""; IFS= read -rsn1 -t 1 key || true
+  key=""; IFS= read -rsn1 -t 1 key </dev/tty || true
   case "$key" in
     q|Q) break ;;
     j) offset=$((offset-1)); paint ;;                       # down / toward latest
@@ -218,12 +220,12 @@ while :; do
     G) offset=0; paint ;;                                   # bottom / follow
     p|P) pick_link; RESIZED=1 ;;                            # preview a document link
     "$(printf '\033')")
-      seq=""; read -rsn2 -t 1 seq || true
+      seq=""; read -rsn2 -t 1 seq </dev/tty || true
       case "$seq" in
         '[A') offset=$((offset+1)); paint ;;                # ↑
         '[B') offset=$((offset-1)); paint ;;                # ↓
-        '[5') read -rsn1 -t 1 _ || true; offset=$((offset+(ROWS-2))); paint ;;   # PgUp
-        '[6') read -rsn1 -t 1 _ || true; offset=$((offset-(ROWS-2))); paint ;;   # PgDn
+        '[5') read -rsn1 -t 1 _ </dev/tty || true; offset=$((offset+(ROWS-2))); paint ;;   # PgUp
+        '[6') read -rsn1 -t 1 _ </dev/tty || true; offset=$((offset-(ROWS-2))); paint ;;   # PgDn
       esac ;;
   esac
 done
