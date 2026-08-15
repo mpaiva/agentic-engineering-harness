@@ -1,58 +1,54 @@
 #!/usr/bin/env bash
-# team-chat.sh — watch the team's intercom conversation as one live feed.
+# team-chat.sh — a live, reflowing viewer for the team's intercom feed.
 #
-#   ./scripts/team-chat.sh                 # tail the feed in this pane
+#   ./scripts/team-chat.sh                 # view the feed in this pane
 #   TEAMCHAT_FEED=/abs/path ./scripts/team-chat.sh
 #
 # The feed is written by the intercom-bridge extension (atomic/extensions/intercom-bridge.ts),
 # loaded in each teammate with `atomic -e .../intercom-bridge.ts`. Each session appends its own
-# outbound intercom sends, so this tail shows the AGENT side of the chat (Phase 1 of
-# specs/2026-08-14-intercom-team-chat-pane.md). Human overlay sends are not here yet — that is
-# Phase 2 (a `chat` intercom client).
+# outbound intercom sends, so this shows the AGENT side of the chat (Phase 1 of
+# specs/2026-08-14-intercom-team-chat-pane.md). Human overlay sends are Phase 2.
+#
+# WHY A LIVE TUI (and not `tail -f`)
+#
+# Atomic's own intercom message box reflows when you resize the pane or change the font size
+# because it is a live component that RE-RENDERS at the current width. Text printed once into a
+# terminal's scrollback cannot do that — the terminal reflows the raw characters and any drawn
+# box breaks. So this viewer does what Atomic does: it repaints the whole feed on every resize
+# (SIGWINCH), so the boxes are rebuilt at the new width and never shatter.
+#
+# Trade-off: it uses the alternate screen with its own scrollback, so Herdr's native pane scroll
+# does not apply while it runs. Keys: j/k or ↓/↑ scroll · Space/b page · g/G bottom/top · q quit.
+# Piped or non-interactive output falls back to a one-shot render.
 #
 # Put it in its own Herdr pane:
 #   herdr pane split --current --direction right
 #   herdr pane run <new-pane-id> ./scripts/team-chat.sh
 #
 # Verified against Atomic 0.9.13 and Herdr 0.8.0. Bash 3.2 safe.
-set -euo pipefail
+set -uo pipefail
 
 HERE="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD="${BUILD_DIR:-$HERE/build}"
 FEED="${TEAMCHAT_FEED:-$BUILD/team-chat.log}"
-
-# The extension and this viewer must agree on the path. If a launcher exports TEAMCHAT_FEED for
-# the agents, export the SAME value here. We print the resolved path so a mismatch is obvious.
 mkdir -p "$(dirname "$FEED")"
 touch "$FEED"
 
-# Detect the pane's real width. tput often falls back to 80 inside a multiplexer pane, which
-# then overflows the box; stty size reads the actual ioctl and is more reliable. Fall back
-# tput -> 80. The detected width is shown in the header so a wrong value is easy to spot.
+ACCENT="${TEAMCHAT_ACCENT_RGB:-138;190;183}"   # body colour = Atomic intercom accent (#8abeb7)
+MARGIN="${TEAMCHAT_MARGIN:-2}"                  # gap from the right edge
+PAL="39 213 46 214 123 208 220 141"            # per-sender chip colours
 SEP="$(printf '\037')"
-COLS="$(stty size </dev/tty 2>/dev/null | awk '{print $2}')"
-case "$COLS" in ''|*[!0-9]*) COLS="$(tput cols 2>/dev/null || echo 80)";; esac
-case "$COLS" in ''|*[!0-9]*) COLS=80;; esac
 
-# ---- header + legend (the legend spells out each badge in plain words) ----
-printf '\033[1mTeam chat\033[0m  \033[2m(%s)\033[0m  \033[2m[width %s]\033[0m\n' "$FEED" "$COLS"
-printf '\033[2mSEND = a message    ASK = needs a reply    REPLY = an answer\033[0m\n'
-printf '\033[2magent messages only — your own typed messages arrive in Phase 2\033[0m\n'
+have_jq=0; command -v jq >/dev/null 2>&1 && have_jq=1
 
-# Body uses Atomic's intercom "accent" colour so the feed matches how messages render inside a
-# session; override TEAMCHAT_ACCENT_RGB for other themes. TEAMCHAT_MARGIN tunes the gap to the edge.
-
-# One awk pass draws each message as a dark-grey box: top border, a header line (sender colour
-# chip, → target, action badge, time), then the word-wrapped body in the accent colour with the
-# first sentence bold and file paths / URLs underlined. Padding is computed from *visible* width
-# (ANSI stripped, UTF-8 counted by character) so the right border stays aligned. awk (not sed)
-# because BSD sed cannot emit ESC.
-if command -v jq >/dev/null 2>&1; then
-  tail -n +1 -f "$FEED" \
-  | jq -r --unbuffered '[ (if (.ts|type)=="string" and (.ts|length)>=16 then .ts[11:16] else (.ts//"") end), (.from//"?"), (.to//""), (.action//"?"), (.message//""|gsub("[\n\t]";" ")) ] | join("\u001f")' \
-  | awk -v W="$COLS" -v margin="${TEAMCHAT_MARGIN:-2}" -v sep="$SEP" -v teal="${TEAMCHAT_ACCENT_RGB:-138;190;183}" -v palstr="39 213 46 214 123 208 220 141" '
+# render <width> — emit the WHOLE feed as dark-grey boxes sized to <width>.
+# Padding uses visible width (ANSI stripped, UTF-8 counted per char) so the right border aligns.
+render() {
+  local w="$1"
+  if [ "$have_jq" != 1 ]; then cat "$FEED"; return; fi
+  jq -r '[ (if (.ts|type)=="string" and (.ts|length)>=16 then .ts[11:16] else (.ts//"") end), (.from//"?"), (.to//""), (.action//"?"), (.message//""|gsub("[\n\t]";" ")) ] | join("\u001f")' "$FEED" 2>/dev/null \
+  | awk -v W="$w" -v margin="$MARGIN" -v sep="$SEP" -v teal="$ACCENT" -v palstr="$PAL" '
     function ord(ch){ return ORDT[ch]+0 }
-    # visible column count: strip ANSI, then count UTF-8 lead bytes (continuation bytes 0x80-0xBF skipped)
     function cwidth(s,   t,i,b,w){ t=s; gsub(reESC,"",t); w=0; for(i=1;i<=length(t);i++){ b=ord(substr(t,i,1)); if(b>=128 && b<192) continue; w++ } return w }
     function pad(n,   s){ s=""; while(n-- > 0) s=s" "; return s }
     function rule(n,   s){ s=""; while(n-- > 0) s=s"─"; return s }
@@ -64,27 +60,88 @@ if command -v jq >/dev/null 2>&1; then
       for(i=1;i<=nw;i++){ if(cur=="") cur=words[i]; else if(cwidth(cur)+1+cwidth(words[i])<=width) cur=cur" "words[i]; else { arr[++cnt]=cur; cur=words[i] }
         while(cwidth(cur)>width){ arr[++cnt]=substr(cur,1,width); cur=substr(cur,width+1) } }
       if(cur!="") arr[++cnt]=cur; if(cnt==0) arr[++cnt]=""; return cnt }
-    BEGIN{ E=sprintf("%c",27); R=E"[0m"; reESC=E"\\[[0-9;]*m";
+    BEGIN{ E=sprintf("%c",27); R=E"[0m"; DIM=E"[2m"; reESC=E"\\[[0-9;]*m";
       GREY=E"[38;5;240m"; MSG=E"[38;2;" teal "m"; B=E"[1m"; BO=E"[22m"; U=E"[4m"; UO=E"[24m"; VBAR="│";
       NP=split(palstr,PAL," "); for(i=0;i<256;i++) ORDT[sprintf("%c",i)]=i;
       FS=sep; W=W+0; if(W<28) W=80; BW=W-(margin+0); if(BW<20) BW=20; INNER=BW-4; if(INNER<12) INNER=12 }
     { t=$1; from=$2; to=$3; act=$4; msg=$5;
-      print "";                                         # blank line = clear gap between boxes
-      print GREY "╭" rule(BW-2) "╮" R;                  # top border
-      h=chip(from);
-      if(to!="") h=h" "E"[2m→"R" "B to BO;              # dim arrow + bold target
-      h=h"  "badge(act);
-      if(act=="ask") h=h" "E"[33m(needs a reply)"R;
-      h=h"  "E"[2m"t R;                                 # dim time
-      print boxline(h);                                 # header line
+      print "";
+      print GREY "╭" rule(BW-2) "╮" R;
+      # header pieces, trimmed from the right if the pane is too narrow to fit them all
+      pt = (to!="") ? " " DIM "→" R " " B to BO : "";
+      pb = "  " badge(act);
+      pr = (act=="ask") ? " " E"[33m(needs a reply)" R : "";
+      ptime = "  " DIM t R;
+      h = chip(from) pt pb pr ptime;
+      if(cwidth(h)>INNER) h = chip(from) pt pb pr;          # drop the time
+      if(cwidth(h)>INNER) h = chip(from) pt pb;             # drop the (needs a reply) note
+      if(cwidth(h)>INNER) h = chip(from) pb;                # drop the target
+      print boxline(h);
+      # body: underline paths on PLAIN first (so the regex cannot eat into the bold code), THEN
+      # bold the first sentence. B is only ever prepended/inserted, never gsub-scanned afterwards.
       inFirst=1; n=wrap(msg,INNER,LN);
-      for(li=1; li<=n; li++){ plain=LN[li]; styled=plain;
-        if(inFirst){ if(match(plain,/[.!?]( |$)/)){ p=RSTART; styled=B substr(plain,1,p) BO substr(plain,p+1); inFirst=0 } else styled=B plain BO }
-        styled=ul(styled); styled=MSG styled R;         # accent-coloured body, first sentence bold, paths underlined
-        print boxline(styled) }
-      print GREY "╰" rule(BW-2) "╯" R }                 # bottom border
+      for(li=1; li<=n; li++){ s=ul(LN[li]);
+        if(inFirst){ if(match(s,/[.!?]( |$)/)){ p=RSTART; s=B substr(s,1,p) BO substr(s,p+1); inFirst=0 } else s=B s BO }
+        s=MSG s R;
+        print boxline(s) }
+      print GREY "╰" rule(BW-2) "╯" R }
   '
-else
-  echo "team-chat: install jq for the readable view; showing raw JSON lines" >&2
-  tail -n +1 -f "$FEED"
+}
+
+# Non-interactive (piped/redirected): no resize to handle — render once and exit.
+if [ ! -t 1 ] || [ ! -t 0 ]; then
+  render "${COLUMNS:-80}"
+  exit 0
 fi
+
+# ---- live TUI ----
+TMP="$(mktemp "${TMPDIR:-/tmp}/teamchat.XXXXXX")"
+cleanup(){ printf '\033[?25h\033[?1049l'; rm -f "$TMP"; }
+trap cleanup EXIT
+trap 'printf "\033[?25h\033[?1049l"; exit 0' INT TERM
+trap 'RESIZED=1' WINCH
+printf '\033[?1049h\033[?25l'                 # alt screen + hide cursor
+
+ROWS=24; COLS=80
+term_size(){ local s; s="$(stty size </dev/tty 2>/dev/null)"; ROWS="${s%% *}"; COLS="${s##* }"
+  case "$COLS" in ''|*[!0-9]*) COLS="$(tput cols 2>/dev/null || echo 80)";; esac
+  case "$ROWS" in ''|*[!0-9]*) ROWS="$(tput lines 2>/dev/null || echo 24)";; esac
+  case "$COLS" in ''|*[!0-9]*) COLS=80;; esac; case "$ROWS" in ''|*[!0-9]*) ROWS=24;; esac; }
+
+offset=0; total=0
+rerender(){ term_size; render "$COLS" > "$TMP"; total="$(wc -l < "$TMP" | tr -d ' ')"; }
+paint(){
+  local view=$((ROWS-1)); [ "$view" -lt 3 ] && view=3
+  local maxoff=$((total - view)); [ "$maxoff" -lt 0 ] && maxoff=0
+  [ "$offset" -gt "$maxoff" ] && offset=$maxoff; [ "$offset" -lt 0 ] && offset=0
+  local end=$((total - offset)); local start=$((end - view + 1)); [ "$start" -lt 1 ] && start=1
+  printf '\033[H\033[2J'
+  sed -n "${start},${end}p" "$TMP"
+  printf '\033[%d;1H\033[7m team-chat  [%sx%s]  j/k ↓/↑ · space/b page · g/G · q quit \033[0m' "$ROWS" "$COLS" "$ROWS"
+}
+
+RESIZED=1; lastsize=-1
+while :; do
+  sz="$(wc -c < "$FEED" 2>/dev/null || echo 0)"; sz="${sz// /}"
+  if [ "$RESIZED" = 1 ] || [ "$sz" != "$lastsize" ]; then
+    RESIZED=0; lastsize="$sz"; rerender; paint
+  fi
+  key=""; IFS= read -rsn1 -t 1 key || true
+  case "$key" in
+    q|Q) break ;;
+    j) offset=$((offset-1)); paint ;;                       # down / toward latest
+    k) offset=$((offset+1)); paint ;;                       # up / older
+    ' ') offset=$((offset-(ROWS-2))); paint ;;              # page down
+    b|B) offset=$((offset+(ROWS-2))); paint ;;              # page up
+    g) offset=$((total)); paint ;;                          # top (clamped)
+    G) offset=0; paint ;;                                   # bottom / follow
+    "$(printf '\033')")
+      seq=""; read -rsn2 -t 1 seq || true
+      case "$seq" in
+        '[A') offset=$((offset+1)); paint ;;                # ↑
+        '[B') offset=$((offset-1)); paint ;;                # ↓
+        '[5') read -rsn1 -t 1 _ || true; offset=$((offset+(ROWS-2))); paint ;;   # PgUp
+        '[6') read -rsn1 -t 1 _ || true; offset=$((offset-(ROWS-2))); paint ;;   # PgDn
+      esac ;;
+  esac
+done
