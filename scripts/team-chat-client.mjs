@@ -1,10 +1,11 @@
-// team-chat-client.mjs — the human's "chat" peer for the team-chat pane (Phase 2).
+// team-chat-client.mjs — the human's chat peer for the team-chat pane (Phase 2).
 //
-// Registers with the intercom broker as a peer named "chat" so the human can take part in the
+// Registers with the intercom broker as a peer named "human" so the human can take part in the
 // team's conversation. Two directions, both captured into the same feed the viewer shows:
 //   • OUTGOING — the viewer appends "<to>\t<text>" lines to $TEAMCHAT_FEED.outbox; this daemon
-//     sends each as a real intercom message AND writes it to the feed (from "you").
-//   • INCOMING — messages other sessions address to "chat" are written to the feed.
+//     sends each as a real intercom message AND writes it to the feed (from "human").
+//   • INCOMING — messages other sessions address to "human" are written to the feed. Agents must
+//     reply over intercom (send/reply to "human"); answering only in their own pane does not reach us.
 //
 // Protocol (verified in research/phase0-broker-client-spike-2026-08-15.md): a Unix socket at
 // <agentdir>/intercom/broker.sock, framed as 4-byte big-endian length + JSON. No Atomic imports;
@@ -21,8 +22,8 @@ const SOCK = `${AGENT_DIR}/intercom/broker.sock`;
 const FEED = process.env.TEAMCHAT_FEED || "build/team-chat.log";
 const OUTBOX = `${FEED}.outbox`;
 const GROUP = process.env.ATOMIC_INTERCOM_GROUP || "default";
-const ME = process.env.TEAMCHAT_ME || "you";
-const NAME = "chat";
+const ME = process.env.TEAMCHAT_ME || "human";
+const NAME = ME;      // register on the broker under the same name the team sees in the chat
 
 function frame(msg) {
   const p = Buffer.from(JSON.stringify(msg), "utf8");

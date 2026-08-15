@@ -12,6 +12,18 @@ reach these agents.
 Teammates are addressed by role name (`lead`, `verifier`, …). Run `intercom({action:"list"})`
 to see who has been hired so far — the roster grows as the lead hires.
 
+## The human is in the chat too — peer name `human`
+
+A real person takes part as an intercom peer named **`human`** (through the team-chat pane). They
+**cannot see your pane** — they only see what you send over intercom. So when a message arrives
+from `human`, reply the same way you reply to a teammate:
+
+  intercom({ action: "reply", message: "..." })        # if they used ask
+  intercom({ action: "send",  to: "human", message: "..." })   # otherwise
+
+Answering only in your own pane does **not** reach them. Keep replies to `human` short and plain,
+and send them promptly — a person is waiting.
+
 ## Rules that keep this team from deadlocking — follow them exactly
 
 1. **The lead delegates with `send`, never `ask`.** Only one `ask` may be outstanding per

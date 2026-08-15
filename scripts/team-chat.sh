@@ -7,7 +7,7 @@
 # The feed is written by the intercom-bridge extension (atomic/extensions/intercom-bridge.ts),
 # loaded in each teammate with `atomic -e .../intercom-bridge.ts`. Each session appends its own
 # outbound intercom sends, so the feed shows the agents' side of the chat. You take part by
-# pressing `i` to compose: scripts/team-chat-client.mjs (the "chat" peer) sends your line to the
+# pressing `i` to compose: scripts/team-chat-client.mjs (the "human" peer) sends your line to the
 # team and mirrors both directions into the same feed. See specs/2026-08-14-intercom-team-chat-pane.md.
 #
 # WHY A LIVE TUI (and not `tail -f`)
@@ -106,8 +106,8 @@ trap 'printf "\033[?25h\033[?1049l"; exit 0' INT TERM
 trap 'RESIZED=1' WINCH
 printf '\033[?1049h\033[?25l'                 # alt screen + hide cursor
 
-# Start the human's "chat" peer (Phase 2) so you can take part — press i to compose. It registers
-# with the broker, sends your lines to the team, and mirrors both directions into this same feed.
+# Start the human's chat peer (registers as `human`, Phase 2) so you can take part — press i to
+# compose. It sends your lines to the team and mirrors both directions into this same feed.
 # Runs under bun or node; if neither is present, the viewer is read-only.
 CLIENT_PID=""
 if command -v bun >/dev/null 2>&1; then RT=bun; elif command -v node >/dev/null 2>&1; then RT=node; else RT=""; fi
