@@ -190,7 +190,7 @@ plainly:
 | No programmatic intercom-send API for extensions | **Proven** — only `input` + `pi.sendMessage`/`sendUserMessage` (local model) |
 | Herdr has no messaging plugin; `pane` runs any command | **Proven** — `herdr integration status`, `herdr notification --help`, `herdr --help` |
 | Broker socket path/default | **Proven** — `getBrokerSocketPath()`, `~/.atomic/agent/intercom/broker.sock` |
-| chat client can register as a peer and send/receive over the socket | **Unverified** — undocumented framing; §Phase-0 spike |
+| chat client can register as a peer and send/receive over the socket | **Proven** — a standalone ~50-line client registered, listed, and exchanged a message with the real broker (isolated agent dir); see `research/phase0-broker-client-spike-2026-08-15.md` |
 | Extension appends outbound `send`/`ask`/`reply` to the feed; ignores control calls | **Proven live** — real headless Atomic (anthropic/claude-haiku-4) loaded the extension and made a real intercom `send`; feed line written; `list`/non-intercom ignored, `reply` omits `to` |
 | Union of per-agent captures = one merged feed | **Demonstrated (sequential)** — two real sessions (`lead` and `verifier`) appended to one feed, rendered as one chat by `team-chat.sh`. Concurrent multi-session still untested |
 | build.sh auto-open: split → rename `team-chat` → run `team-chat.sh`, feed renders in the pane | **Proven live** — ran the exact build.sh sequence against a real headless Herdr server (throwaway session); pane opened, `send-keys Enter` executed headlessly, two appended lines rendered as formatted chat |
@@ -211,9 +211,10 @@ plainly:
 
 ## 10. Phasing
 
-0. **Spike the client-half protocol.** Prove a tiny program can connect to `broker.sock`, register
-   as peer `chat`, send a message another session receives, and receive one. Gates Option A. Pin
-   the Atomic version. If it fails, fall back to Option B.
+0. **Spike the client-half protocol — DONE.** A from-scratch standalone client registered with the
+   real broker, listed peers, and sent+received a message (Atomic 0.9.13, isolated agent dir); the
+   protocol is 4-byte-BE-length + JSON and needs no Atomic internals beyond the wire format. See
+   `research/phase0-broker-client-spike-2026-08-15.md`. Phase 2 is unblocked.
 1. **Extension → feed, pane tails it. — DONE.** `atomic/extensions/intercom-bridge.ts` hooks
    `tool_execution_start` for `toolName === "intercom"` and appends `send`/`ask`/`reply` to
    `TEAMCHAT_FEED` (default `build/team-chat.log`); `scripts/team-chat.sh` tails it (jq-formatted
