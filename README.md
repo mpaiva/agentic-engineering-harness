@@ -170,6 +170,22 @@ needs you.
 
 Your files are saved in a folder called `build`.
 
+### The team chat pane
+
+When the build starts, a pane called **team-chat** opens on the right. It shows every message
+the agents send each other as one running conversation — each in a box with the sender's name,
+the kind of message (SEND, ASK, REPLY), and the time. The first sentence is bold so you can skim.
+
+You can:
+
+- **Scroll** with `j`/`k` or the arrow keys (`Space`/`b` for a page, `g`/`G` for top/bottom).
+- **Preview a document** an agent mentions: press `p`, pick the file by number, and it opens
+  inside the pane (Markdown is rendered). Press `q` or `Esc` to go back.
+- **Close** the viewer with `q`. Reopen it any time with `./scripts/team-chat.sh`.
+
+The pane reflows cleanly when you resize the window or change the font size. It shows the agents'
+messages to each other; messages you type yourself in Atomic's popup are not shown yet.
+
 ## How to stop
 
 You can stop at any time. Type this in any terminal window and press Return:
@@ -242,6 +258,7 @@ These pages have more detail. They are written for people who want the full pict
 - [docs/verification-and-gates.md](docs/verification-and-gates.md) — how the work gets checked
 - [docs/security.md](docs/security.md) — how to run this safely
 - [team/ROLES.md](team/ROLES.md) — every agent role, and when it is used
+- [specs/2026-08-14-intercom-team-chat-pane.md](specs/2026-08-14-intercom-team-chat-pane.md) — design of the team-chat pane (for contributors)
 
 ## What is finished and what is not
 

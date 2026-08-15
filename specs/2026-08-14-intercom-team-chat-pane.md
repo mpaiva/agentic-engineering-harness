@@ -1,10 +1,14 @@
 # Design spec — a "team chat" Herdr pane over Atomic intercom
 
-> **Status: PHASE 1 IMPLEMENTED; PHASES 2+ FUTURE.** The agent-capture half is built and
-> smoke-tested — `atomic/extensions/intercom-bridge.ts` (outbound intercom → feed file) and
-> `scripts/team-chat.sh` (tail the feed in a Herdr pane). The human-send `chat` client (Phase 2)
-> and external fan-out (§11) are still designs. Every unbuilt "the client does X" is a proposal;
-> every "intercom/Herdr does Y" is verified against the installed tools and cited.
+> **Status: PHASE 1 + VIEWER SHIPPED; HUMAN-SEND CAPTURE (PHASE 2) PENDING.** Built and in use:
+> `atomic/extensions/intercom-bridge.ts` (outbound intercom → feed file) and `scripts/team-chat.sh`,
+> now a live TUI that reflows on resize (SIGWINCH), draws a dark-grey box per message with sender
+> colour-chips, SEND/ASK/REPLY badges, a bold-white first sentence, underlined paths, scroll
+> (j/k, g/G, space/b), and a keyboard document-preview modal (`p`) with a dependency-free markdown
+> renderer. build.sh loads the extension in every teammate and auto-opens the pane. Still a design:
+> capturing the human's own ALT+M overlay sends (the `chat` broker client, Phase 2 / §3) and
+> external fan-out (§11). Every unbuilt "the client does X" is a proposal; every "intercom/Herdr
+> does Y" is verified against the installed tools and cited.
 >
 > Verified against: Atomic `0.9.13` (`docs/intercom.md`, `docs/extensions.md`, `atomic --help`),
 > Herdr `0.8.0` (`herdr --help`, `herdr integration status`, `herdr notification --help`), and
@@ -149,7 +153,9 @@ plainly:
 3. **feed file** — append-only newline-JSON (or formatted text) under `build/` or the agent dir;
    the single source of truth the pane reads. Concurrent appends from multiple writers → use
    `O_APPEND` line writes (atomic for small lines on local fs).
-4. **pane view** — `tail -f` first; a scrollable/coloured TUI later.
+4. **pane view** — a live TUI (`scripts/team-chat.sh`): reflows on resize, boxes each message,
+   scrolls (j/k, g/G, space/b), and previews linked documents in a modal (`p`) with a small
+   dependency-free markdown renderer. Non-interactive/piped output falls back to a one-shot render.
 
 ## 6. Configuration and secrets
 
@@ -188,6 +194,8 @@ plainly:
 | Extension appends outbound `send`/`ask`/`reply` to the feed; ignores control calls | **Proven live** — real headless Atomic (anthropic/claude-haiku-4) loaded the extension and made a real intercom `send`; feed line written; `list`/non-intercom ignored, `reply` omits `to` |
 | Union of per-agent captures = one merged feed | **Demonstrated (sequential)** — two real sessions (`lead` and `verifier`) appended to one feed, rendered as one chat by `team-chat.sh`. Concurrent multi-session still untested |
 | build.sh auto-open: split → rename `team-chat` → run `team-chat.sh`, feed renders in the pane | **Proven live** — ran the exact build.sh sequence against a real headless Herdr server (throwaway session); pane opened, `send-keys Enter` executed headlessly, two appended lines rendered as formatted chat |
+| Live TUI reflows the boxed feed on resize / font-change | **Confirmed** — repaints at current width on SIGWINCH; render width-audited at 44/64 cols; reflow/scroll confirmed in the live pane by the user |
+| Markdown preview modal: `p` → pick a link → scroll the rendered doc | **Confirmed** — link resolution + markdown render/wrap tested; reads keys from /dev/tty; no glow/pandoc needed |
 
 ## 9. Open questions
 
@@ -213,7 +221,9 @@ plainly:
    **agent** chat view at zero protocol risk. Not yet run across live multi-session teammates.
 2. **Chat client (human send + inbound).** Add the peer-`chat` client so the human participates and
    human sends land in the feed. Now "capture human sends" is satisfied, locally.
-3. **View polish.** Thin TUI: colour by peer, mark `ask`/`reply`, timestamps.
+3. **View polish — DONE.** Live TUI: reflows on resize, per-message boxes, sender colour-chips,
+   SEND/ASK/REPLY badges, bold-white first sentence, underlined paths, scroll, and a `p` markdown
+   preview modal. Confirmed working in the live pane.
 4. **(Future, §11) External fan-out.** Only if wanted later.
 
 Each phase leaves a runnable, documented state and records what was exercised against the real
