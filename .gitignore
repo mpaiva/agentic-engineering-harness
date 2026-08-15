@@ -25,6 +25,7 @@
 node_modules/
 
 /build/
+/build-*/
 
 # subagent-driven-development scratch (ledger, briefs, review packages)
 .superpowers/

@@ -5,6 +5,8 @@
 #   ./build.sh --dry-run        # print the plan, touch nothing
 #   ./build.sh --resume         # re-attach a lead to an existing build/ run
 #   ./build.sh --model claude-opus-5
+#   ./build.sh --session beta   # a second run, fully isolated from the default (own build-beta/,
+#                               # own Herdr session, own intercom group) — safe to run concurrently
 #
 # Creates ONE pane running the lead agent. The lead asks what to build (via the
 # build-intake extension), refines the answer into build/MISSION.md, and then hires its own
@@ -14,7 +16,6 @@
 set -euo pipefail
 
 SESSION="harness"
-GROUP="harness"
 PROVIDER="anthropic"
 MODEL="claude-sonnet-5"
 MODE="run"
@@ -37,7 +38,12 @@ case "$SESSION" in
 esac
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
-BUILD="$HERE/build"
+# Session-scoped so several builds can run at once without colliding: the default 'harness'
+# session keeps build/ and intercom group 'harness'; any other --session gets its own
+# build-<name>/ dir and its own intercom group, so two teams never share a broker group,
+# an agent name, or a feed. BUILD_DIR / ATOMIC_INTERCOM_GROUP still override if set.
+GROUP="${ATOMIC_INTERCOM_GROUP:-$SESSION}"
+if [ "$SESSION" = "harness" ]; then BUILD="${BUILD_DIR:-$HERE/build}"; else BUILD="${BUILD_DIR:-$HERE/build-$SESSION}"; fi
 LAUNCHDIR="$BUILD/.launch"
 export PATH="$HOME/.local/bin:$PATH"
 herdr(){ command herdr --session "$SESSION" "$@"; }
