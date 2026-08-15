@@ -105,11 +105,17 @@ function drainOutbox() {
     const to = (tab >= 0 ? line.slice(0, tab) : "lead").trim() || "lead";
     const text = tab >= 0 ? line.slice(tab + 1) : line;
     if (!text) continue;
+    // A question (ends with "?") goes out as an ASK: Atomic then shows the agent a pending
+    // question it must answer with `intercom reply`, which routes straight back here. That is far
+    // more reliable than a plain send, which an agent tends to "answer" only in its own pane.
+    // Statements stay plain sends, so they neither block the agent nor demand a reply.
+    const asks = /\?\s*$/.test(text);
     if (connected && sock) {
       const message = { id: `tc-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, timestamp: Date.now(), content: { text } };
+      if (asks) message.expectsReply = true;
       try { sock.write(frame({ type: "send", to, message, attemptId: message.id })); } catch { /* dropped */ }
     }
-    appendFeed({ from: ME, action: "send", to, message: text });   // capture the human's line locally
+    appendFeed({ from: ME, action: asks ? "ask" : "send", to, message: text });   // capture the human's line locally
   }
 }
 
