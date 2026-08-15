@@ -202,6 +202,32 @@ account.
 
 Your files stay in the `build` folder. Nothing you built is deleted.
 
+## Run more than one build at once
+
+You can run a second build next to the first. Give it a name with `--session`:
+
+```bash
+./build.sh --session beta
+```
+
+The two runs are kept completely apart. The named run gets:
+
+- its own cockpit — open it with `herdr --session beta`
+- its own files, in a folder called `build-beta` (not `build`)
+- its own team, so the two teams never see or message each other
+
+Your first run keeps using `build` and the name `harness`, and is not touched.
+
+To manage the named run:
+
+```bash
+herdr --session beta                 # watch it
+herdr --session beta server stop     # stop only this one
+cat build-beta/team-chat.log         # its chat history
+```
+
+You can use any name in place of `beta`. Each name is a separate, isolated build.
+
 ## If something goes wrong
 
 | What you see | What to do |
