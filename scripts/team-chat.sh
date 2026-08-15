@@ -31,54 +31,53 @@ printf '\033[1mTeam chat\033[0m  \033[2m(%s)\033[0m\n' "$FEED"
 printf '\033[2mSEND = a message    ASK = needs a reply    REPLY = an answer\033[0m\n'
 printf '\033[2magent messages only — your own typed messages arrive in Phase 2\033[0m\n'
 
-R=$'\033[0m'; DIM=$'\033[2m'; BOLD=$'\033[1m'; YEL=$'\033[33m'
-PAL=(39 213 46 214 123 208 220 141)   # stable colour per sender (an extra cue, never the only one)
-# Body text uses Atomic's intercom "accent" colour so this feed matches how intercom messages
-# render inside a session (Atomic paints the whole message box with theme.fg("accent", …)).
-# Default is the #8abeb7 teal accent; override TEAMCHAT_ACCENT_RGB="r;g;b" for another theme.
-MSG=$'\033[38;2;'"${TEAMCHAT_ACCENT_RGB:-138;190;183}"'m'
+# Border colour (dark grey) and body accent colour. Body uses Atomic's intercom "accent" so the
+# feed matches how messages render inside a session; override TEAMCHAT_ACCENT_RGB for other themes.
+SEP="$(printf '\037')"
+COLS="$(tput cols 2>/dev/null || echo 80)"; case "$COLS" in ''|*[!0-9]*) COLS=80;; esac
 
-# Sum the name's bytes to pick a stable palette slot, so a sender keeps one colour.
-idx_for(){ local n="$1" s=0 i c; for ((i=0; i<${#n}; i++)); do printf -v c '%d' "'${n:i:1}"; s=$((s + c)); done; printf '%s' "$((s % ${#PAL[@]}))"; }
-# The sender is a bold colour "chip": black text on the sender's colour. High contrast, and
-# the name is still spelled out — colour is never the only cue.
-chip_for(){ local n="$1"; printf '\033[1;38;5;16;48;5;%sm %s \033[0m' "${PAL[$(idx_for "$n")]}" "$n"; }
-# Action badges carry the word (primary cue) on a high-contrast block (secondary cue).
-badge_for(){ case "$1" in
-    ask)   printf '\033[1;30;43m ASK \033[0m';;
-    reply) printf '\033[1;30;42m REPLY \033[0m';;
-    send)  printf '\033[1;30;44m SEND \033[0m';;
-    *)     printf '\033[1;30;47m %s \033[0m' "$1";;
-  esac; }
-
-# Style the body WITHOUT disturbing its accent colour: bold the first sentence (a mini-summary
-# you can skim) and underline file paths / URLs. Uses attribute-off codes (22 = bold off,
-# 24 = underline off), never a full reset, so the accent colour carries through. awk is used
-# because BSD sed (macOS) cannot emit an ESC byte.
-style_body(){ printf '%s' "$1" | awk '
-    BEGIN { E=sprintf("%c",27); B=E"[1m"; BO=E"[22m"; U=E"[4m"; UO=E"[24m" }
-    {
-      line=$0
-      if (match(line, /[.!?]( |$)/)) { p=RSTART; line=B substr(line,1,p) BO substr(line,p+1) }
-      else { line=B line BO }
-      gsub(/((https?|file):\/\/[^ )]+)|([A-Za-z0-9_.~{}-]*\/[A-Za-z0-9_.~{},\/-]*\.[A-Za-z0-9]+)/, U "&" UO, line)
-      print line
-    }'; }
-
-# Deliberately NO hard-wrap and NO indent: the pane wraps the body itself, and an indent
-# would be lost on those wrapped lines (and double-wraps if our width guess is off). Flush-left
-# body + a blank line between messages keeps long messages readable at any pane width.
+# One awk pass draws each message as a dark-grey box: top border, a header line (sender colour
+# chip, → target, action badge, time), then the word-wrapped body in the accent colour with the
+# first sentence bold and file paths / URLs underlined. Padding is computed from *visible* width
+# (ANSI stripped, UTF-8 counted by character) so the right border stays aligned. awk (not sed)
+# because BSD sed cannot emit ESC.
 if command -v jq >/dev/null 2>&1; then
   tail -n +1 -f "$FEED" \
   | jq -r --unbuffered '[ (if (.ts|type)=="string" and (.ts|length)>=16 then .ts[11:16] else (.ts//"") end), (.from//"?"), (.to//""), (.action//"?"), (.message//""|gsub("[\n\t]";" ")) ] | join("\u001f")' \
-  | while IFS=$'\037' read -r t from to act msg; do
-      hdr="$(chip_for "$from")"
-      if [ -n "$to" ]; then hdr="${hdr} ${DIM}→${R} ${BOLD}${to}${R}"; fi
-      hdr="${hdr}  $(badge_for "$act")"
-      if [ "$act" = "ask" ]; then hdr="${hdr} ${YEL}(needs a reply)${R}"; fi
-      hdr="${hdr}  ${DIM}${t}${R}"
-      printf '\n%s\n%s%s%s\n' "$hdr" "$MSG" "$(style_body "$msg")" "$R"   # blank line = break; body = accent
-    done
+  | awk -v W="$COLS" -v sep="$SEP" -v teal="${TEAMCHAT_ACCENT_RGB:-138;190;183}" -v palstr="39 213 46 214 123 208 220 141" '
+    function ord(ch){ return ORDT[ch]+0 }
+    # visible column count: strip ANSI, then count UTF-8 lead bytes (continuation bytes 0x80-0xBF skipped)
+    function cwidth(s,   t,i,b,w){ t=s; gsub(reESC,"",t); w=0; for(i=1;i<=length(t);i++){ b=ord(substr(t,i,1)); if(b>=128 && b<192) continue; w++ } return w }
+    function pad(n,   s){ s=""; while(n-- > 0) s=s" "; return s }
+    function rule(n,   s){ s=""; while(n-- > 0) s=s"─"; return s }
+    function chip(name,   i,su,code){ su=0; for(i=1;i<=length(name);i++) su+=ord(substr(name,i,1)); code=PAL[(su % NP)+1]; return E"[1;38;5;16;48;5;" code "m " name " " R }
+    function badge(a){ if(a=="ask") return E"[1;30;43m ASK " R; else if(a=="reply") return E"[1;30;42m REPLY " R; else if(a=="send") return E"[1;30;44m SEND " R; else return E"[1;30;47m " a " " R }
+    function ul(s){ gsub(/((https?|file):\/\/[^ )]+)|([A-Za-z0-9_.~{}-]*\/[A-Za-z0-9_.~{},\/-]*\.[A-Za-z0-9]+)/, U "&" UO, s); return s }
+    function boxline(styled,   v){ v=cwidth(styled); if(v>INNER) v=INNER; return GREY VBAR R " " styled pad(INNER-v) " " GREY VBAR R }
+    function wrap(text,width,arr,   nw,words,i,cur,cnt){ cnt=0; cur=""; nw=split(text,words," ");
+      for(i=1;i<=nw;i++){ if(cur=="") cur=words[i]; else if(cwidth(cur)+1+cwidth(words[i])<=width) cur=cur" "words[i]; else { arr[++cnt]=cur; cur=words[i] }
+        while(cwidth(cur)>width){ arr[++cnt]=substr(cur,1,width); cur=substr(cur,width+1) } }
+      if(cur!="") arr[++cnt]=cur; if(cnt==0) arr[++cnt]=""; return cnt }
+    BEGIN{ E=sprintf("%c",27); R=E"[0m"; reESC=E"\\[[0-9;]*m";
+      GREY=E"[38;5;240m"; MSG=E"[38;2;" teal "m"; B=E"[1m"; BO=E"[22m"; U=E"[4m"; UO=E"[24m"; VBAR="│";
+      NP=split(palstr,PAL," "); for(i=0;i<256;i++) ORDT[sprintf("%c",i)]=i;
+      FS=sep; W=W+0; if(W<28) W=80; BW=W-1; INNER=BW-4; if(INNER<12) INNER=12 }
+    { t=$1; from=$2; to=$3; act=$4; msg=$5;
+      print "";                                         # blank line = clear gap between boxes
+      print GREY "╭" rule(BW-2) "╮" R;                  # top border
+      h=chip(from);
+      if(to!="") h=h" "E"[2m→"R" "B to BO;              # dim arrow + bold target
+      h=h"  "badge(act);
+      if(act=="ask") h=h" "E"[33m(needs a reply)"R;
+      h=h"  "E"[2m"t R;                                 # dim time
+      print boxline(h);                                 # header line
+      inFirst=1; n=wrap(msg,INNER,LN);
+      for(li=1; li<=n; li++){ plain=LN[li]; styled=plain;
+        if(inFirst){ if(match(plain,/[.!?]( |$)/)){ p=RSTART; styled=B substr(plain,1,p) BO substr(plain,p+1); inFirst=0 } else styled=B plain BO }
+        styled=ul(styled); styled=MSG styled R;         # accent-coloured body, first sentence bold, paths underlined
+        print boxline(styled) }
+      print GREY "╰" rule(BW-2) "╯" R }                 # bottom border
+  '
 else
   echo "team-chat: install jq for the readable view; showing raw JSON lines" >&2
   tail -n +1 -f "$FEED"
