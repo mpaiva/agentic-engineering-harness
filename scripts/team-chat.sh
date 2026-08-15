@@ -26,15 +26,21 @@ FEED="${TEAMCHAT_FEED:-$BUILD/team-chat.log}"
 mkdir -p "$(dirname "$FEED")"
 touch "$FEED"
 
+# Detect the pane's real width. tput often falls back to 80 inside a multiplexer pane, which
+# then overflows the box; stty size reads the actual ioctl and is more reliable. Fall back
+# tput -> 80. The detected width is shown in the header so a wrong value is easy to spot.
+SEP="$(printf '\037')"
+COLS="$(stty size </dev/tty 2>/dev/null | awk '{print $2}')"
+case "$COLS" in ''|*[!0-9]*) COLS="$(tput cols 2>/dev/null || echo 80)";; esac
+case "$COLS" in ''|*[!0-9]*) COLS=80;; esac
+
 # ---- header + legend (the legend spells out each badge in plain words) ----
-printf '\033[1mTeam chat\033[0m  \033[2m(%s)\033[0m\n' "$FEED"
+printf '\033[1mTeam chat\033[0m  \033[2m(%s)\033[0m  \033[2m[width %s]\033[0m\n' "$FEED" "$COLS"
 printf '\033[2mSEND = a message    ASK = needs a reply    REPLY = an answer\033[0m\n'
 printf '\033[2magent messages only — your own typed messages arrive in Phase 2\033[0m\n'
 
-# Border colour (dark grey) and body accent colour. Body uses Atomic's intercom "accent" so the
-# feed matches how messages render inside a session; override TEAMCHAT_ACCENT_RGB for other themes.
-SEP="$(printf '\037')"
-COLS="$(tput cols 2>/dev/null || echo 80)"; case "$COLS" in ''|*[!0-9]*) COLS=80;; esac
+# Body uses Atomic's intercom "accent" colour so the feed matches how messages render inside a
+# session; override TEAMCHAT_ACCENT_RGB for other themes. TEAMCHAT_MARGIN tunes the gap to the edge.
 
 # One awk pass draws each message as a dark-grey box: top border, a header line (sender colour
 # chip, → target, action badge, time), then the word-wrapped body in the accent colour with the
@@ -44,7 +50,7 @@ COLS="$(tput cols 2>/dev/null || echo 80)"; case "$COLS" in ''|*[!0-9]*) COLS=80
 if command -v jq >/dev/null 2>&1; then
   tail -n +1 -f "$FEED" \
   | jq -r --unbuffered '[ (if (.ts|type)=="string" and (.ts|length)>=16 then .ts[11:16] else (.ts//"") end), (.from//"?"), (.to//""), (.action//"?"), (.message//""|gsub("[\n\t]";" ")) ] | join("\u001f")' \
-  | awk -v W="$COLS" -v margin="${TEAMCHAT_MARGIN:-5}" -v sep="$SEP" -v teal="${TEAMCHAT_ACCENT_RGB:-138;190;183}" -v palstr="39 213 46 214 123 208 220 141" '
+  | awk -v W="$COLS" -v margin="${TEAMCHAT_MARGIN:-2}" -v sep="$SEP" -v teal="${TEAMCHAT_ACCENT_RGB:-138;190;183}" -v palstr="39 213 46 214 123 208 220 141" '
     function ord(ch){ return ORDT[ch]+0 }
     # visible column count: strip ANSI, then count UTF-8 lead bytes (continuation bytes 0x80-0xBF skipped)
     function cwidth(s,   t,i,b,w){ t=s; gsub(reESC,"",t); w=0; for(i=1;i<=length(t);i++){ b=ord(substr(t,i,1)); if(b>=128 && b<192) continue; w++ } return w }
