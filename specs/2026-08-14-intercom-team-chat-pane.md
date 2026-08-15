@@ -185,8 +185,8 @@ plainly:
 | Herdr has no messaging plugin; `pane` runs any command | **Proven** — `herdr integration status`, `herdr notification --help`, `herdr --help` |
 | Broker socket path/default | **Proven** — `getBrokerSocketPath()`, `~/.atomic/agent/intercom/broker.sock` |
 | chat client can register as a peer and send/receive over the socket | **Unverified** — undocumented framing; §Phase-0 spike |
-| Extension appends outbound `send`/`ask`/`reply` to the feed; ignores control calls | **Proven** — smoke-tested: 2 messages logged, `list`/non-intercom ignored, `reply` omits `to` |
-| Union of extension + client captures ≈ whole conversation | **Reasoned, not run** — needs a live multi-session test |
+| Extension appends outbound `send`/`ask`/`reply` to the feed; ignores control calls | **Proven live** — real headless Atomic (anthropic/claude-haiku-4) loaded the extension and made a real intercom `send`; feed line written; `list`/non-intercom ignored, `reply` omits `to` |
+| Union of per-agent captures = one merged feed | **Demonstrated (sequential)** — two real sessions (`lead` and `verifier`) appended to one feed, rendered as one chat by `team-chat.sh`. Concurrent multi-session still untested |
 
 ## 9. Open questions
 
