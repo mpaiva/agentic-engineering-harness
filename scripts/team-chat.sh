@@ -113,14 +113,18 @@ term_size(){ local s; s="$(stty size </dev/tty 2>/dev/null)"; ROWS="${s%% *}"; C
 
 offset=0; total=0
 rerender(){ term_size; render "$COLS" > "$TMP"; total="$(wc -l < "$TMP" | tr -d ' ')"; }
+K=$'\033[K'          # clear to end of line
 paint(){
   local view=$((ROWS-1)); [ "$view" -lt 3 ] && view=3
   local maxoff=$((total - view)); [ "$maxoff" -lt 0 ] && maxoff=0
   [ "$offset" -gt "$maxoff" ] && offset=$maxoff; [ "$offset" -lt 0 ] && offset=0
   local end=$((total - offset)); local start=$((end - view + 1)); [ "$start" -lt 1 ] && start=1
-  printf '\033[H\033[2J'
-  sed -n "${start},${end}p" "$TMP"
-  printf '\033[%d;1H\033[7m team-chat  [%sx%s]  j/k ↓/↑ · space/b · g/G · p preview · q quit \033[0m' "$ROWS" "$COLS" "$ROWS"
+  # Flicker-free: home the cursor, redraw each visible line with a clear-to-EOL, clear anything
+  # left below, then the status bar — all in ONE write, with NO full-screen clear (that flashes).
+  local body
+  body="$(sed -n "${start},${end}p" "$TMP" | awk -v k="$K" '{print $0 k}')"
+  printf '\033[H%s\033[J\033[%d;1H\033[7m team-chat  [%sx%s]  j/k ↓/↑ · space/b · g/G · p preview · q quit \033[0m%s' \
+    "$body" "$ROWS" "$COLS" "$K"
 }
 
 # Collect previewable document links from the feed: path-like tokens that resolve to an existing
@@ -148,10 +152,12 @@ preview_doc(){
     term_size; view=$((ROWS-2)); [ "$view" -lt 1 ] && view=1
     maxoff=$((total-view)); [ "$maxoff" -lt 0 ] && maxoff=0
     [ "$off" -gt "$maxoff" ] && off=$maxoff; [ "$off" -lt 0 ] && off=0
-    printf '\033[H\033[2J'
-    printf '\033[38;5;240m┌─ \033[0m\033[1m%s\033[0m  \033[2m(%s lines)\033[0m\n' "$disp" "$total"
-    sed -n "$((off+1)),$((off+view))p" "$f" 2>/dev/null | cut -c "1-$((COLS-1))"
-    printf '\033[%d;1H\033[7m preview: %s   j/k ↓/↑ · space/b · g/G · q/Esc back \033[0m' "$ROWS" "$disp"
+    # flicker-free: title, then body lines each cleared to EOL, clear below, status — one write
+    local title body
+    title="$(printf '\033[38;5;240m┌─ \033[0m\033[1m%s\033[0m  \033[2m(%s lines)\033[0m%s' "$disp" "$total" "$K")"
+    body="$(sed -n "$((off+1)),$((off+view))p" "$f" 2>/dev/null | cut -c "1-$((COLS-1))" | awk -v k="$K" '{print $0 k}')"
+    printf '\033[H%s\n%s\033[J\033[%d;1H\033[7m preview: %s   j/k ↓/↑ · space/b · g/G · q/Esc back \033[0m%s' \
+      "$title" "$body" "$ROWS" "$disp" "$K"
     key=""; IFS= read -rsn1 key || true
     case "$key" in
       q|Q) return ;;
