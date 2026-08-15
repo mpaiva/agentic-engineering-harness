@@ -35,31 +35,31 @@ R=$'\033[0m'; DIM=$'\033[2m'; BOLD=$'\033[1m'; YEL=$'\033[33m'
 PAL=(39 213 46 214 123 208 220 141)   # stable colour per sender (an extra cue, never the only one)
 
 # Sum the name's bytes to pick a stable palette slot, so a sender keeps one colour.
-color_for(){ local n="$1" s=0 i c; for ((i=0; i<${#n}; i++)); do printf -v c '%d' "'${n:i:1}"; s=$((s + c)); done; printf '\033[38;5;%sm' "${PAL[$((s % ${#PAL[@]}))]}"; }
-# Badges carry the word (primary cue) on a high-contrast block (secondary cue).
+idx_for(){ local n="$1" s=0 i c; for ((i=0; i<${#n}; i++)); do printf -v c '%d' "'${n:i:1}"; s=$((s + c)); done; printf '%s' "$((s % ${#PAL[@]}))"; }
+# The sender is a bold colour "chip": black text on the sender's colour. High contrast, and
+# the name is still spelled out — colour is never the only cue.
+chip_for(){ local n="$1"; printf '\033[1;38;5;16;48;5;%sm %s \033[0m' "${PAL[$(idx_for "$n")]}" "$n"; }
+# Action badges carry the word (primary cue) on a high-contrast block (secondary cue).
 badge_for(){ case "$1" in
-    ask)   printf '\033[30;43m ASK \033[0m';;
-    reply) printf '\033[30;42m REPLY \033[0m';;
-    send)  printf '\033[30;44m SEND \033[0m';;
-    *)     printf '\033[30;47m %s \033[0m' "$1";;
+    ask)   printf '\033[1;30;43m ASK \033[0m';;
+    reply) printf '\033[1;30;42m REPLY \033[0m';;
+    send)  printf '\033[1;30;44m SEND \033[0m';;
+    *)     printf '\033[1;30;47m %s \033[0m' "$1";;
   esac; }
 
-# Wrap the body to the pane width with a hanging indent, so long messages read as a tidy
-# block instead of a wall that blurs into the next message.
-COLS="$(tput cols 2>/dev/null || echo 72)"; case "$COLS" in ''|*[!0-9]*) COLS=72;; esac
-BODYW=$((COLS - 4)); [ "$BODYW" -lt 24 ] && BODYW=24
-
+# Deliberately NO hard-wrap and NO indent: the pane wraps the body itself, and an indent
+# would be lost on those wrapped lines (and double-wraps if our width guess is off). Flush-left
+# body + a blank line between messages keeps long messages readable at any pane width.
 if command -v jq >/dev/null 2>&1; then
   tail -n +1 -f "$FEED" \
   | jq -r --unbuffered '[ (if (.ts|type)=="string" and (.ts|length)>=16 then .ts[11:16] else (.ts//"") end), (.from//"?"), (.to//""), (.action//"?"), (.message//""|gsub("[\n\t]";" ")) ] | join("\u001f")' \
   | while IFS=$'\037' read -r t from to act msg; do
-      c="$(color_for "$from")"
-      hdr="${DIM}${t}${R} ${c}▌${R} ${c}${BOLD}${from}${R}"
+      hdr="$(chip_for "$from")"
       if [ -n "$to" ]; then hdr="${hdr} ${DIM}→${R} ${BOLD}${to}${R}"; fi
       hdr="${hdr}  $(badge_for "$act")"
       if [ "$act" = "ask" ]; then hdr="${hdr} ${YEL}(needs a reply)${R}"; fi
-      printf '\n%s\n' "$hdr"                              # blank line = clear break between messages
-      printf '%s\n' "$msg" | fold -s -w "$BODYW" | sed 's/^/    /'
+      hdr="${hdr}  ${DIM}${t}${R}"
+      printf '\n%s\n%s\n' "$hdr" "$msg"     # blank line before = clear break; body flush-left
     done
 else
   echo "team-chat: install jq for the readable view; showing raw JSON lines" >&2
