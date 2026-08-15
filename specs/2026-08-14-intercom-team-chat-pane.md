@@ -1,8 +1,10 @@
 # Design spec — a "team chat" Herdr pane over Atomic intercom
 
-> **Status: FUTURE / NOT IMPLEMENTED.** This is a design, not a shipped feature. No code in
-> this repo builds it yet. Every "the pane/extension/client does X" is a proposal; every
-> "intercom/Herdr does Y" is verified against the installed tools and cited.
+> **Status: PHASE 1 IMPLEMENTED; PHASES 2+ FUTURE.** The agent-capture half is built and
+> smoke-tested — `atomic/extensions/intercom-bridge.ts` (outbound intercom → feed file) and
+> `scripts/team-chat.sh` (tail the feed in a Herdr pane). The human-send `chat` client (Phase 2)
+> and external fan-out (§11) are still designs. Every unbuilt "the client does X" is a proposal;
+> every "intercom/Herdr does Y" is verified against the installed tools and cited.
 >
 > Verified against: Atomic `0.9.13` (`docs/intercom.md`, `docs/extensions.md`, `atomic --help`),
 > Herdr `0.8.0` (`herdr --help`, `herdr integration status`, `herdr notification --help`), and
@@ -183,6 +185,7 @@ plainly:
 | Herdr has no messaging plugin; `pane` runs any command | **Proven** — `herdr integration status`, `herdr notification --help`, `herdr --help` |
 | Broker socket path/default | **Proven** — `getBrokerSocketPath()`, `~/.atomic/agent/intercom/broker.sock` |
 | chat client can register as a peer and send/receive over the socket | **Unverified** — undocumented framing; §Phase-0 spike |
+| Extension appends outbound `send`/`ask`/`reply` to the feed; ignores control calls | **Proven** — smoke-tested: 2 messages logged, `list`/non-intercom ignored, `reply` omits `to` |
 | Union of extension + client captures ≈ whole conversation | **Reasoned, not run** — needs a live multi-session test |
 
 ## 9. Open questions
@@ -202,9 +205,11 @@ plainly:
 0. **Spike the client-half protocol.** Prove a tiny program can connect to `broker.sock`, register
    as peer `chat`, send a message another session receives, and receive one. Gates Option A. Pin
    the Atomic version. If it fails, fall back to Option B.
-1. **Extension → feed, pane tails it.** Build `intercom-bridge` (agent outbound → feed) and view
-   the feed in a Herdr pane (`tail -f`). Delivers a real-time **agent** chat view, zero protocol
-   risk, immediately.
+1. **Extension → feed, pane tails it. — DONE.** `atomic/extensions/intercom-bridge.ts` hooks
+   `tool_execution_start` for `toolName === "intercom"` and appends `send`/`ask`/`reply` to
+   `TEAMCHAT_FEED` (default `build/team-chat.log`); `scripts/team-chat.sh` tails it (jq-formatted
+   when jq is present, raw JSON otherwise). Smoke-tested against a fake `pi`. Delivers a real-time
+   **agent** chat view at zero protocol risk. Not yet run across live multi-session teammates.
 2. **Chat client (human send + inbound).** Add the peer-`chat` client so the human participates and
    human sends land in the feed. Now "capture human sends" is satisfied, locally.
 3. **View polish.** Thin TUI: colour by peer, mark `ask`/`reply`, timestamps.
