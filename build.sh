@@ -321,6 +321,28 @@ else
   echo "answer the question, then re-run: ./build.sh --resume" >&2
 fi
 
+# Open a read-only "team chat" pane beside the lead so the human can watch the whole intercom
+# conversation as one feed (intercom-bridge.ts writes it — see
+# specs/2026-08-14-intercom-team-chat-pane.md). Idempotent: skip if a team-chat pane already
+# exists (e.g. on --resume). Best-effort: a failure here must never fail the run, so every
+# herdr call swallows its error.
+if ! herdr pane list 2>/dev/null | python3 -c "
+import sys, json
+try: panes = json.load(sys.stdin)['result']['panes']
+except Exception: sys.exit(1)
+sys.exit(0 if any(p.get('label') == 'team-chat' for p in panes) else 1)
+"; then
+  CHATPANE="$(herdr pane split "$LEAD" --direction right --ratio 0.35 --no-focus --cwd "$HERE" 2>/dev/null \
+    | python3 -c "import sys,json;print(json.load(sys.stdin)['result']['pane']['pane_id'])" 2>/dev/null || true)"
+  if [ -n "$CHATPANE" ]; then
+    herdr pane rename "$CHATPANE" team-chat >/dev/null 2>&1 || true
+    echo "$CHATPANE" > "$LAUNCHDIR/team-chat.pane"
+    # Pass the feed explicitly so the viewer matches the agents even if BUILD_DIR is custom.
+    herdr pane send-text "$CHATPANE" "TEAMCHAT_FEED=$BUILD/team-chat.log ./scripts/team-chat.sh" >/dev/null 2>&1 || true
+    herdr pane send-keys "$CHATPANE" Enter >/dev/null 2>&1 || true
+  fi
+fi
+
 if [ "$MODE" = "resume" ]; then
   HEADLINE=" The lead is back. It is re-reading the mission and continuing."
 else
@@ -336,7 +358,7 @@ $HEADLINE
  ROSTER:   cat $BUILD/ROSTER.md
  MISSION:  cat $BUILD/MISSION.md
  STOP:     herdr --session $SESSION server stop
- CHAT:     ./scripts/team-chat.sh   (or in a pane: herdr pane split --current --direction right; herdr pane run <id> ./scripts/team-chat.sh)
+ CHAT:     opens automatically in the 'team-chat' pane · reopen: ./scripts/team-chat.sh
 
  Output lands in: $BUILD
 EOF
