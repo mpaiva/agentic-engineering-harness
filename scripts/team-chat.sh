@@ -51,6 +51,20 @@ badge_for(){ case "$1" in
     *)     printf '\033[1;30;47m %s \033[0m' "$1";;
   esac; }
 
+# Style the body WITHOUT disturbing its accent colour: bold the first sentence (a mini-summary
+# you can skim) and underline file paths / URLs. Uses attribute-off codes (22 = bold off,
+# 24 = underline off), never a full reset, so the accent colour carries through. awk is used
+# because BSD sed (macOS) cannot emit an ESC byte.
+style_body(){ printf '%s' "$1" | awk '
+    BEGIN { E=sprintf("%c",27); B=E"[1m"; BO=E"[22m"; U=E"[4m"; UO=E"[24m" }
+    {
+      line=$0
+      if (match(line, /[.!?]( |$)/)) { p=RSTART; line=B substr(line,1,p) BO substr(line,p+1) }
+      else { line=B line BO }
+      gsub(/((https?|file):\/\/[^ )]+)|([A-Za-z0-9_.~{}-]*\/[A-Za-z0-9_.~{},\/-]*\.[A-Za-z0-9]+)/, U "&" UO, line)
+      print line
+    }'; }
+
 # Deliberately NO hard-wrap and NO indent: the pane wraps the body itself, and an indent
 # would be lost on those wrapped lines (and double-wraps if our width guess is off). Flush-left
 # body + a blank line between messages keeps long messages readable at any pane width.
@@ -63,7 +77,7 @@ if command -v jq >/dev/null 2>&1; then
       hdr="${hdr}  $(badge_for "$act")"
       if [ "$act" = "ask" ]; then hdr="${hdr} ${YEL}(needs a reply)${R}"; fi
       hdr="${hdr}  ${DIM}${t}${R}"
-      printf '\n%s\n%s%s%s\n' "$hdr" "$MSG" "$msg" "$R"   # blank line = clear break; body in accent colour
+      printf '\n%s\n%s%s%s\n' "$hdr" "$MSG" "$(style_body "$msg")" "$R"   # blank line = break; body = accent
     done
 else
   echo "team-chat: install jq for the readable view; showing raw JSON lines" >&2
