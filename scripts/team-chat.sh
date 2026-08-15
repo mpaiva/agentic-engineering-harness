@@ -26,16 +26,32 @@ FEED="${TEAMCHAT_FEED:-$BUILD/team-chat.log}"
 mkdir -p "$(dirname "$FEED")"
 touch "$FEED"
 
-echo "team-chat: tailing $FEED"
-echo "team-chat: (agent sends only — human overlay sends arrive in Phase 2)"
-echo "──────────────────────────────────────────────────────────────────────"
+printf '\033[1mteam-chat\033[0m  \033[2m%s\033[0m\n' "$FEED"
+printf '\033[2magent sends only — human overlay sends arrive in Phase 2\033[0m\n'
 
 # Pretty-print when jq is present (no dependency is added: we degrade to raw JSON without it).
+# Each message becomes a card: a dim rule (top border) + a left colour bar in the sender's
+# colour, a header (dim time · bold sender → bold target · action badge), then the body.
 if command -v jq >/dev/null 2>&1; then
-  tail -n +1 -f "$FEED" | jq -rc --unbuffered '
-    "\(.ts[11:19])  \(.from)\(if .to then " → "+.to else "" end)  [\(.action)]  \(.message)"
-  ' 2>/dev/null
+  fmt='
+    ["\u001b[38;5;39m","\u001b[38;5;213m","\u001b[38;5;46m","\u001b[38;5;214m","\u001b[38;5;123m","\u001b[38;5;208m","\u001b[38;5;220m","\u001b[38;5;141m"] as $pal |
+    "\u001b[0m" as $R | "\u001b[2m" as $DIM | "\u001b[1m" as $BOLD |
+    (.from // "?") as $from |
+    $pal[ ((($from | explode | add) // 0) % ($pal | length)) ] as $c |
+    (if (.ts | type) == "string" and (.ts | length) >= 19 then .ts[11:19] else (.ts // "") end) as $t |
+    (.action // "?") as $act |
+    (if $act == "ask" then "\u001b[30;43m ASK \u001b[0m"
+     elif $act == "reply" then "\u001b[30;42m REPLY \u001b[0m"
+     else "\u001b[30;44m SEND \u001b[0m" end) as $badge |
+    ($c + "▌" + $R) as $bar |
+    (if (.to // "") != "" then " " + $DIM + "→" + $R + " " + $BOLD + .to + $R else "" end) as $arrow |
+    ($DIM + "╶──────────────────╴" + $R) as $rule |
+    $rule + "\n"
+      + $bar + " " + $DIM + $t + $R + "  " + $c + $BOLD + $from + $R + $arrow + "  " + $badge + "\n"
+      + $bar + " " + (.message // "" | gsub("\n"; " "))
+  '
+  tail -n +1 -f "$FEED" | jq -r --unbuffered "$fmt" 2>/dev/null
 else
-  echo "team-chat: install jq for a formatted view; showing raw JSON lines" >&2
+  echo "team-chat: install jq for the colour view; showing raw JSON lines" >&2
   tail -n +1 -f "$FEED"
 fi
