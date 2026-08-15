@@ -61,7 +61,7 @@ render() {
         while(cwidth(cur)>width){ arr[++cnt]=substr(cur,1,width); cur=substr(cur,width+1) } }
       if(cur!="") arr[++cnt]=cur; if(cnt==0) arr[++cnt]=""; return cnt }
     BEGIN{ E=sprintf("%c",27); R=E"[0m"; DIM=E"[2m"; reESC=E"\\[[0-9;]*m";
-      GREY=E"[38;5;240m"; MSG=E"[38;2;" teal "m"; B=E"[1m"; BO=E"[22m"; U=E"[4m"; UO=E"[24m"; VBAR="│";
+      GREY=E"[38;5;240m"; MSG=E"[38;2;" teal "m"; WHITE=E"[1;97m"; B=E"[1m"; BO=E"[22m"; U=E"[4m"; UO=E"[24m"; VBAR="│";
       NP=split(palstr,PAL," "); for(i=0;i<256;i++) ORDT[sprintf("%c",i)]=i;
       FS=sep; W=W+0; if(W<28) W=80; BW=W-(margin+0); if(BW<20) BW=20; INNER=BW-4; if(INNER<12) INNER=12 }
     { t=$1; from=$2; to=$3; act=$4; msg=$5;
@@ -80,9 +80,11 @@ render() {
       # body: underline paths on PLAIN first (so the regex cannot eat into the bold code), THEN
       # bold the first sentence. B is only ever prepended/inserted, never gsub-scanned afterwards.
       inFirst=1; n=wrap(msg,INNER,LN);
+      # First sentence renders bold WHITE (a skimmable summary); the rest of the body is the
+      # teal accent. Underline paths on plain first so the regex cannot eat into a colour code.
       for(li=1; li<=n; li++){ s=ul(LN[li]);
-        if(inFirst){ if(match(s,/[.!?]( |$)/)){ p=RSTART; s=B substr(s,1,p) BO substr(s,p+1); inFirst=0 } else s=B s BO }
-        s=MSG s R;
+        if(inFirst){ if(match(s,/[.!?]( |$)/)){ p=RSTART; s=WHITE substr(s,1,p) R MSG substr(s,p+1) R; inFirst=0 } else s=WHITE s R }
+        else s=MSG s R;
         print boxline(s) }
       print GREY "╰" rule(BW-2) "╯" R }
   '
