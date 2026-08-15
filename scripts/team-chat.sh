@@ -99,7 +99,7 @@ fi
 # ---- live TUI ----
 TMP="$(mktemp "${TMPDIR:-/tmp}/teamchat.XXXXXX")"
 LINKS="$(mktemp "${TMPDIR:-/tmp}/teamchat-links.XXXXXX")"
-cleanup(){ printf '\033[?25h\033[?1049l'; rm -f "$TMP" "$LINKS"; }
+cleanup(){ printf '\033[?25h\033[?1049l'; rm -f "$TMP" "$TMP.prev" "$TMP.links" "$LINKS"; }
 trap cleanup EXIT
 trap 'printf "\033[?25h\033[?1049l"; exit 0' INT TERM
 trap 'RESIZED=1' WINCH
@@ -144,18 +144,61 @@ build_links(){
   rm -f "$TMP.links"
 }
 
+# render_md <file> <width> — lightweight markdown -> ANSI wrapped to <width>. Handles headings,
+# **bold**, *italic*, `code`, - lists, > quotes, --- rules, and ``` fenced code. Dependency-free
+# (no glow/pandoc). Wrapping is on plain text (inline styling adds zero-width ANSI), so lines fit.
+render_md(){
+  awk -v W="$2" -v teal="$ACCENT" '
+  function inl(s,   r,i,L,j,inner){ r=""; i=1; L=length(s)
+    while(i<=L){
+      if(substr(s,i,2)=="**"){ j=index(substr(s,i+2),"**"); if(j>0){ inner=substr(s,i+2,j-1); r=r B inner BO; i=i+j+3; continue } }
+      if(substr(s,i,1)=="`"){ j=index(substr(s,i+1),"`"); if(j>0){ inner=substr(s,i+1,j-1); r=r CODE inner CODEO; i=i+j+1; continue } }
+      if(substr(s,i,1)=="*"){ j=index(substr(s,i+1),"*"); if(j>0){ inner=substr(s,i+1,j-1); r=r IT inner ITO; i=i+j+1; continue } }
+      r=r substr(s,i,1); i++ }
+    return r }
+  function sp(k,   s){ s=""; while(k-- > 0) s=s" "; return s }
+  function emit(text,width,pre,cont,style,   nw,words,i,cand,cur,first){ nw=split(text,words," "); cur=""; first=1
+    for(i=1;i<=nw;i++){ cand=(cur==""?words[i]:cur" "words[i]); if(length(cand)<=width) cur=cand; else { print (first?pre:cont) style inl(cur) R; first=0; cur=words[i] } }
+    if(cur!="") print (first?pre:cont) style inl(cur) R; else if(nw==0) print "" }
+  BEGIN{ E=sprintf("%c",27); R=E"[0m"; BOLD=E"[1m"; DIM=E"[2m"; GREY=E"[38;5;240m";
+    WHITE=E"[1;97m"; ACC=E"[38;2;" teal "m"; B=E"[1m"; BO=E"[22m"; IT=E"[3m"; ITO=E"[23m"; CODE=E"[7m"; CODEO=E"[27m";
+    W=W+0; if(W<8) W=80; HR=""; for(i=0;i<W-1;i++) HR=HR"─" }
+  { line=$0
+    if(line ~ /^[ \t]*```/){ incode=!incode; print GREY (incode?"┄┄┄ code ┄┄┄":"┄┄┄┄┄┄┄┄┄┄┄") R; next }
+    if(incode){ print GREY "  " line R; next }
+    if(match(line,/^### +/)){ print BOLD substr(line,RLENGTH+1) R; next }
+    if(match(line,/^## +/)){ print BOLD ACC substr(line,RLENGTH+1) R; next }
+    if(match(line,/^# +/)){ print WHITE substr(line,RLENGTH+1) R; next }
+    if(line ~ /^([-*_] *){3,}$/){ print GREY HR R; next }
+    if(match(line,/^> ?/)){ emit(substr(line,RLENGTH+1), W-3, GREY "│ " R, GREY "│ " R, DIM); next }
+    if(match(line,/^[ \t]*[-*+] +/)){ emit(substr(line,RLENGTH+1), W-3, ACC "• " R, "  ", ""); next }
+    if(match(line,/^[ \t]*[0-9]+\. +/)){ n=substr(line,1,RLENGTH); sub(/^[ \t]*/,"",n); emit(substr(line,RLENGTH+1), W-length(n)-1, ACC n R, sp(length(n)), ""); next }
+    if(line ~ /^[ \t]*$/){ print ""; next }
+    emit(line, W-1, "", "", "") }
+  ' "$1"
+}
+
 # Full-screen, scrollable preview of one document. q/Esc returns to the feed.
 preview_doc(){
-  local f="$1" disp="$2" off=0 total view maxoff key seq
-  total="$(wc -l < "$f" 2>/dev/null | tr -d ' ')"; case "$total" in ''|*[!0-9]*) total=0;; esac
+  local f="$1" disp="$2" off=0 total view maxoff key seq src ismd=0 rw=-1 title body meta
+  case "$f" in *.md|*.markdown|*.mdown) ismd=1 ;; esac
   while :; do
     term_size; view=$((ROWS-2)); [ "$view" -lt 1 ] && view=1
+    if [ "$ismd" = 1 ]; then
+      if [ "$COLS" != "$rw" ]; then render_md "$f" "$COLS" > "$TMP.prev" 2>/dev/null; rw="$COLS"; fi
+      src="$TMP.prev"; meta="markdown"
+    else
+      src="$f"; meta="text"
+    fi
+    total="$(wc -l < "$src" 2>/dev/null | tr -d ' ')"; case "$total" in ''|*[!0-9]*) total=0;; esac
     maxoff=$((total-view)); [ "$maxoff" -lt 0 ] && maxoff=0
     [ "$off" -gt "$maxoff" ] && off=$maxoff; [ "$off" -lt 0 ] && off=0
-    # flicker-free: title, then body lines each cleared to EOL, clear below, status — one write
-    local title body
-    title="$(printf '\033[38;5;240m┌─ \033[0m\033[1m%s\033[0m  \033[2m(%s lines)\033[0m%s' "$disp" "$total" "$K")"
-    body="$(sed -n "$((off+1)),$((off+view))p" "$f" 2>/dev/null | cut -c "1-$((COLS-1))" | awk -v k="$K" '{print $0 k}')"
+    title="$(printf '\033[38;5;240m┌─ \033[0m\033[1m%s\033[0m  \033[2m(%s)\033[0m%s' "$disp" "$meta" "$K")"
+    if [ "$ismd" = 1 ]; then
+      body="$(sed -n "$((off+1)),$((off+view))p" "$src" 2>/dev/null | awk -v k="$K" '{print $0 k}')"
+    else
+      body="$(sed -n "$((off+1)),$((off+view))p" "$src" 2>/dev/null | cut -c "1-$((COLS-1))" | awk -v k="$K" '{print $0 k}')"
+    fi
     printf '\033[H%s\n%s\033[J\033[%d;1H\033[7m preview: %s   j/k ↓/↑ · space/b · g/G · q/Esc back \033[0m%s' \
       "$title" "$body" "$ROWS" "$disp" "$K"
     key=""; IFS= read -rsn1 key </dev/tty || true
