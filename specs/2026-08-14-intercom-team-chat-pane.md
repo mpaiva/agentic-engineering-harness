@@ -187,6 +187,7 @@ plainly:
 | chat client can register as a peer and send/receive over the socket | **Unverified** — undocumented framing; §Phase-0 spike |
 | Extension appends outbound `send`/`ask`/`reply` to the feed; ignores control calls | **Proven live** — real headless Atomic (anthropic/claude-haiku-4) loaded the extension and made a real intercom `send`; feed line written; `list`/non-intercom ignored, `reply` omits `to` |
 | Union of per-agent captures = one merged feed | **Demonstrated (sequential)** — two real sessions (`lead` and `verifier`) appended to one feed, rendered as one chat by `team-chat.sh`. Concurrent multi-session still untested |
+| build.sh auto-open: split → rename `team-chat` → run `team-chat.sh`, feed renders in the pane | **Proven live** — ran the exact build.sh sequence against a real headless Herdr server (throwaway session); pane opened, `send-keys Enter` executed headlessly, two appended lines rendered as formatted chat |
 
 ## 9. Open questions
 
