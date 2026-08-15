@@ -300,11 +300,15 @@ The test found three problems. All three are fixed.
 - The first two tries failed before any build worked. One deadlocked on its own readiness
   check; the other had an unrelated Herdr plugin uninstall kill the running team. Both are
   fixed.
-- **`build.sh` stops waiting for your answer after ten minutes.** If you take longer to answer
-  the opening question, the script exits. The agent itself keeps running with your question on
-  screen, but the two messages that get it moving never arrive, and `--resume` is not a safe
-  fix at that point — it restarts the server and would throw away the answer you just typed.
-  This happened in the run pictured above and needed a human to work around it. Not fixed yet.
+- **`build.sh` used to stop waiting for your answer after ten minutes.** If you took longer
+  to answer the opening question, the script exited; the agent kept running with your
+  question on screen, but the two messages that get it moving never arrived, and `--resume`
+  was not a safe fix (it restarts the server and would throw away the answer you just typed).
+  This happened in the run pictured above and needed a human to work around it. **Fixed in
+  code:** the intake wait no longer has a cap — `build.sh` waits as long as it takes and
+  prints a heartbeat every minute so a long wait does not look like a hang. The fix has not
+  yet been exercised in a live run where a human deliberately answers slowly, so it is
+  corrected but not yet proven end to end.
 - We have not yet used `--resume` to finish a job that was left half done. Our test brought
   back a job that was already complete. So restarting works. Picking up unfinished work is
   not proven.

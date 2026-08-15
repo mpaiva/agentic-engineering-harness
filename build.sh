@@ -261,10 +261,27 @@ if [ "$MODE" = "resume" ]; then
 else
   echo "Waiting for your answer in the attached cockpit…"
 fi
-for _ in $(seq 1 600); do
-  [ -f "$BUILD/IDEA.md" ] && break
+# Wait for the human to answer the intake popup. There is deliberately NO timeout here.
+# The popup keeps the lead agent alive with the question on screen, and the two kickoff
+# sends below are gated on IDEA.md existing — so giving up would strand a live agent that
+# can still be answered, and --resume is unsafe then (it restarts the server and discards
+# the typed answer). Wait as long as it takes; print a heartbeat so a long wait does not
+# look like a hang. The human can abort with Ctrl-C, or stop the run from another terminal
+# with: herdr --session $SESSION server stop
+# The wait below is unbounded, so a human who gives up must get guidance instead of dying
+# silently while the detached herdr server and the live lead pane keep running. On Ctrl-C or
+# SIGTERM, print how to reach the still-live lead, then exit. Cleared right after the loop so
+# the rest of the script keeps default signal behavior.
+trap 'printf "\n[harness] Interrupted before you answered. The lead is still live in its pane.\n  Attach with:  herdr --session %s\n  Answer the question, then re-run: ./build.sh --resume\n  Or stop the run: herdr --session %s server stop\n" "$SESSION" "$SESSION" >&2; exit 130' INT TERM
+WAITED=0
+while [ ! -f "$BUILD/IDEA.md" ]; do
   sleep 1
+  WAITED=$((WAITED + 1))
+  if [ $((WAITED % 60)) -eq 0 ]; then
+    printf '[harness] still waiting for your answer in the cockpit (%dm elapsed)…\n' "$((WAITED / 60))"
+  fi
 done
+trap - INT TERM
 
 if [ -f "$BUILD/IDEA.md" ]; then
   # Register the lead on the Intercom broker, NOW — the popup has closed (IDEA.md exists), so
@@ -293,9 +310,12 @@ if [ -f "$BUILD/IDEA.md" ]; then
   fi
   herdr pane send-keys "$LEAD" Enter >/dev/null
 else
-  echo "No IDEA.md after 10 minutes. Attach a cockpit with:" >&2
-  echo "  herdr --session $SESSION" >&2
-  echo "Then re-run: ./build.sh --resume" >&2
+  # Defensive re-check, not an interrupt guard: reachable only if IDEA.md disappears between
+  # the loop's last test and this line (TOCTOU). On Ctrl-C/SIGTERM the script dies inside the
+  # wait loop above and never reaches here, so the kickoff sends cannot fire without a mission.
+  echo "No IDEA.md — the intake wait was interrupted before you answered. Attach a" >&2
+  echo "cockpit with:  herdr --session $SESSION" >&2
+  echo "answer the question, then re-run: ./build.sh --resume" >&2
 fi
 
 if [ "$MODE" = "resume" ]; then

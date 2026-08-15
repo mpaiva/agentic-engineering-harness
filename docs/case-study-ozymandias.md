@@ -206,15 +206,17 @@ is the whole trade.
 
 Nothing stopped the build, but four things are worth writing down.
 
-**1. `build.sh` gave up while a person was still typing.** It waits ten minutes for the intake
-popup to be answered, then exits. The popup in this run was answered nineteen minutes after
+**1. `build.sh` gave up while a person was still typing.** It waited ten minutes for the intake
+popup to be answered, then exited. The popup in this run was answered nineteen minutes after
 `build.sh` started waiting for it. The lead agent
 survived — it is a separate process in its own pane — but the script that was supposed to send
 the two follow-up messages was gone. Those two messages (`/name lead`, then the *Begin…*
 kickoff) had to be sent by hand with `herdr pane send-text`. `./build.sh --resume` is the
 documented recovery, but it restarts the Herdr server, which would have killed the live lead
-and the answer already typed into it. **The ten-minute timeout should be longer, or it should
-not be a timeout at all** — nothing is being wasted while a human thinks.
+and the answer already typed into it. **Fixed since this run:** `build.sh` no longer caps
+the intake wait — it waits as long as the human needs and prints a heartbeat every minute —
+so nothing is wasted while a person thinks. This fix has not yet been re-exercised in a live
+slow-answer run.
 
 **2. The lead looked for `TRANSPORT.md` in the wrong place.**
 
