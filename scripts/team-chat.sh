@@ -98,7 +98,8 @@ fi
 
 # ---- live TUI ----
 TMP="$(mktemp "${TMPDIR:-/tmp}/teamchat.XXXXXX")"
-cleanup(){ printf '\033[?25h\033[?1049l'; rm -f "$TMP"; }
+LINKS="$(mktemp "${TMPDIR:-/tmp}/teamchat-links.XXXXXX")"
+cleanup(){ printf '\033[?25h\033[?1049l'; rm -f "$TMP" "$LINKS"; }
 trap cleanup EXIT
 trap 'printf "\033[?25h\033[?1049l"; exit 0' INT TERM
 trap 'RESIZED=1' WINCH
@@ -119,7 +120,79 @@ paint(){
   local end=$((total - offset)); local start=$((end - view + 1)); [ "$start" -lt 1 ] && start=1
   printf '\033[H\033[2J'
   sed -n "${start},${end}p" "$TMP"
-  printf '\033[%d;1H\033[7m team-chat  [%sx%s]  j/k ↓/↑ · space/b page · g/G · q quit \033[0m' "$ROWS" "$COLS" "$ROWS"
+  printf '\033[%d;1H\033[7m team-chat  [%sx%s]  j/k ↓/↑ · space/b · g/G · p preview · q quit \033[0m' "$ROWS" "$COLS" "$ROWS"
+}
+
+# Collect previewable document links from the feed: path-like tokens that resolve to an existing
+# local file. Relative paths resolve against the repo root; URLs are skipped (they open externally,
+# not in a modal). Writes "abspath<TAB>display" lines to $LINKS and sets LINKCOUNT.
+build_links(){
+  : > "$LINKS"; LINKCOUNT=0
+  local tok abs
+  { [ "$have_jq" = 1 ] && jq -r '.message // ""' "$FEED" 2>/dev/null || cat "$FEED"; } \
+  | grep -oE '([A-Za-z0-9_.~{}-]*/[A-Za-z0-9_.~{},/-]*\.[A-Za-z0-9]+)' 2>/dev/null \
+  | sort -u > "$TMP.links" 2>/dev/null || true
+  while IFS= read -r tok; do
+    [ -n "$tok" ] || continue
+    case "$tok" in /*) abs="$tok" ;; *) abs="$HERE/$tok" ;; esac
+    if [ -f "$abs" ]; then LINKCOUNT=$((LINKCOUNT+1)); printf '%s\t%s\n' "$abs" "$tok" >> "$LINKS"; fi
+  done < "$TMP.links"
+  rm -f "$TMP.links"
+}
+
+# Full-screen, scrollable preview of one document. q/Esc returns to the feed.
+preview_doc(){
+  local f="$1" disp="$2" off=0 total view maxoff key seq
+  total="$(wc -l < "$f" 2>/dev/null | tr -d ' ')"; case "$total" in ''|*[!0-9]*) total=0;; esac
+  while :; do
+    term_size; view=$((ROWS-2)); [ "$view" -lt 1 ] && view=1
+    maxoff=$((total-view)); [ "$maxoff" -lt 0 ] && maxoff=0
+    [ "$off" -gt "$maxoff" ] && off=$maxoff; [ "$off" -lt 0 ] && off=0
+    printf '\033[H\033[2J'
+    printf '\033[38;5;240m┌─ \033[0m\033[1m%s\033[0m  \033[2m(%s lines)\033[0m\n' "$disp" "$total"
+    sed -n "$((off+1)),$((off+view))p" "$f" 2>/dev/null | cut -c "1-$((COLS-1))"
+    printf '\033[%d;1H\033[7m preview: %s   j/k ↓/↑ · space/b · g/G · q/Esc back \033[0m' "$ROWS" "$disp"
+    key=""; IFS= read -rsn1 key || true
+    case "$key" in
+      q|Q) return ;;
+      j) off=$((off+1)) ;;
+      k) off=$((off-1)) ;;
+      ' ') off=$((off+view)) ;;
+      b|B) off=$((off-view)) ;;
+      g) off=0 ;;
+      G) off=$total ;;
+      "$(printf '\033')")
+        seq=""; read -rsn2 -t 1 seq || true
+        case "$seq" in
+          '') return ;;                                        # bare Esc closes
+          '[A') off=$((off-1)) ;;
+          '[B') off=$((off+1)) ;;
+          '[5') read -rsn1 -t 1 _ || true; off=$((off-view)) ;;
+          '[6') read -rsn1 -t 1 _ || true; off=$((off+view)) ;;
+        esac ;;
+    esac
+  done
+}
+
+# Modal: list document links, let the user pick one by number, then preview it.
+pick_link(){
+  build_links
+  if [ "$LINKCOUNT" -eq 0 ]; then
+    printf '\033[%d;1H\033[7m no document links in the feed — press any key \033[0m' "$ROWS"; IFS= read -rsn1 _ || true; return
+  fi
+  printf '\033[H\033[2J\033[1mPreview which document?\033[0m\n\n'
+  local i=1 abs disp
+  while IFS="$(printf '\t')" read -r abs disp; do
+    [ "$i" -gt 9 ] && break
+    printf '  \033[7m %d \033[0m  \033[4m%s\033[0m\n' "$i" "$disp"; i=$((i+1))
+  done < "$LINKS"
+  printf '\n\033[2mtype a number (1-%d), or Esc to cancel\033[0m' "$((i-1))"
+  local key=""; IFS= read -rsn1 key || true
+  case "$key" in
+    [1-9]) if [ "$key" -le "$((i-1))" ]; then
+             local n=0; while IFS="$(printf '\t')" read -r abs disp; do n=$((n+1)); if [ "$n" -eq "$key" ]; then preview_doc "$abs" "$disp"; break; fi; done < "$LINKS"
+           fi ;;
+  esac
 }
 
 RESIZED=1; lastsize=-1
@@ -137,6 +210,7 @@ while :; do
     b|B) offset=$((offset+(ROWS-2))); paint ;;              # page up
     g) offset=$((total)); paint ;;                          # top (clamped)
     G) offset=0; paint ;;                                   # bottom / follow
+    p|P) pick_link; RESIZED=1 ;;                            # preview a document link
     "$(printf '\033')")
       seq=""; read -rsn2 -t 1 seq || true
       case "$seq" in
