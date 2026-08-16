@@ -137,7 +137,7 @@ paint(){
   local body
   body="$(sed -n "${start},${end}p" "$TMP" | awk -v k="$K" '{print $0 k}')"
   printf '\033[H%s\033[J\033[%d;1H\033[7m team-chat  [%sx%s]  j/k · space/b · g/G · p preview · i send · q quit \033[0m%s' \
-    "$body" "$ROWS" "$COLS" "$K"
+    "$body" "$ROWS" "$COLS" "$ROWS" "$K"
 }
 
 # Collect previewable document links from the feed: path-like tokens that resolve to an existing
