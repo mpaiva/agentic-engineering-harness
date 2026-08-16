@@ -63,16 +63,24 @@ The `agent` subcommands are the ones the harness leans on:
 
 ```bash
 herdr agent list                       # agents + current states
-herdr agent get <agent>                # details for one agent
-herdr agent start <agent> <pane>       # start an interactive agent in an existing pane
-herdr agent prompt <agent> "…"         # submit a prompt to an agent
-herdr agent send-keys <agent> …        # raw keystrokes
-herdr agent read <agent>               # read the agent's terminal output
-herdr agent wait <agent> --until done  # BLOCK until a state (the supervision primitive)
-herdr agent focus <agent>              # focus it (marks it "seen")
-herdr agent rename <agent> <name>      # names match [a-z][a-z0-9_-]{0,31}
-herdr agent explain <agent>            # why it's in its current state
+herdr agent get <pane-id>                 # details for one agent
+herdr agent start <name> --kind claude --pane <pane-id>   # start an agent in an existing pane
+herdr agent prompt <pane-id> "…"          # submit a prompt to an agent
+herdr agent send-keys <pane-id> …         # raw keystrokes
+herdr agent read <pane-id>                # read the agent's terminal output
+herdr agent wait <pane-id> --until done   # BLOCK until a state (the supervision primitive)
+herdr agent focus <pane-id>               # focus it (marks it "seen")
+herdr agent rename <pane-id> <name>       # names match [a-z][a-z0-9_-]{0,31}
+herdr agent explain --file <buf> --agent <backend>   # why it's in its current state
 ```
+
+> **`<pane-id>` is literal, not a stand-in for the role name.** On Herdr 0.8.0 these
+> subcommands resolve a pane id (`w1:p5`) and reject a role name with `agent_not_found` —
+> `herdr agent get docs` fails even while `herdr agent list` reports an agent named `docs`.
+> Read the `pane_id` field out of `herdr agent list` and pass that. `herdr agent explain` is
+> the odd one out: its bare-target form does not resolve at all, so capture the buffer first
+> (`herdr agent read <pane-id> --source detection --lines 40 > /tmp/buf`) and pass
+> `--file /tmp/buf --agent claude`, where `--agent` names the *backend* manifest, not the role.
 
 ### The supervision primitive
 
@@ -80,7 +88,7 @@ herdr agent explain <agent>            # why it's in its current state
 
 ```bash
 # Wait up to 15 min for an agent to finish or block; act only when it does.
-herdr agent wait planner --until done --until blocked --timeout 900000
+herdr agent wait w1:p5 --until done --until blocked --timeout 900000
 ```
 
 Note the state semantics from Herdr's own skill: `idle` = ready for input and its tab was seen in the UI; `done` = the same idle state after *unseen* background work finished; `blocked` = Herdr recognized an approval/question UI; `unknown` = present but unclassifiable — **not** proof of completion. CLI reads do **not** mark a tab "seen"; focusing it does.

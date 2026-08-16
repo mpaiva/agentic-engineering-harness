@@ -46,11 +46,38 @@ Two mechanisms, in priority order:
 
 State **rolls up**: a `blocked` agent makes its pane, tab, and *workspace* read as blocked in the sidebar. That is the whole point — you scan workspaces, not panes.
 
-Diagnose why an agent is in a given state:
+Diagnose why an agent is in a given state — capture the buffer Herdr classifies, then replay
+the manifest rules against it:
 
 ```bash
-herdr agent explain <agent-name-or-pane-id>
+herdr agent read w1:p5 --source detection --lines 40 > /tmp/pane.txt
+herdr agent explain --file /tmp/pane.txt --agent claude
 ```
+```text
+agent: claude
+state: idle
+manifest: remote:…/agent-detection/remote/claude.toml 2026.08.13.1
+rule: live_prompt_box (region=prompt_box_body priority=950)
+evidence: "❯\n"
+```
+
+`--agent` takes the **agent backend** (`claude`, `codex`, …) — the manifest to match against —
+not the pane's role name. Passing a role (`--agent docs`) returns `fallback_reason:
+unknown_agent`, because no manifest by that name exists.
+
+Two caveats, both verified against Herdr 0.8.0:
+
+- **The `<target>` form does not resolve.** `herdr agent explain <role-name>` returns
+  `agent_not_found`, and `herdr agent explain <pane-id>` returns `agent_explain_unavailable —
+  does not have a detected agent label`, even for panes that `herdr agent list` reports
+  cleanly. Use the `--file` / `--agent` form above. See
+  [docs/troubleshooting.md](troubleshooting.md#herdr-agent-state-is-unclear).
+- **`explain` shows mechanism 2, not mechanism 1.** It replays the *screen-manifest* rules
+  against a captured buffer, so its verdict can disagree with `herdr agent list` when lifecycle
+  hooks are installed — the hooks are authoritative and win. A pane that `list` reports as
+  `working` can read as `idle` here, because the snapshot caught an idle-looking prompt box.
+  Trust `herdr agent list` for *what* the state is; use `explain` to understand *why* the
+  buffer-based fallback would classify it that way.
 
 ## Reading state from scripts and other agents
 
@@ -60,16 +87,22 @@ Everything the sidebar shows is available over the CLI / socket API, so a workfl
 # Snapshot the whole session as JSON
 herdr api snapshot
 
-# List agents and their current states
+# List agents and their current states — this is where you get the pane ids
 herdr agent list
 
 # Read what an agent has printed
-herdr agent read <agent>
+herdr agent read w1:p5 --lines 40
 
 # Block until an agent reaches a terminal-ish state (the supervision primitive)
-herdr agent wait <agent> --until done --timeout 900000
-herdr agent wait <agent> --until blocked --until done
+herdr agent wait w1:p5 --until done --timeout 900000
+herdr agent wait w1:p5 --until blocked --until done
 ```
+
+> **Target these by pane id, not role name.** On Herdr 0.8.0 every one of these subcommands
+> rejects a role name with `agent_not_found` — `herdr agent wait docs …` fails even while
+> `herdr agent list` reports an agent literally named `docs`. The `pane_id` field from
+> `herdr agent list` (`w1:p5`, …) is what resolves. Scripts should read the pane id out of
+> `herdr agent list` rather than hardcoding role names.
 
 `herdr agent wait --until <state>` is how the harness implements *supervision by exception* in automation: a coordinator waits on many agents and only escalates the ones that reach `blocked`, or that fail their checks.
 

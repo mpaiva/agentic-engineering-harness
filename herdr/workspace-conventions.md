@@ -60,13 +60,19 @@ Prefer:
 research · planner · frontend · backend · accessibility · test · review · integration · verifier
 ```
 
-Herdr enforces a name grammar for agents: `[a-z][a-z0-9_-]{0,31}`, unique among live agents. A name follows the current pane occupant and clears when that agent exits or is replaced. So `herdr agent rename <pane-or-agent> frontend` gives you a stable handle you can `prompt`, `wait` on, and `read` regardless of which model backs it.
+Herdr enforces a name grammar for agents: `[a-z][a-z0-9_-]{0,31}`, unique among live agents. A name follows the current pane occupant and clears when that agent exits or is replaced. `herdr agent rename <pane-id> frontend` gives that pane a stable *label* — it is what the sidebar, `herdr agent list`, and the state rollup show you.
 
 ```bash
-herdr agent rename <pane-id> planner
-herdr agent prompt planner "Read research/*.md and produce specs/implementation-plan.md"
-herdr agent wait planner --until done --timeout 900000
+herdr agent rename w1:p3 planner
+herdr agent prompt w1:p3 "Read research/*.md and produce specs/implementation-plan.md"
+herdr agent wait w1:p3 --until done --timeout 900000
 ```
+
+> **Target by pane id, not by the name you just set.** On Herdr 0.8.0 the label is for reading,
+> not for addressing: `herdr agent wait planner …` returns `agent_not_found` even after a
+> successful rename, and the same holds for `get`, `read`, and `explain`. Verified against
+> three live named agents. Keep the rename for the human-facing sidebar, and pass the `pane_id`
+> from `herdr agent list` when scripting.
 
 ## The state vocabulary (shared with Atomic stages)
 
@@ -76,7 +82,7 @@ herdr agent wait planner --until done --timeout 900000
 | `blocked` | recognized an approval/question UI | a human gate, or a question |
 | `done` | finished (idle after unseen work) | stage complete |
 | `idle` | ready for input / available | between stages |
-| `unknown` | present, unclassifiable | investigate with `herdr agent explain` |
+| `unknown` | present, unclassifiable | investigate: `herdr agent read <pane-id> --source detection --lines 40 > /tmp/buf` then `herdr agent explain --file /tmp/buf --agent claude` |
 
 Keeping agent names (responsibility) and states aligned with the Atomic workflow's stage names is what lets the two layers be read as one cockpit — see [atomic-integration.md](atomic-integration.md).
 

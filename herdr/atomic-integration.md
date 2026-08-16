@@ -41,10 +41,13 @@ When you want each responsibility visible as its own pane/state in the sidebar, 
 The state primitive that ties a script to the Atomic-style phase order:
 
 ```bash
-herdr agent wait research  --until done --timeout 900000
-herdr agent wait planner   --until done --until blocked --timeout 900000
+herdr agent wait w1:p3 --until done --timeout 900000
+herdr agent wait w1:p4 --until done --until blocked --timeout 900000
 # … only escalate to the human when an agent reaches `blocked`
 ```
+
+> Pass the `pane_id` from `herdr agent list`, not the role name — on Herdr 0.8.0 a role name
+> returns `agent_not_found`. See [workspace-conventions.md](workspace-conventions.md#the-state-vocabulary-shared-with-atomic-stages).
 
 ## The gap (be honest about it)
 
