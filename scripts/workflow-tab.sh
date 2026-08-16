@@ -97,7 +97,16 @@ name = detail.get('name', '?')
 status = detail.get('status', '?')
 dur = detail.get('durationMs', 0) or 0
 stages = detail.get('stages', []) or []
-print(sep.join([run_id, name, status, str(int(dur)), str(len(stages))]))
+
+# --- forecast inputs, every number from real stage data (never fabricated) ---
+term = status in ('completed', 'crashed', 'failed', 'cancelled')
+completed_durs = [int(s.get('durationMs') or 0) for s in stages
+                  if s.get('status') == 'completed' and (s.get('durationMs') or 0) > 0]
+done_ct = sum(1 for s in stages if s.get('status') == 'completed')
+total_ct = len(stages)
+remaining_ct = total_ct - done_ct
+
+print(sep.join([run_id, name, status, str(int(dur)), str(total_ct), str(done_ct), str(remaining_ct)]))
 
 def glyph(s):
     return {'completed': '\u2713', 'crashed': '\u2717', 'failed': '\u2717', 'running': '\u25cf'}.get(s, '\u25cb')
@@ -105,6 +114,44 @@ def glyph(s):
 def fmt_dur(ms):
     s = int((ms or 0) + 500) // 1000
     return (str(s) + 's') if s < 60 else (str(s // 60) + 'm ' + str(s % 60) + 's')
+
+def mean(xs):
+    return (sum(xs) / len(xs)) if xs else 0
+
+def median(xs):
+    xs = sorted(xs); n = len(xs)
+    return xs[n // 2] if n else 0
+
+# ETA to completion = mean elapsed of completed stages x stages not yet done. A terminal run
+# has nothing left to forecast; a run with no completed stage yet has no data to extrapolate
+# from, and we say exactly that instead of inventing a number.
+if term:
+    eta = ('complete in ' + fmt_dur(dur)) if status == 'completed' else ('run ' + status + ', no further stages')
+elif remaining_ct <= 0:
+    eta = 'all stages done'
+elif completed_durs:
+    avg = mean(completed_durs)
+    eta = '~' + fmt_dur(avg * remaining_ct) + ' (avg ' + fmt_dur(avg) + '/stage x ' + str(remaining_ct) + ' left)'
+else:
+    eta = 'no data yet (0 stages completed)'
+
+print(sep.join(['FCAST', 'forecast: ' + str(done_ct) + '/' + str(total_ct) + ' stages done   |   '
+                + str(remaining_ct) + ' remaining   |   ETA ' + eta]))
+
+# Per-stage complexity, relative to the median elapsed time of THIS run's completed stages.
+# Only a stage with real elapsed time (completed, or a running stage that has reported one)
+# gets a label; a pending/not-yet-run stage has no measured cost, so it gets none.
+comp_basis = median(completed_durs)
+
+def complexity(s):
+    d = int(s.get('durationMs') or 0)
+    if d <= 0 or s.get('status') not in ('completed', 'running') or comp_basis <= 0:
+        return ''
+    if d >= 2 * comp_basis:
+        return 'high'
+    if d <= 0.5 * comp_basis:
+        return 'low'
+    return 'med'
 
 by_id = {s.get('id'): s for s in stages if s.get('id')}
 children = {}
@@ -127,6 +174,9 @@ def render(sid, prefix, is_last, is_root):
     s = by_id[sid]
     branch = '' if is_root else (' \u2514\u2500 ' if is_last else ' \u251c\u2500 ')
     line = prefix + branch + glyph(s.get('status')) + ' ' + s.get('name', '?') + '  ' + s.get('status', '?') + '  ' + fmt_dur(s.get('durationMs'))
+    c = complexity(s)
+    if c:
+        line += '  [' + c + ']'
     extra = s.get('_extra_parents') or []
     if extra:
         line += '  (also after: ' + ', '.join(extra) + ')'
@@ -151,7 +201,7 @@ refresh_cache(){
     if [ -n "$out" ]; then
       printf '%s\n' "$out" | { IFS= read -r head; printf 'RUN%s%s%s%s\n' "$SEP" "$launched_by" "$SEP" "$head"; cat; } >> "$CACHE"
     else
-      printf 'RUN%s%s%s%s%s?%s?%s0%s0\n' "$SEP" "$launched_by" "$SEP" "$run_id" "$SEP" "$SEP" "$SEP" "$SEP" >> "$CACHE"
+      printf 'RUN%s%s%s%s%s?%s?%s0%s0%s0%s0\n' "$SEP" "$launched_by" "$SEP" "$run_id" "$SEP" "$SEP" "$SEP" "$SEP" "$SEP" "$SEP" >> "$CACHE"
     fi
   done < <(read_registry)
 }
@@ -166,15 +216,15 @@ status_glyph(){ case "$1" in # bash 3.2: no assoc arrays
 
 render(){
   local n=0
-  echo "  RUN                                   NAME               STATUS      DURATION  LAUNCHED BY"
-  echo "  ────────────────────────────────────  ─────────────────  ──────────  ────────  ──────────────────"
-  while IFS="$SEP" read -r tag launched_by run_id name status dur _stagecount; do
+  echo "  RUN                                   NAME               STATUS      DURATION  STAGES   LAUNCHED BY"
+  echo "  ────────────────────────────────────  ─────────────────  ──────────  ────────  ───────  ──────────────────"
+  while IFS="$SEP" read -r tag launched_by run_id name status dur total donec _remaining; do
     [ "$tag" = "RUN" ] || continue
     n=$((n+1))
     local mark=" "
     [ "$n" -eq "${SEL:-1}" ] && mark=">"
-    printf '%s %-2s %-34s  %-17s  %s %-9s  %-8s  %s\n' \
-      "$mark" "$n)" "${run_id:0:34}" "${name:0:17}" "$(status_glyph "$status")" "${status:0:9}" "$(fmt_dur "${dur:-0}")" "$launched_by"
+    printf '%s %-2s %-34s  %-17s  %s %-9s  %-8s  %-7s  %s\n' \
+      "$mark" "$n)" "${run_id:0:34}" "${name:0:17}" "$(status_glyph "$status")" "${status:0:9}" "$(fmt_dur "${dur:-0}")" "${donec:-0}/${total:-0}" "$launched_by"
   done < "$CACHE"
   if [ "$n" -eq 0 ]; then
     echo
@@ -189,6 +239,8 @@ show_detail(){
     if [ "$tag" = "RUN" ]; then
       n=$((n+1))
       cur=$([ "$n" -eq "$target" ] && echo 1 || echo 0)
+    elif [ "$tag" = "FCAST" ] && [ "${cur:-0}" = "1" ]; then
+      printf '    \033[1m%s\033[0m\n' "$a"
     elif [ "$tag" = "TREE" ] && [ "${cur:-0}" = "1" ]; then
       printf '    %s\n' "$a"
     fi
@@ -201,9 +253,19 @@ TOTAL="$(grep -c "^RUN$SEP" "$CACHE" 2>/dev/null || echo 0)"
 cleanup(){ rm -f "$CACHE"; }
 trap cleanup EXIT
 
-# Non-interactive (piped/redirected): render once and exit.
+# Non-interactive (piped/redirected): render the list, then each run's forecast + stage detail
+# (the live TUI shows the selected run's detail on demand; piped output has no selection, so it
+# lays every run's forecast out in full for a stakeholder reading the tab or an evidence capture).
 if [ ! -t 1 ] || [ ! -t 0 ]; then
   render
+  if [ "$TOTAL" -gt 0 ]; then
+    i=1
+    while [ "$i" -le "$TOTAL" ]; do
+      echo
+      show_detail "$i"
+      i=$((i+1))
+    done
+  fi
   exit 0
 fi
 
@@ -214,7 +276,7 @@ paint(){
   render
   echo
   if [ "$TOTAL" -gt 0 ]; then
-    echo "  Selected run's stage graph (real topology from parentIds):"
+    echo "  Selected run — forecast, then stage-by-stage status (real topology + elapsed time):"
     show_detail "$SEL"
   fi
   printf '\n\033[7m workflows  ↑↓/j/k select · r refresh (re-queries) · q quit \033[0m%s\n' "$K"
