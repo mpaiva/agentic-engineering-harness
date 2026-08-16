@@ -55,7 +55,7 @@ $ git log -S"seq 1 600" --oneline -- build.sh
 $ grep -n "seq 1 600" build.sh
 (no output — cap absent from HEAD)
 $ sed -n '284p' build.sh
-trap 'printf "\n[harness] Interrupted before you answered. The lead is still live in its pane.\n  Attach with:  herdr --session %s\n  Answer the question, then re-run: ./build.sh --resume\n  Or stop the run: herdr --session %s server stop\n" "$SESSION" "$SESSION" >&2; exit 130' INT TERM
+trap 'printf "\n[cockpit] Interrupted before you answered. The lead is still live in its pane.\n  Attach with:  herdr --session %s\n  Answer the question, then re-run: ./build.sh --resume\n  Or stop the run: herdr --session %s server stop\n" "$SESSION" "$SESSION" >&2; exit 130' INT TERM
 ```
 
 Trap present, unbounded wait with heartbeat confirmed in `build.sh:273-293`.
@@ -177,7 +177,7 @@ Read all four documents in sequence. Findings:
 
 - Read for contradictions between the four docs: none found. Command examples
   (`npm install -g @bastani/atomic`, `herdr integration install claude`, `./build.sh`,
-  `herdr --session harness`) match `--help` output shape and are consistent with
+  `herdr --session cockpit`) match `--help` output shape and are consistent with
   `atomic/README.md` and `herdr/setup.md` conventions referenced elsewhere.
 
 ## 8. `build/EVIDENCE.md` exists

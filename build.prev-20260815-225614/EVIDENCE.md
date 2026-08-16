@@ -1,6 +1,6 @@
-# Evidence — harness repo audit (criterion 7: independent spot-check)
+# Evidence — cockpit repo audit (criterion 7: independent spot-check)
 
-Mission: `build/MISSION.md` — audit report at `build/artifacts/harness-audit/AUDIT.md`.
+Mission: `build/MISSION.md` — audit report at `build/artifacts/cockpit-audit/AUDIT.md`.
 This file covers only criterion 7: an independent second pass that re-checks AUDIT.md's own
 findings against actual repo state. I did not write AUDIT.md (researcher did); every check
 below re-ran the underlying command/file-read myself.
@@ -38,8 +38,8 @@ Output (13 files, not 16):
 ./atomic/workflows/feature-development.ts
 ./build.sh
 ./docs/getting-started.md
-./docs/superpowers/plans/2026-08-13-project-agnostic-harness.md
-./docs/superpowers/specs/2026-08-13-project-agnostic-harness-design.md
+./docs/superpowers/plans/2026-08-13-project-agnostic-cockpit.md
+./docs/superpowers/specs/2026-08-13-project-agnostic-cockpit-design.md
 ./herdr/atomic-integration.md
 ./scripts/sync-workflows.sh
 ./scripts/team.sh
@@ -54,8 +54,8 @@ Also checked AUDIT's "plus 3 files under `docs/superpowers/`":
 ```
 find docs/superpowers -type f -name "*.md" | xargs grep -l "0.9.12"
 ```
-Output: only 2 files (`plans/2026-08-13-project-agnostic-harness.md`,
-`specs/2026-08-13-project-agnostic-harness-design.md`), not 3.
+Output: only 2 files (`plans/2026-08-13-project-agnostic-cockpit.md`,
+`specs/2026-08-13-project-agnostic-cockpit-design.md`), not 3.
 
 **Verdict:** the drift itself is real and correctly identified — this is a genuine,
 important finding. But the flagship top-priority finding's headline number, "16 files," is
@@ -149,7 +149,7 @@ Command:
 sed -n '270,295p' build.sh
 ```
 Output confirms: `while [ ! -f "$BUILD/IDEA.md" ]; do sleep 1; WAITED=$((WAITED + 1)); if
-[ $((WAITED % 60)) -eq 0 ]; then printf '[harness] still waiting...'; fi; done` — no timeout
+[ $((WAITED % 60)) -eq 0 ]; then printf '[cockpit] still waiting...'; fi; done` — no timeout
 condition anywhere in the loop, heartbeat exactly every 60 iterations (60 seconds, since each
 iteration sleeps 1s). Matches AUDIT's claim word for word: unbounded wait, 60s heartbeat.
 Comments directly above the loop (lines 273-283) independently corroborate the "why" AUDIT
@@ -178,8 +178,8 @@ Output: `13` — matches corrected §6 Finding #1 count exactly.
 ```
 find docs/superpowers -type f -name "*.md" | xargs grep -l "0.9.12"
 ```
-Output: 2 files (`plans/2026-08-13-project-agnostic-harness.md`,
-`specs/2026-08-13-project-agnostic-harness-design.md`) — matches corrected sub-count exactly.
+Output: 2 files (`plans/2026-08-13-project-agnostic-cockpit.md`,
+`specs/2026-08-13-project-agnostic-cockpit-design.md`) — matches corrected sub-count exactly.
 
 ```
 grep -rln "0.9.13" --include="*.md" --include="*.sh" --include="*.ts" . 2>/dev/null | grep -v "^./build/\|^./build-alpha/\|^./build-beta/" | wc -l

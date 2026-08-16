@@ -261,11 +261,11 @@ CSS-only, zero JS, zero deps — no toggle control needed:
 
 | # | Section | Title | Command block(s) | You will see | Extra |
 |---|---------|-------|-------------------|---------------|-------|
-| 1 | Set up | Get the project | `git clone https://github.com/mpaiva/agentic-engineering-harness` + `cd agentic-engineering-harness` (one block, 2 lines) | "lines of text about downloading files." | — |
+| 1 | Set up | Get the project | `git clone https://github.com/mpaiva/atomic-cockpit` + `cd atomic-cockpit` (one block, 2 lines) | "lines of text about downloading files." | — |
 | 2 | Set up | Install the tools | `./scripts/setup.sh` | "a list of green check marks (✓). This can take a few minutes." | note: red ✗ guidance |
 | 3 | Set up | Log in | `atomic` | "a message that says you are logged in." | note: Ctrl+C twice to leave; mentions `/login`, "Claude Pro/Max" as body text, not a command block (not a shell command) |
 | 4 | Build something | Start the build | `./build.sh` | "a message telling you to open a second window. The first window then waits. This is normal. Leave it open." | — |
-| 5 | Build something | Open the second window | `herdr --session harness` | "a dark screen with a box in the middle. The box asks: *What do you want to build today?*" | — |
+| 5 | Build something | Open the second window | `herdr --session cockpit` | "a dark screen with a box in the middle. The box asks: *What do you want to build today?*" | — |
 | 6 | Build something | Answer the question | none (no shell command — user types free text into the app) | "the screen change while an agent writes your plan. This takes a minute or two." | example answers list (3 bullets) |
 | 7 | Build something | Read the plan and say yes | none | "the screen split into boxes after you say yes. Each box is one agent." | review bullets (Goal/Success criteria/Non-goals) |
 | 8 | Build something | Watch the agents work | none | (no explicit "You will see" line in README for this step — omit the callout box for step 8, do not invent text) | status-word table; "blocked" row highlighted; note about team-chat pane is out of scope per MISSION (only the two ordered how-to sections, not "The team chat pane" subsection) |

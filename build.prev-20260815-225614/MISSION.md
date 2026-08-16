@@ -4,15 +4,15 @@
 
 > What do you want to build today?
 
-new mission: help finish building this harness
+new mission: help finish building atomic cockpit
 
 (Human clarified: start with a general audit of the repo — read through it and report
 what's incomplete, broken, or undocumented — rather than jumping straight to a fix.)
 
 ## Goal
 
-A written audit report (`build/artifacts/harness-audit/AUDIT.md`) of the
-`agentic-engineering-harness` repository itself: every place where a claim in the docs does
+A written audit report (`build/artifacts/cockpit-audit/AUDIT.md`) of the
+`atomic-cockpit` repository itself: every place where a claim in the docs does
 not match what the installed tools/scripts actually do, every broken cross-reference, every
 script that doesn't run as documented, and every gap README's own "This is still rough"
 section already names. The report is the deliverable — it does not itself fix anything. Each
@@ -52,7 +52,7 @@ Z.sh --flag` fails with <error>"), not an impression.
 - Ground every claim in a command that was actually run or a file that was actually read —
   per this repo's own `AGENTS.md` rule ("Ground truth over assumption"). No claim without
   evidence.
-- Output lives under `build/artifacts/harness-audit/` (the report) and `build/EVIDENCE.md`
+- Output lives under `build/artifacts/cockpit-audit/` (the report) and `build/EVIDENCE.md`
   (the independent spot-check), per this repo's convention.
 
 ## Non-goals
@@ -65,6 +65,6 @@ Z.sh --flag` fails with <error>"), not an impression.
 ## Stop rules
 
 Done when all 7 success criteria have command-level or check-level evidence recorded in
-`build/EVIDENCE.md`, and `build/artifacts/harness-audit/AUDIT.md` exists with the findings
+`build/EVIDENCE.md`, and `build/artifacts/cockpit-audit/AUDIT.md` exists with the findings
 and the prioritized top-10 list. Stop and write `build/BLOCKED.md` if a criterion fails 3
 repair cycles.

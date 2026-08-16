@@ -165,7 +165,7 @@ criterion 6 beyond the CHAT line already specified above.
 
 **Decision: defer, do not implement this phase.** It requires editing `team/*.md` role
 briefs (e.g. `team/lead.md` or a shared convention) to instruct every role to `send` its
-run id on workflow launch — that's writable only by lead/PM per the harness's own
+run id on workflow launch — that's writable only by lead/PM per atomic cockpit's own
 read-only-for-architect rule on `team/`, it is not required by any MISSION-2 success
 criterion, and MISSION-2's non-goals explicitly rule out changing the hiring/role model.
 Criterion 5 is already satisfied without it (F2 / `/workflow connect <run-id>` inside the

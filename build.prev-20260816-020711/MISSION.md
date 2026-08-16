@@ -4,7 +4,7 @@
 
 > What do you want to build today?
 
-I need help finishing building this harness so I can make this repository available for
+I need help finishing building atomic cockpit so I can make this repository available for
 others to use. I need you to assess where we are, create a long term plan - autonomously
 without my approval - and fire up as many agents needed to get this in a quality statge a
 senior engineer will want to use this repository to build complex solutions with
@@ -12,7 +12,7 @@ multi-agents and atomic
 
 ## Goal
 
-`agentic-engineering-harness` becomes a reference repo a senior engineer can clone, follow
+`atomic-cockpit` becomes a reference repo a senior engineer can clone, follow
 `README.md` to set up Ghostty + Herdr + Atomic, and run `./build.sh` to watch a real
 multi-agent build happen — with no dead links, no scripts that fail their own syntax check,
 no doc that claims a capability the tools don't have, and every known-fixable defect closed.

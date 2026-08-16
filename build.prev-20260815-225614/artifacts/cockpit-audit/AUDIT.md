@@ -1,4 +1,4 @@
-# Harness audit — agentic-engineering-harness
+# Cockpit audit — atomic-cockpit
 
 Read-only audit. Every claim below cites the command run or file read. Environment: macOS,
 `atomic 0.9.13`, `herdr 0.8.0`, `Ghostty 1.3.1`, `claude 2.1.233`, `node v24.11.0`, `bun` and
@@ -61,7 +61,7 @@ contributor would follow.
 | `herdr --version` | `docs/getting-started.md:39` | Printed `herdr 0.8.0` — matches |
 | `ghostty --version` | implied by README's "Ghostty 1.3.1" | Printed `Ghostty 1.3.1` — matches |
 | `herdr --help` | general | Output matches every subcommand referenced across docs (`server`, `agent`, `api`, `workspace`, `tab`, `pane`, `worktree`, `notification`, `integration`, `channel`, `session`) |
-| `herdr server --help` | README's `herdr --session harness server stop` | `stop` is a listed subcommand — composition is valid |
+| `herdr server --help` | README's `herdr --session cockpit server stop` | `stop` is a listed subcommand — composition is valid |
 | `herdr --session --help` (attempted nested run) | n/a, exploratory | Fails with `nested herdr is disabled by default` — expected, not a doc claim, and matches "see configuration if you want to enable it" |
 | `atomic --help` | `AGENTS.md:14`, `atomic/README.md` | Output matches described commands (`install`, `remove`, `update`, `list`, `config`, `auth`, flags) |
 | `./scripts/setup.sh` | README §Step 2, `docs/getting-started.md` | Ran clean: all ✓ (node, atomic, herdr, Ghostty, claude, herdr↔claude integration, workflow sync). Confirms idempotent claim in its own header comment |
@@ -84,10 +84,10 @@ contributor would follow.
 
 | Command | Where documented | Reason not run |
 |---|---|---|
-| `git clone https://github.com/mpaiva/agentic-engineering-harness` | README:62 | Already inside a checkout of this repo; a fresh clone would be redundant and network-dependent |
+| `git clone https://github.com/mpaiva/atomic-cockpit` | README:62 | Already inside a checkout of this repo; a fresh clone would be redundant and network-dependent |
 | `atomic` (interactive login) | README:85, `docs/getting-started.md:60` | Interactive TUI requiring a live login flow; already authenticated in this environment, re-running would not add evidence |
 | `./build.sh` (full run) | README:107 | Starts a real multi-agent build, spends real API credits, and this session **is itself running inside a `./build.sh` invocation** (see `herdr agent list` output above showing this repo's own lead/researcher/etc. panes) — running it again would be redundant and costly |
-| `herdr --session harness server stop` | README:197 | Destructive — would kill this very session's Herdr server and every teammate pane, including this audit run |
+| `herdr --session cockpit server stop` | README:197 | Destructive — would kill this very session's Herdr server and every teammate pane, including this audit run |
 | `./build.sh --session beta` | README:210 | Same cost/redundancy reasoning as `./build.sh`; `build-beta/` exists but is empty (`ls build-beta/` → no output, `team-chat.log` absent), so this path has never actually been exercised in this checkout |
 | `herdr --session beta`, `herdr --session beta server stop`, `cat build-beta/team-chat.log` | README:224-226 | Depends on a live `beta` session that does not exist (see above); running `cat` would just confirm the file's absence, which is already known |
 | `./build.sh --resume` | README:336, `docs/getting-started.md` implicitly | Destructive/stateful against this session's own live `build/` — restarts the server per the script's own comments (`build.sh:276-277`) |
@@ -182,8 +182,8 @@ Source: README.md:345-362.
    `.atomic/workflows/` directly, so it's worth noting rather than dropping silently):
    `README.md`, `atomic/README.md`, `atomic/extensions/build-intake.ts`,
    `atomic/extensions/herdr-state.ts`, `atomic/workflows/feature-development.ts`, `build.sh`,
-   `docs/getting-started.md`, `docs/superpowers/plans/2026-08-13-project-agnostic-harness.md`,
-   `docs/superpowers/specs/2026-08-13-project-agnostic-harness-design.md`,
+   `docs/getting-started.md`, `docs/superpowers/plans/2026-08-13-project-agnostic-cockpit.md`,
+   `docs/superpowers/specs/2026-08-13-project-agnostic-cockpit-design.md`,
    `herdr/atomic-integration.md`, `scripts/sync-workflows.sh`, `scripts/team.sh`, plus the
    gitignored `.atomic/workflows/feature-development.ts` copy.
 
@@ -191,8 +191,8 @@ Source: README.md:345-362.
    ```
    find docs/superpowers -type f -name "*.md" | xargs grep -l "0.9.12"
    ```
-   Output: **2 files**, not 3 — `docs/superpowers/plans/2026-08-13-project-agnostic-harness.md`
-   and `docs/superpowers/specs/2026-08-13-project-agnostic-harness-design.md`.
+   Output: **2 files**, not 3 — `docs/superpowers/plans/2026-08-13-project-agnostic-cockpit.md`
+   and `docs/superpowers/specs/2026-08-13-project-agnostic-cockpit-design.md`.
 
    Command (the "4 files already say `0.9.13`" sub-claim, re-checked — this part was correct):
    ```
@@ -279,8 +279,8 @@ Source: README.md:345-362.
    stages, and roles match `team/*.md` and `atomic/workflows/feature-development.ts`?).
 
 10. **`docs/superpowers/` and `.superpowers/` contain planning/spec docs
-    (`docs/superpowers/plans/2026-08-13-project-agnostic-harness.md`,
-    `docs/superpowers/specs/2026-08-13-project-agnostic-harness-design.md`) that also carry
+    (`docs/superpowers/plans/2026-08-13-project-agnostic-cockpit.md`,
+    `docs/superpowers/specs/2026-08-13-project-agnostic-cockpit-design.md`) that also carry
     the stale `0.9.12` version claim** (see finding 1) and were not otherwise audited for
     currency against what's actually built today. **Suggested next mission:** fold into
     finding 1's version-sweep mission, or a separate pass confirming the plan/spec still

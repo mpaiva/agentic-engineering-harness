@@ -10,7 +10,7 @@ A senior engineer who runs `./build.sh` gets a cockpit that reads clearly at a g
 each Herdr tab has one job, the live intercom conversation is not fighting the lead's own
 pane for space, and the human can actually see an agent's Atomic workflow graph when one is
 running — not just read about a "future adapter" that undersells what Atomic already ships
-today (`/workflow connect`, `F2` graph overlay). The harness becomes something an engineer
+today (`/workflow connect`, `F2` graph overlay). Atomic cockpit becomes something an engineer
 would show a colleague, not something they'd forgive.
 
 ## Current state (verified this session)
