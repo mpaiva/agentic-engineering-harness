@@ -350,6 +350,46 @@ sys.exit(0 if any(p.get('label') == 'team-chat' for p in panes) else 1)
   fi
 fi
 
+# Open the kanban board in its own tab so every card's stage is one glance away (cards live
+# under build/BOARD/, written with scripts/board.sh — see docs/kanban.md). Idempotent: skip if
+# a kanban tab already exists (e.g. on --resume). Best-effort: a failure here must never fail
+# the run, so every herdr call swallows its error. The JSON shapes are searched rather than
+# assumed (flags verified against `herdr tab --help` / `herdr pane --help`, Herdr 0.8.0).
+if ! herdr tab list 2>/dev/null | python3 -c "
+import sys, json
+def labelled(o):
+    if isinstance(o, dict):
+        return o.get('label') == 'kanban' or any(labelled(v) for v in o.values())
+    if isinstance(o, list):
+        return any(labelled(v) for v in o)
+    return False
+try: sys.exit(0 if labelled(json.load(sys.stdin)) else 1)
+except Exception: sys.exit(1)
+"; then
+  KANBANPANE="$(herdr tab create --label kanban --cwd "$HERE" --no-focus 2>/dev/null \
+    | python3 -c "
+import sys, json
+def find(o):
+    if isinstance(o, dict):
+        if 'pane_id' in o: return o['pane_id']
+        for v in o.values():
+            r = find(v)
+            if r: return r
+    if isinstance(o, list):
+        for v in o:
+            r = find(v)
+            if r: return r
+    return None
+try: print(find(json.load(sys.stdin)) or '')
+except Exception: pass
+" 2>/dev/null || true)"
+  if [ -n "$KANBANPANE" ]; then
+    echo "$KANBANPANE" > "$LAUNCHDIR/kanban.pane" 2>/dev/null || true
+    # BUILD_DIR points the viewer at THIS run's board, so --session beta watches build-beta/.
+    herdr pane run "$KANBANPANE" env "BUILD_DIR=$BUILD" ./scripts/kanban.sh >/dev/null 2>&1 || true
+  fi
+fi
+
 if [ "$MODE" = "resume" ]; then
   HEADLINE=" The lead is back. It is re-reading the mission and continuing."
 else
@@ -366,6 +406,7 @@ $HEADLINE
  MISSION:  cat $BUILD/MISSION.md
  STOP:     herdr --session $SESSION server stop
  CHAT:     opens automatically in the 'team-chat' pane · reopen: ./scripts/team-chat.sh
+ BOARD:    opens in the 'kanban' tab · add cards: ./scripts/board.sh · reopen: ./scripts/kanban.sh
 
  Output lands in: $BUILD
 EOF

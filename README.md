@@ -284,6 +284,7 @@ These pages have more detail. They are written for people who want the full pict
 - [docs/case-study-ozymandias.md](docs/case-study-ozymandias.md) — a real run, screenshot by screenshot, including what broke
 - [docs/architecture.md](docs/architecture.md) — how the three tools fit together
 - [docs/monitoring-agents.md](docs/monitoring-agents.md) — how to watch a team without reading everything
+- [docs/kanban.md](docs/kanban.md) — the kanban board: columns are the workflow stages, cards are files under `build/BOARD/`
 - [docs/verification-and-gates.md](docs/verification-and-gates.md) — how the work gets checked
 - [docs/security.md](docs/security.md) — how to run this safely
 - [team/ROLES.md](team/ROLES.md) — every agent role, and when it is used
