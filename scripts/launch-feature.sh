@@ -79,8 +79,10 @@ if [[ "$MODE" == "--live" ]]; then
 
 LIVE mode drives real agents. For each responsibility the driver would:
   herdr agent start <name> --kind claude --pane <pane>
-  herdr agent prompt <name> "<phase prompt scoped to that responsibility>"
-  herdr agent wait  <name> --until done --until blocked --timeout 900000
+  herdr agent prompt <pane> "<phase prompt scoped to that responsibility>"
+  herdr agent wait  <pane> --until done --until blocked --timeout 900000
+Note: prompt/wait target the pane id, not the name given to 'agent start' — verified live,
+role-name targets return agent_not_found for get/read/wait/explain (herdr 0.8.0).
 Then advance to the next phase when the stage's agents report 'done', and stop for you
 when any reports 'blocked'. Start it by attaching the TUI in Ghostty:  herdr --session $SESSION
 
