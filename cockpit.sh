@@ -17,7 +17,7 @@ if [ "$SESSION" = "harness" ]; then BUILD="$HERE/build"; else BUILD="$HERE/build
 export PATH="$HOME/.local/bin:$PATH"
 herdr(){ command herdr --session "$SESSION" "$@"; }
 
-E=$'\033'; R="$E[0m"; B="$E[1m"; DIM="$E[2m"; GRN="$E[38;5;150m"; YEL="$E[1;33m"; GREY="$E[38;5;244m"
+E=$'\033'; R="${E}[0m"; B="${E}[1m"; DIM="${E}[2m"; GRN="${E}[38;5;150m"; YEL="${E}[1;33m"; GREY="${E}[38;5;244m"
 
 # ---- assess ----------------------------------------------------------------
 assess(){
