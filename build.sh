@@ -422,6 +422,11 @@ _open_side_tab kanban env "BUILD_DIR=$BUILD" ./scripts/kanban.sh
 # done). BUILD_DIR + HERDR_SESSION point the viewer at THIS run's roster and session.
 _open_side_tab team env "BUILD_DIR=$BUILD" "HERDR_SESSION=$SESSION" ./scripts/team-status.sh
 
+# Named workflow runs: a list of active + terminal /workflow runs (registered via
+# scripts/workflow-register.sh), selectable for read-only stage detail. BUILD_DIR points the
+# viewer at THIS run's registry, so --session beta watches build-beta/WORKFLOW-RUNS.md.
+_open_side_tab workflows env "BUILD_DIR=$BUILD" ./scripts/workflow-tab.sh
+
 if [ "$MODE" = "resume" ]; then
   HEADLINE=" The lead is back. It is re-reading the mission and continuing."
 else
@@ -440,6 +445,7 @@ $HEADLINE
  CHAT:     opens in the 'team-chat' tab · reopen: ./scripts/team-chat.sh
  BOARD:    opens in the 'kanban' tab · add cards: ./scripts/board.sh · reopen: ./scripts/kanban.sh
  TEAM:     live roster in the 'team' tab · reopen: ./scripts/team-status.sh
+ WORKFLOWS: opens in the 'workflows' tab · register a run: ./scripts/workflow-register.sh · reopen: ./scripts/workflow-tab.sh
 
  Output lands in: $BUILD
 EOF
