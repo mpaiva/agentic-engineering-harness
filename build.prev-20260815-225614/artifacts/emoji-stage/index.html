@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Emoji Stage</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page">
+    <h1 class="visually-hidden">Emoji Stage</h1>
+    <div class="hero" id="hero">
+      <span class="hero-glyph" id="hero-glyph" aria-hidden="true">✨</span>
+      <p class="hero-caption" id="hero-caption">Pick an emoji below to bring it to life.</p>
+      <span class="visually-hidden" id="hero-live" aria-live="polite"></span>
+    </div>
+
+    <div class="picker" role="group" aria-label="Choose an emoji">
+      <button type="button" class="picker-btn" data-emoji="😀" aria-label="Grinning face">😀</button>
+      <button type="button" class="picker-btn" data-emoji="😎" aria-label="Smiling face with sunglasses">😎</button>
+      <button type="button" class="picker-btn" data-emoji="🚀" aria-label="Rocket">🚀</button>
+      <button type="button" class="picker-btn" data-emoji="🎉" aria-label="Party popper">🎉</button>
+      <button type="button" class="picker-btn" data-emoji="🌈" aria-label="Rainbow">🌈</button>
+      <button type="button" class="picker-btn" data-emoji="🔥" aria-label="Fire">🔥</button>
+      <button type="button" class="picker-btn" data-emoji="🍕" aria-label="Pizza">🍕</button>
+      <button type="button" class="picker-btn" data-emoji="🐙" aria-label="Octopus">🐙</button>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

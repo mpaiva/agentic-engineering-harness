@@ -1,0 +1,568 @@
+/* Getting started page — style per DESIGN.md (§4a: light/dark via prefers-color-scheme) */
+
+:root {
+  --bg: #f7f7f5;
+  --ink: #1c1c1e;
+  --muted: #565a5f;
+  --accent: #b5651d;
+  --accent-strong: #8a4a12;
+  --code-bg: #1e2126;
+  --code-ink: #eef0f2;
+  --callout-bg: #fbeee0;
+  --callout-border: var(--accent);
+  --card-bg: #ffffff;
+  --border: #e2e0db;
+  --focus: #1258e8;
+  --blocked-bg: #fde3d0;
+  --table-head-bg: #efece5;
+  --copy-border: rgba(255, 255, 255, 0.4);
+  --copy-border-hover: rgba(255, 255, 255, 0.7);
+  --copy-bg-hover: rgba(255, 255, 255, 0.12);
+  --copy-bg-active: rgba(255, 255, 255, 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14151a;
+    --ink: #eceef1;
+    --muted: #a3a8b0;
+    --accent: #e08a3e;
+    --accent-strong: #f0a25c;
+    --code-bg: #0b0c0f;
+    --code-ink: #f2f4f6;
+    --callout-bg: #2e2013;
+    --callout-border: var(--accent);
+    --card-bg: #1c1e24;
+    --border: #33363e;
+    --focus: #7ba8ff;
+    --blocked-bg: #4a2a12;
+    --table-head-bg: #262832;
+    --copy-border: rgba(255, 255, 255, 0.3);
+    --copy-border-hover: rgba(255, 255, 255, 0.55);
+    --copy-bg-hover: rgba(255, 255, 255, 0.1);
+    --copy-bg-active: rgba(255, 255, 255, 0.18);
+  }
+}
+
+/* Explicit user choice (toggle) wins over prefers-color-scheme via higher
+   specificity: :root[data-theme] beats plain :root regardless of source
+   order or OS setting. */
+:root[data-theme="light"] {
+  --bg: #f7f7f5;
+  --ink: #1c1c1e;
+  --muted: #565a5f;
+  --accent: #b5651d;
+  --accent-strong: #8a4a12;
+  --code-bg: #1e2126;
+  --code-ink: #eef0f2;
+  --callout-bg: #fbeee0;
+  --callout-border: var(--accent);
+  --card-bg: #ffffff;
+  --border: #e2e0db;
+  --focus: #1258e8;
+  --blocked-bg: #fde3d0;
+  --table-head-bg: #efece5;
+  --copy-border: rgba(255, 255, 255, 0.4);
+  --copy-border-hover: rgba(255, 255, 255, 0.7);
+  --copy-bg-hover: rgba(255, 255, 255, 0.12);
+  --copy-bg-active: rgba(255, 255, 255, 0.2);
+}
+
+:root[data-theme="dark"] {
+  --bg: #14151a;
+  --ink: #eceef1;
+  --muted: #a3a8b0;
+  --accent: #e08a3e;
+  --accent-strong: #f0a25c;
+  --code-bg: #0b0c0f;
+  --code-ink: #f2f4f6;
+  --callout-bg: #2e2013;
+  --callout-border: var(--accent);
+  --card-bg: #1c1e24;
+  --border: #33363e;
+  --focus: #7ba8ff;
+  --blocked-bg: #4a2a12;
+  --table-head-bg: #262832;
+  --copy-border: rgba(255, 255, 255, 0.3);
+  --copy-border-hover: rgba(255, 255, 255, 0.55);
+  --copy-bg-hover: rgba(255, 255, 255, 0.1);
+  --copy-bg-active: rgba(255, 255, 255, 0.18);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  line-height: 1.55;
+}
+
+main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 1.25rem 4rem;
+}
+
+/* Header */
+
+.page-header {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 1.5rem;
+}
+
+.page-header h1 {
+  font-size: 2rem;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.page-header p {
+  margin: 0.25rem 0;
+  color: var(--muted);
+}
+
+.progress-note {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-strong);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Section dividers */
+
+.phase {
+  margin-top: 2rem;
+}
+
+.phase h2 {
+  font-size: 1.5rem;
+  margin: 0 0 0.75rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 3px solid var(--accent);
+}
+
+.phase-note {
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.phase-intro {
+  color: var(--muted);
+  margin-top: 0;
+}
+
+.phase-end {
+  margin-top: 1.5rem;
+  padding: 0.9rem 1.1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+/* Steps */
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.step {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem 1.4rem 1.5rem;
+}
+
+.step-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.step-badge {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.step-head h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.step-body {
+  color: var(--ink);
+  margin: 0.5rem 0;
+}
+
+.step ul {
+  margin: 0.4rem 0 0.9rem;
+  padding-left: 1.4rem;
+}
+
+.step li {
+  margin: 0.2rem 0;
+}
+
+.note {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin: 0.6rem 0 0;
+}
+
+/* Command block: darkest zone, code-editor-like */
+
+.command-block {
+  position: relative;
+  background: var(--code-bg);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  padding: 0.9rem 5.5rem 0.9rem 1rem;
+  margin: 0.75rem 0;
+  overflow-x: auto;
+}
+
+.command-block pre {
+  margin: 0;
+  overflow-x: auto;
+}
+
+.command-block code {
+  color: var(--code-ink);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.95rem;
+  white-space: pre;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.7rem;
+  background: transparent;
+  color: var(--code-ink);
+  border: 1px solid var(--copy-border);
+  border-radius: 6px;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.copy-btn:hover {
+  background: var(--copy-bg-hover);
+  border-color: var(--copy-border-hover);
+}
+
+.copy-btn:active {
+  background: var(--copy-bg-active);
+}
+
+.copy-btn.copied {
+  background: #1f7a3d;
+  border-color: #1f7a3d;
+  color: #fff;
+}
+
+.copy-btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* "You will see" callout: distinct tinted zone */
+
+.callout {
+  background: var(--callout-bg);
+  border-left: 4px solid var(--callout-border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0 0;
+  font-size: 0.98rem;
+}
+
+.callout-label {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  color: var(--accent-strong);
+  margin-right: 0.4rem;
+}
+
+/* Status table (step 8) */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+  font-size: 0.95rem;
+}
+
+th, td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.7rem;
+  text-align: left;
+}
+
+thead th {
+  background: var(--table-head-bg);
+}
+
+tr.row-blocked {
+  background: var(--blocked-bg);
+}
+/* Scrollspy TOC (§4c) — sticky horizontal bar under header on narrow
+   viewports, sticky sidebar on wide viewports */
+
+.toc {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0.6rem 1.25rem;
+}
+
+.toc ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+}
+
+.toc li {
+  flex: 0 0 auto;
+}
+
+.toc-link {
+  display: inline-block;
+  padding: 0.35rem 0.65rem;
+  border-left: 3px solid transparent;
+  border-radius: 4px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.toc-link:hover {
+  background: var(--card-bg);
+}
+
+.toc-link.active {
+  background: var(--callout-bg);
+  border-left-color: var(--accent);
+  font-weight: 700;
+}
+
+.toc-link:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (min-width: 900px) {
+  body {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 760px) 1fr;
+    grid-template-areas:
+      "header header header"
+      "toc     main   main"
+      "footer  footer footer";
+    column-gap: 2rem;
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+
+  .page-header {
+    grid-area: header;
+    max-width: none;
+  }
+
+  .toc {
+    grid-area: toc;
+    position: sticky;
+    top: 1.25rem;
+    align-self: start;
+    max-height: calc(100vh - 2.5rem);
+    overflow-y: auto;
+    border-bottom: none;
+    background: transparent;
+    padding: 1.25rem 0 0;
+  }
+
+  .toc ol {
+    flex-direction: column;
+    overflow-x: visible;
+    gap: 0.15rem;
+  }
+
+  main {
+    grid-area: main;
+    max-width: none;
+    margin: 0;
+  }
+
+  .page-footer {
+    grid-area: footer;
+    max-width: none;
+  }
+}
+
+
+/* Manual light/dark toggle (§4b) + print button — fixed top-right, always reachable */
+
+.top-actions {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.theme-toggle,
+.print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--card-bg);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.theme-toggle:hover,
+.print-btn:hover {
+  border-color: var(--accent);
+}
+
+.theme-toggle-icon,
+.print-btn-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.theme-toggle:focus-visible,
+.print-btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .top-actions {
+    top: 0.6rem;
+    right: 0.6rem;
+    gap: 0.35rem;
+  }
+
+  .theme-toggle,
+  .print-btn {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.78rem;
+  }
+}
+
+/* Print: strip interactive chrome, keep the 8 clean steps */
+
+@media print {
+  .top-actions {
+    display: none;
+  }
+
+  .toc {
+    display: none;
+  }
+
+  .copy-btn {
+    display: none;
+  }
+
+  .command-block {
+    padding-right: 1rem;
+  }
+
+  *:focus,
+  *:focus-visible {
+    outline: none;
+  }
+}
+
+/* Footer */
+
+.page-footer {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* Focus visibility, uniform across interactive controls */
+
+a:focus-visible,
+button:focus-visible,
+pre:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Responsive: shrink copy button below ~480px, keep accessible text label */
+
+@media (max-width: 480px) {
+  .command-block {
+    padding-right: 4rem;
+  }
+
+  .copy-btn {
+    padding: 0.25rem 0.45rem;
+    font-size: 0.72rem;
+  }
+}
+
+@media (max-width: 360px) {
+  main, .page-header, .page-footer {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .step {
+    padding: 1rem 1rem 1.25rem;
+  }
+}

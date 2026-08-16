@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Getting started — Agentic engineering harness</title>
+<script>
+(function () {
+  try {
+    var stored = localStorage.getItem("theme");
+    if (stored === "dark" || stored === "light") {
+      document.documentElement.setAttribute("data-theme", stored);
+    }
+  } catch (e) {
+    /* localStorage unavailable — fall back to prefers-color-scheme via CSS */
+  }
+})();
+</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="top-actions">
+  <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle color theme">
+    <span class="theme-toggle-icon" aria-hidden="true">&#9789;</span>
+    <span class="theme-toggle-label">Light</span>
+  </button>
+  <button type="button" id="print-btn" class="print-btn" aria-label="Print this guide">
+    <span class="print-btn-icon" aria-hidden="true">&#128438;</span>
+    <span class="print-btn-label">Print</span>
+  </button>
+</div>
+<header class="page-header">
+  <h1>Getting started</h1>
+  <p>Step by step, from the project README. Set it up once, then build something.</p>
+  <p class="progress-note">8 steps</p>
+</header>
+
+<nav class="toc" aria-label="Steps">
+  <ol>
+    <li><a href="#step-1" class="toc-link" data-step="1">1. Get the project</a></li>
+    <li><a href="#step-2" class="toc-link" data-step="2">2. Install the tools</a></li>
+    <li><a href="#step-3" class="toc-link" data-step="3">3. Log in</a></li>
+    <li><a href="#step-4" class="toc-link" data-step="4">4. Start the build</a></li>
+    <li><a href="#step-5" class="toc-link" data-step="5">5. Open the second window</a></li>
+    <li><a href="#step-6" class="toc-link" data-step="6">6. Answer the question</a></li>
+    <li><a href="#step-7" class="toc-link" data-step="7">7. Read the plan and say yes</a></li>
+    <li><a href="#step-8" class="toc-link" data-step="8">8. Watch the agents work</a></li>
+  </ol>
+</nav>
+
+<main>
+  <section id="setup" class="phase">
+    <h2>Set up <span class="phase-note">(you do this once)</span></h2>
+
+    <ol class="steps">
+      <li class="step" id="step-1">
+        <div class="step-head">
+          <span class="step-badge">1</span>
+          <h3>Get the project</h3>
+        </div>
+        <p class="step-body">Open your terminal app. Type this and press Return:</p>
+        <div class="command-block">
+        <pre tabindex="0"><code>git clone https://github.com/mpaiva/agentic-engineering-harness
+cd agentic-engineering-harness</code></pre>
+          <button type="button" class="copy-btn" aria-live="polite" aria-label="Copy command for step 1: Get the project" data-command="git clone https://github.com/mpaiva/agentic-engineering-harness&#10;cd agentic-engineering-harness">Copy</button>
+        </div>
+        <p class="callout"><span class="callout-label">You will see:</span> lines of text about downloading files.</p>
+      </li>
+
+      <li class="step" id="step-2">
+        <div class="step-head">
+          <span class="step-badge">2</span>
+          <h3>Install the tools</h3>
+        </div>
+        <p class="step-body">Type this and press Return:</p>
+        <div class="command-block">
+          <pre tabindex="0"><code>./scripts/setup.sh</code></pre>
+          <button type="button" class="copy-btn" aria-live="polite" aria-label="Copy command for step 2: Install the tools" data-command="./scripts/setup.sh">Copy</button>
+        </div>
+        <p class="callout"><span class="callout-label">You will see:</span> a list of green check marks (✓). This can take a few minutes.</p>
+        <p class="note">If you see a red ✗, the message tells you what to fix. Fix it, then run the command again.</p>
+      </li>
+
+      <li class="step" id="step-3">
+        <div class="step-head">
+          <span class="step-badge">3</span>
+          <h3>Log in</h3>
+        </div>
+        <p class="step-body">Type this and press Return:</p>
+        <div class="command-block">
+          <pre tabindex="0"><code>atomic</code></pre>
+          <button type="button" class="copy-btn" aria-live="polite" aria-label="Copy command for step 3: Log in" data-command="atomic">Copy</button>
+        </div>
+        <p class="step-body">A program opens. Type <code>/login</code> and press Return. Choose <strong>Claude Pro/Max</strong>. Follow the steps in your web browser.</p>
+        <p class="callout"><span class="callout-label">You will see:</span> a message that says you are logged in.</p>
+        <p class="note">To leave the program, hold <strong>Control</strong> and press <strong>C</strong>. Do this twice.</p>
+      </li>
+    </ol>
+
+    <p class="phase-end"><strong>You are now set up.</strong> You will not need to do these three steps again.</p>
+  </section>
+
+  <section id="build" class="phase">
+    <h2>Build something</h2>
+    <p class="phase-intro">You need <strong>two terminal windows</strong> for this. The first one runs the build. The second one is where you answer questions.</p>
+
+    <ol class="steps" start="4">
+      <li class="step" id="step-4">
+        <div class="step-head">
+          <span class="step-badge">4</span>
+          <h3>Start the build</h3>
+        </div>
+        <p class="step-body">In your first terminal window, type this and press Return:</p>
+        <div class="command-block">
+          <pre tabindex="0"><code>./build.sh</code></pre>
+          <button type="button" class="copy-btn" aria-live="polite" aria-label="Copy command for step 4: Start the build" data-command="./build.sh">Copy</button>
+        </div>
+        <p class="callout"><span class="callout-label">You will see:</span> a message telling you to open a second window. The first window then waits. This is normal. Leave it open.</p>
+      </li>
+
+      <li class="step" id="step-5">
+        <div class="step-head">
+          <span class="step-badge">5</span>
+          <h3>Open the second window</h3>
+        </div>
+        <p class="step-body">Open a new terminal window. Type this and press Return:</p>
+        <div class="command-block">
+          <pre tabindex="0"><code>herdr --session harness</code></pre>
+          <button type="button" class="copy-btn" aria-live="polite" aria-label="Copy command for step 5: Open the second window" data-command="herdr --session harness">Copy</button>
+        </div>
+        <p class="callout"><span class="callout-label">You will see:</span> a dark screen with a box in the middle. The box asks: <em>What do you want to build today?</em></p>
+      </li>
+
+      <li class="step" id="step-6">
+        <div class="step-head">
+          <span class="step-badge">6</span>
+          <h3>Answer the question</h3>
+        </div>
+        <p class="step-body">Type what you want to build. Use normal words. You do not need to be technical.</p>
+        <p class="step-body">Good answers look like this:</p>
+        <ul>
+          <li>a to do list app I can use with a keyboard only</li>
+          <li>a tool that turns a spreadsheet into a web page</li>
+          <li>a program that renames my photo files by date</li>
+        </ul>
+        <p class="step-body">Press Return when you are done.</p>
+        <p class="callout"><span class="callout-label">You will see:</span> the screen change while an agent writes your plan. This takes a minute or two.</p>
+      </li>
+
+      <li class="step" id="step-7">
+        <div class="step-head">
+          <span class="step-badge">7</span>
+          <h3>Read the plan and say yes</h3>
+        </div>
+        <p class="step-body">The agent shows you a plan. It asks: <em>Proceed as written?</em></p>
+        <p class="step-body">Read the plan first. Look for:</p>
+        <ul>
+          <li><strong>Goal</strong> — what you will have at the end</li>
+          <li><strong>Success criteria</strong> — how you will know it worked</li>
+          <li><strong>Non-goals</strong> — what it will <em>not</em> build</li>
+        </ul>
+        <p class="step-body">If the plan looks right, choose yes.</p>
+        <p class="step-body">If the plan looks wrong, say what to change. It is much cheaper to fix the plan now than to fix the software later.</p>
+        <p class="callout"><span class="callout-label">You will see:</span> the screen split into boxes after you say yes. Each box is one agent.</p>
+      </li>
+
+      <li class="step" id="step-8">
+        <div class="step-head">
+          <span class="step-badge">8</span>
+          <h3>Watch the agents work</h3>
+        </div>
+        <p class="step-body">Each box has a name, like <code>implementer</code> or <code>verifier</code>. Under each name is a word that tells you what that agent is doing:</p>
+        <table>
+          <thead>
+            <tr><th scope="col">Word</th><th scope="col">What it means</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>working</td><td>The agent is busy.</td></tr>
+            <tr><td>idle</td><td>The agent is waiting for work.</td></tr>
+            <tr class="row-blocked"><td>blocked</td><td><strong>The agent needs you.</strong> Read that box.</td></tr>
+            <tr><td>done</td><td>The agent finished its task.</td></tr>
+          </tbody>
+        </table>
+        <p class="step-body">You do not need to read every box. Watch for the word <strong>blocked</strong>. That is the one that needs you.</p>
+        <p class="step-body">Your files are saved in a folder called <code>build</code>.</p>
+      </li>
+    </ol>
+  </section>
+</main>
+
+<footer class="page-footer">
+  <p>Source: README.md</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
