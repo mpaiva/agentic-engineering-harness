@@ -392,6 +392,44 @@ except Exception: pass
   fi
 fi
 
+# Open the team roster board in its own tab: who was hired, why, and each agent's live state
+# (working/blocked/idle/done). Same idempotent + best-effort contract as the kanban tab above,
+# and — like it — writes NO $LAUNCHDIR/*.pane record, so scripts/team.sh keeps splitting from
+# the newest hire pane rather than landing hires in this tab. See scripts/team-status.sh.
+if ! herdr tab list 2>/dev/null | python3 -c "
+import sys, json
+def labelled(o):
+    if isinstance(o, dict):
+        return o.get('label') == 'team' or any(labelled(v) for v in o.values())
+    if isinstance(o, list):
+        return any(labelled(v) for v in o)
+    return False
+try: sys.exit(0 if labelled(json.load(sys.stdin)) else 1)
+except Exception: sys.exit(1)
+"; then
+  TEAMPANE="$(herdr tab create --label team --cwd "$HERE" --no-focus 2>/dev/null \
+    | python3 -c "
+import sys, json
+def find(o):
+    if isinstance(o, dict):
+        if 'pane_id' in o: return o['pane_id']
+        for v in o.values():
+            r = find(v)
+            if r: return r
+    if isinstance(o, list):
+        for v in o:
+            r = find(v)
+            if r: return r
+    return None
+try: print(find(json.load(sys.stdin)) or '')
+except Exception: pass
+" 2>/dev/null || true)"
+  if [ -n "$TEAMPANE" ]; then
+    # BUILD_DIR + HERDR_SESSION point the viewer at THIS run's roster and session.
+    herdr pane run "$TEAMPANE" env "BUILD_DIR=$BUILD" "HERDR_SESSION=$SESSION" ./scripts/team-status.sh >/dev/null 2>&1 || true
+  fi
+fi
+
 if [ "$MODE" = "resume" ]; then
   HEADLINE=" The lead is back. It is re-reading the mission and continuing."
 else
@@ -409,6 +447,7 @@ $HEADLINE
  STOP:     herdr --session $SESSION server stop
  CHAT:     opens automatically in the 'team-chat' pane · reopen: ./scripts/team-chat.sh
  BOARD:    opens in the 'kanban' tab · add cards: ./scripts/board.sh · reopen: ./scripts/kanban.sh
+ TEAM:     live roster in the 'team' tab · reopen: ./scripts/team-status.sh
 
  Output lands in: $BUILD
 EOF

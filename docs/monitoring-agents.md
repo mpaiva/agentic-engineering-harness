@@ -94,7 +94,7 @@ VERIFICATION
 HUMAN REVIEW      ○ waiting
 ```
 
-Today Herdr provides the pane/state cockpit and Atomic provides the stage graph; a first-class adapter that projects Atomic's stage names into the Herdr sidebar is a documented future step (see [herdr/atomic-integration.md](../herdr/atomic-integration.md)). Until then, `scripts/status.sh` rolls up `herdr agent list` into the same at-a-glance view.
+Today Herdr provides the pane/state cockpit and Atomic provides the stage graph; a first-class adapter that projects Atomic's stage names into the Herdr sidebar is a documented future step (see [herdr/atomic-integration.md](../herdr/atomic-integration.md)). Until then, `scripts/status.sh` rolls up `herdr agent list` into the same at-a-glance view for a feature workspace, and `scripts/team-status.sh` is the live version shown in the team cockpit's **`team` tab** — it joins `build/ROSTER.md` (who was hired and why) with each agent's live state, sorts BLOCKED/UNKNOWN last, and prints the `scripts/team.sh` hire/list controls. `build.sh` opens it automatically.
 
 ## The principle
 
