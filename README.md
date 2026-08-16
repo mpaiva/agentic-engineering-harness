@@ -26,11 +26,13 @@ Then:
        alt="A 40-second animation of one real run. It moves through eight stages: a single terminal pane asking what to build; the typed answer; a written plan with seven checks; a dialog that halts everything until a person approves; four agents hired one at a time as the window splits from one pane into five; the team working; a separate agent reporting all seven checks pass; and a browser showing the finished page, a poem revealed line by line, ending with the author's signature." />
   <figcaption>
     <em>Not a drawing and not a re-creation: these are screenshots of the screen, taken every
-    two seconds while this actually happened on 14 August 2026. The run finished — all 7
-    checks passed, proved by an agent that did not write the code, then watched by a person.
-    It cost $4.21. It also turned up four things that were wrong, one of which needed a human
-    to work around it mid-run. Every stage above is described in words, with still pictures,
-    in <a href="https://mpaiva.github.io/atomic-cockpit/docs/case-study-ozymandias.html">the
+    two seconds while this actually happened on 14 August 2026. That predates the rename, so
+    the terminal chrome in these frames still reads the old repository name. The run
+    finished — all 7 checks passed, proved by an agent that did not write the code, then
+    watched by a person. It cost $4.21. It also turned up four things that were wrong, one of
+    which needed a human to work around it mid-run. Every stage above is described in words,
+    with still pictures, in
+    <a href="https://mpaiva.github.io/atomic-cockpit/docs/case-study-ozymandias.html">the
     case study</a>.</em>
   </figcaption>
 </figure>

@@ -6,6 +6,12 @@ while this was happening, taken every two seconds. Nothing in it was drawn or re
 It ran on 14 August 2026, from 05:58 to 06:43 in the morning. A person asked for a web page.
 Four agents built and checked it. It cost about four dollars.
 
+The run predates this project's rename, so every still below shows the old name in the
+terminal chrome: the window title reads `herdr --session harness`, the workspace in the
+sidebar is `Harness`, and the paths read `~/git-repos/agentic-engineering-harness`. The
+pictures are left exactly as they were taken — retouching them, or splicing in one frame
+from a later run, would break the only thing that makes them worth publishing.
+
 It is the third run of atomic cockpit. The first did not finish. The second did, with a
 two-agent team and a 19-minute stall. This one is the first that was photographed while it
 happened, which is why it is the one written up.
@@ -29,7 +35,7 @@ The question was *What do you want to build today?* The answer, typed in plain w
 
 <figure>
   <img src="media/steps/02-answer-captured.png" width="1400"
-       alt="The same pane after Enter. It reads &quot;Captured. Refining into /Users/mp/git-repos/agentic-engineering-harness/build/MISSION.md&quot; and &quot;Session name set: lead&quot;, then the kickoff instruction, then a list of the lead's actions: read build/IDEA.md, open the prompt-engineer skill, read team/ROLES.md." />
+       alt="The same pane after Enter, now filled by Atomic's start-up banner: version 0.9.12, model claude-sonnet-5 medium, working directory ~/git-repos/agentic-engineering-harness, then a yellow billing warning and an &quot;Update Available&quot; notice. Below those, two new lines — &quot;Captured. Refining into /Users/mp/git-repos/agentic-engineering-harness/build/MISSION.md…&quot; and &quot;Session name set: lead&quot;. The input line under them is empty. The window title reads &quot;herdr --session harness&quot; and the sidebar lists one agent, lead, in a workspace named Harness." />
   <figcaption>
     <em>Step 2. The answer is saved word for word, then the lead starts turning it into a plan.</em>
   </figcaption>
