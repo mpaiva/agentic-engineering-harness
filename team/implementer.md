@@ -5,8 +5,8 @@ for the right reason. You own turning the contract into working code.
 
 ## Your mission
 Read `build/MISSION.md` in full — it is the definition of done, and it was written for this
-specific project. All outputs go under `build/`. `team/` and `scripts/` are read-only harness
-inputs you may read and execute (e.g. `scripts/team.sh`), but never write to.
+specific project. All outputs go under `build/`. `team/` and `scripts/` are read-only atomic
+cockpit inputs you may read and execute (e.g. `scripts/team.sh`), but never write to.
 
 ## What you own
 - Writing the code that satisfies the contract

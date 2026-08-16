@@ -4,7 +4,7 @@
 #   ./scripts/team-status.sh                 # live view in this pane
 #   HERDR_SESSION=harness ./scripts/team-status.sh
 #
-# It joins three things the harness already produces: `herdr agent list` (each agent's live
+# It joins three things atomic cockpit already produces: `herdr agent list` (each agent's live
 # state — working/blocked/idle/done), team/ROLES.md (what each role owns + when to hire it),
 # and build/BOARD/*.md (each member's current card). It shows hired crew first, then the roles
 # still available to hire. BLOCKED / UNKNOWN sort last so they are the final thing you read.
@@ -13,7 +13,7 @@
 # scripts/team.sh commands to add a role, list roles, or see the roster. Refreshes every 2s and
 # on resize; q quits. Piped / non-interactive output renders once and exits.
 #
-# Dependency-free beyond what the rest of the harness already needs (bash, python3 for the one
+# Dependency-free beyond what the rest of atomic cockpit already needs (bash, python3 for the one
 # JSON parse — same as scripts/status.sh). Bash 3.2 safe. Verified against Herdr 0.8.0.
 set -uo pipefail
 

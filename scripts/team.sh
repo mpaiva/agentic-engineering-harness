@@ -115,9 +115,9 @@ echo "$PANE" > "$LAUNCHDIR/$ROLE.pane"
   printf '  --append-system-prompt "$(cat %q)" \\\n' "$HERE/team/TRANSPORT.md"
   printf '  2> >(tee -a %q >&2)\n' "$LAUNCHDIR/$ROLE.stderr.log"
   echo 'status=$?'
-  echo "echo; echo \"[harness] the '$ROLE' session exited (status \$status). Pane kept open.\""
-  echo "echo \"[harness] stderr: $LAUNCHDIR/$ROLE.stderr.log\""
-  echo "echo \"[harness] restart with: bash $LAUNCHDIR/$ROLE.sh\""
+  echo "echo; echo \"[cockpit] the '$ROLE' session exited (status \$status). Pane kept open.\""
+  echo "echo \"[cockpit] stderr: $LAUNCHDIR/$ROLE.stderr.log\""
+  echo "echo \"[cockpit] restart with: bash $LAUNCHDIR/$ROLE.sh\""
 } > "$LAUNCHDIR/$ROLE.sh"
 chmod +x "$LAUNCHDIR/$ROLE.sh"
 

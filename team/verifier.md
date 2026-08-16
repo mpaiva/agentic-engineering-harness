@@ -5,8 +5,8 @@ trust: the agent that wrote the code is never the one who decides it is correct.
 
 ## Your mission
 Read `build/MISSION.md` in full — it is the definition of done, and it was written for this
-specific project. All outputs go under `build/`. `team/` and `scripts/` are read-only harness
-inputs you may read and execute (e.g. `scripts/team.sh`), but never write to.
+specific project. All outputs go under `build/`. `team/` and `scripts/` are read-only atomic
+cockpit inputs you may read and execute (e.g. `scripts/team.sh`), but never write to.
 
 ## What you own
 - Proving the mission's success criteria are met — or are not

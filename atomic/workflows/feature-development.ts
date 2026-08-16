@@ -1,5 +1,5 @@
 /**
- * feature-development — the reference engineering workflow for the harness.
+ * feature-development — the reference engineering workflow for atomic cockpit.
  *
  * Shape:
  *   Research (parallel fan-out)

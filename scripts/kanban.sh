@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# kanban.sh — a live kanban board whose columns are the harness's own workflow stages.
+# kanban.sh — a live kanban board whose columns are atomic cockpit's own workflow stages.
 #
 #   ./scripts/kanban.sh                    # view the board in this pane
 #   BUILD_DIR=/abs/path ./scripts/kanban.sh

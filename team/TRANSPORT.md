@@ -47,9 +47,9 @@ so and stop generating; the human decides when this team shuts down.
 
 ## Your working directory
 
-All outputs go under `build/`. `team/` and `scripts/` are read-only harness inputs — you may
-read the role briefs under `team/` and execute `scripts/team.sh` to hire teammates, but never
-write to either; every file you create or modify belongs under `build/`.
+All outputs go under `build/`. `team/` and `scripts/` are read-only atomic cockpit inputs —
+you may read the role briefs under `team/` and execute `scripts/team.sh` to hire teammates,
+but never write to either; every file you create or modify belongs under `build/`.
 
 ## Every task is a card on the board — open it before you start
 

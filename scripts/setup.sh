@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# setup.sh — get a freshly-cloned machine ready to run the harness and the agent team.
+# setup.sh — get a freshly-cloned machine ready to run atomic cockpit and the agent team.
 # Idempotent: installs what's missing, reports what needs your hands, changes nothing it
 # doesn't have to. macOS is the primary target; Linux works for atomic + herdr (skip Ghostty).
 #

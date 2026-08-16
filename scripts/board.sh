@@ -6,7 +6,7 @@
 #   ./scripts/board.sh status <id> <state>
 #   ./scripts/board.sh list
 #
-# Stages (the harness workflow stages — see docs/kanban.md): research, plan, implementation,
+# Stages (the atomic cockpit workflow stages — see docs/kanban.md): research, plan, implementation,
 # verification, review, done. States: waiting, working, blocked, done.
 #
 # A card is one markdown file under build/BOARD/: a small `stage:`/`status:`/`owner:` header,

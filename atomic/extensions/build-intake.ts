@@ -1,7 +1,7 @@
 /**
  * build-intake — ask the human what to build, once, at the start of a run.
  *
- * This is the harness's front door. It fires in the lead's pane before any tokens are
+ * This is atomic cockpit's front door. It fires in the lead's pane before any tokens are
  * spent, so the opening question cannot be skipped by the model deciding not to ask it.
  *
  * Writes the answer verbatim to $BUILD_DIR/IDEA.md. The lead then refines that raw answer

@@ -107,9 +107,9 @@ mkdir -p "$BUILD" "$LAUNCHDIR"
   printf '  --append-system-prompt "$(cat %q)" \\\n' "$HERE/team/TRANSPORT.md"
   printf '  2> >(tee -a %q >&2)\n' "$LAUNCHDIR/lead.stderr.log"
   echo 'status=$?'
-  echo "echo; echo \"[harness] the lead session exited (status \$status). Pane kept open.\""
-  echo "echo \"[harness] stderr: $LAUNCHDIR/lead.stderr.log\""
-  echo "echo \"[harness] restart with: bash $LAUNCHDIR/lead.sh\""
+  echo "echo; echo \"[cockpit] the lead session exited (status \$status). Pane kept open.\""
+  echo "echo \"[cockpit] stderr: $LAUNCHDIR/lead.stderr.log\""
+  echo "echo \"[cockpit] restart with: bash $LAUNCHDIR/lead.sh\""
 } > "$LAUNCHDIR/lead.sh"
 chmod +x "$LAUNCHDIR/lead.sh"
 
@@ -328,13 +328,13 @@ fi
 # silently while the detached herdr server and the live lead pane keep running. On Ctrl-C or
 # SIGTERM, print how to reach the still-live lead, then exit. Cleared right after the loop so
 # the rest of the script keeps default signal behavior.
-trap 'printf "\n[harness] Interrupted before you answered. The lead is still live in its pane.\n  Attach with:  herdr --session %s\n  Answer the question, then re-run: ./build.sh --resume\n  Or stop the run: herdr --session %s server stop\n" "$SESSION" "$SESSION" >&2; exit 130' INT TERM
+trap 'printf "\n[cockpit] Interrupted before you answered. The lead is still live in its pane.\n  Attach with:  herdr --session %s\n  Answer the question, then re-run: ./build.sh --resume\n  Or stop the run: herdr --session %s server stop\n" "$SESSION" "$SESSION" >&2; exit 130' INT TERM
 WAITED=0
 while [ ! -f "$BUILD/IDEA.md" ]; do
   sleep 1
   WAITED=$((WAITED + 1))
   if [ $((WAITED % 60)) -eq 0 ]; then
-    printf '[harness] still waiting for your answer in the cockpit (%dm elapsed)…\n' "$((WAITED / 60))"
+    printf '[cockpit] still waiting for your answer in the cockpit (%dm elapsed)…\n' "$((WAITED / 60))"
   fi
 done
 trap - INT TERM

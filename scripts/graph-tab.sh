@@ -27,7 +27,7 @@
 # a live, correctly-labeled agent — verified live against Herdr 0.8.0). This script resolves
 # the name to its pane ID (and that pane's tab ID) first for that reason.
 #
-# v1 assumes the lead is the one launching named workflow runs (true for this harness's usage
+# v1 assumes the lead is the one launching named workflow runs (true for atomic cockpit's usage
 # so far — see specs/2026-08-16-graph-tab.md §4). Pass an agent name to target someone else.
 #
 # Verified against Herdr 0.8.0. Bash 3.2 safe.

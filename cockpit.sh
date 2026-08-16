@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# cockpit.sh — one command to size up the harness and pick your next move.
+# cockpit.sh — one command to size up atomic cockpit and pick your next move.
 #
 #   ./cockpit.sh                 # the default 'harness' session
 #   ./cockpit.sh beta            # inspect/drive a named concurrent session
