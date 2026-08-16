@@ -49,7 +49,7 @@ render() {
   local w="$1"
   if [ "$have_jq" != 1 ]; then cat "$FEED"; return; fi
   jq -r '[ (if (.ts|type)=="string" and (.ts|length)>=16 then .ts[11:16] else (.ts//"") end), (.from//"?"), (.to//""), (.action//"?"), (.message//""|gsub("[\n\t]";" ")) ] | join("\u001f")' "$FEED" 2>/dev/null \
-  | awk -v W="$w" -v margin="$MARGIN" -v sep="$SEP" -v teal="$ACCENT" -v palstr="$PAL" '
+  | LC_ALL=C awk -v W="$w" -v margin="$MARGIN" -v sep="$SEP" -v teal="$ACCENT" -v palstr="$PAL" '
     function ord(ch){ return ORDT[ch]+0 }
     function cwidth(s,   t,i,b,w){ t=s; gsub(reESC,"",t); w=0; for(i=1;i<=length(t);i++){ b=ord(substr(t,i,1)); if(b>=128 && b<192) continue; w++ } return w }
     function pad(n,   s){ s=""; while(n-- > 0) s=s" "; return s }
@@ -62,6 +62,53 @@ render() {
       for(i=1;i<=nw;i++){ if(cur=="") cur=words[i]; else if(cwidth(cur)+1+cwidth(words[i])<=width) cur=cur" "words[i]; else { arr[++cnt]=cur; cur=words[i] }
         while(cwidth(cur)>width){ arr[++cnt]=substr(cur,1,width); cur=substr(cur,width+1) } }
       if(cur!="") arr[++cnt]=cur; if(cnt==0) arr[++cnt]=""; return cnt }
+    # ---- plain-language glossing -------------------------------------------------
+    # Criterion 1 of build/VISUAL-COMMS-SPEC.md section 1: every rendered status line must read
+    # as one plain-English sentence, with no bare commit sha / pane id / error code / flag /
+    # file:line / run uuid / card slug left unglossed. Token-by-token so a partial match can
+    # never mangle the middle of an ordinary word. No regex interval expressions ({n,m}) — the
+    # macOS awk this ships against does not reliably support them.
+    function hasdigit(t,   i){ for(i=1;i<=length(t);i++) if(substr(t,i,1)~/[0-9]/) return 1; return 0 }
+    function glosstok(t,   pre,punct,core,i,nh,res){
+      # Strip wrapping punctuation from BOTH ends before matching, then put it back. Without
+      # the leading strip a token like "(c14ea50," never matches the sha rule and ships
+      # unglossed. index() rather than a regex: it compares bytes, so a stray UTF-8
+      # continuation byte can never reach the regex engine.
+      pre=""; punct="";
+      while(length(t)>0 && index("([{<\"", substr(t,1,1))>0){ pre=pre substr(t,1,1); t=substr(t,2) }
+      while(length(t)>0 && index(",.;:!?)]}>\"", substr(t,length(t),1))>0){ punct=substr(t,length(t),1) punct; t=substr(t,1,length(t)-1) }
+      core=t; if(core=="") return pre punct;
+      res=core;
+      # commit sha -> "change 3f8f664"
+      if(core ~ /^[0-9a-f]+$/ && length(core)>=7 && length(core)<=40 && hasdigit(core)) res="change " core;
+      # run uuid -> a short phrase; the raw id stays visible in the body below
+      else if(core ~ /^[0-9a-f]+-[0-9a-f]+-[0-9a-f]+-[0-9a-f]+-[0-9a-f]+$/) res="a run id";
+      # herdr pane id -> "pane w1:p6"
+      else if(core ~ /^w[0-9]+:p[0-9A-Za-z]+$/) res="pane " core;
+      # cli flag -> "the --resume option"
+      else if(core ~ /^--[a-z][a-z-]*$/) res="the " core " option";
+      # file:line -> "docs/troubleshooting.md line 42"
+      else if(core ~ /^[A-Za-z0-9_.\/-]+\.(sh|md|ts|json|toml):[0-9]+$/){
+        i=length(core); while(i>0 && substr(core,i,1)!=":") i--;
+        res=substr(core,1,i-1) " line " substr(core,i+1) }
+      # snake_case error code -> quoted words: agent_not_found -> "agent not found"
+      else if(core ~ /^[a-z]+(_[a-z]+)+$/){ gsub(/_/," ",core); res="\"" core "\"" }
+      # long hyphenated slug (board card / stage id) -> quoted words. 3+ hyphens only, so
+      # ordinary hyphenated English ("plain-English", "read-only") is left alone.
+      else { nh=gsub(/-/,"-",core);
+        if(core ~ /^[a-z0-9]+(-[a-z0-9]+)+$/ && nh>=3){ gsub(/-/," ",core); res="\"" core "\"" } }
+      return pre res punct }
+    function gloss(s,   n,w,i,out){ n=split(s,w," "); out=""; for(i=1;i<=n;i++) out = out (i>1?" ":"") glosstok(w[i]); return out }
+    # First sentence, or a bounded prefix when the author never punctuated one. Truncation
+    # backs up to a space so it can never split a multibyte character — cutting mid-character
+    # makes awk abort the record with "towc: multibyte conversion failure". With no space to
+    # back up to, the text is returned whole rather than risking a corrupt byte.
+    function firstsent(s,   i){ if(match(s,/[.!?]( |$)/)) return substr(s,1,RSTART);
+      if(length(s)<=96) return s;
+      i=96; while(i>1 && substr(s,i,1)!=" ") i--;
+      if(i<=1) return s;
+      return substr(s,1,i-1) "…" }
+    function verbof(a){ return (a=="ask") ? "asked" : ((a=="reply") ? "replied to" : "told") }
     BEGIN{ E=sprintf("%c",27); R=E"[0m"; DIM=E"[2m"; reESC=E"\\[[0-9;]*m";
       GREY=E"[38;5;240m"; MSG=E"[38;2;" teal "m"; WHITE=E"[1;97m"; B=E"[1m"; BO=E"[22m"; U=E"[4m"; UO=E"[24m"; VBAR="│";
       NP=split(palstr,PAL," "); for(i=0;i<256;i++) ORDT[sprintf("%c",i)]=i;
@@ -79,15 +126,20 @@ render() {
       if(cwidth(h)>INNER) h = chip(from) pt pb;             # drop the (needs a reply) note
       if(cwidth(h)>INNER) h = chip(from) pb;                # drop the target
       print boxline(h);
-      # body: underline paths on PLAIN first (so the regex cannot eat into the bold code), THEN
-      # bold the first sentence. B is only ever prepended/inserted, never gsub-scanned afterwards.
-      inFirst=1; n=wrap(msg,INNER,LN);
-      # First sentence renders bold WHITE (a skimmable summary); the rest of the body is the
-      # teal accent. Underline paths on plain first so the regex cannot eat into a colour code.
-      for(li=1; li<=n; li++){ s=ul(LN[li]);
-        if(inFirst){ if(match(s,/[.!?]( |$)/)){ p=RSTART; s=WHITE substr(s,1,p) R MSG substr(s,p+1) R; inFirst=0 } else s=WHITE s R }
-        else s=MSG s R;
-        print boxline(s) }
+      # Plain-language summary: one glossed sentence naming who acted, on whom, and what
+      # happened — readable without decoding ids.
+      sumtxt = from " " verbof(act) ((to!="") ? " " to : "") ": " gloss(firstsent(msg));
+      ns=wrap(sumtxt,INNER,SL);
+      for(li=1; li<=ns; li++) print boxline(WHITE SL[li] R);
+      # The raw body prints underneath, untouched, whenever it carries something the summary
+      # does not — either glossing rewrote a token, or there is more text after the first
+      # sentence. That way the box shows the raw event beside its rendered line (criterion 2)
+      # and never hides the original wording. For a short message that glossed to itself the
+      # body would be a verbatim repeat, so it is dropped.
+      if(gloss(msg)!=msg || firstsent(msg)!=msg){
+        print boxline(GREY rule(INNER) R);
+        n=wrap(msg,INNER,LN);
+        for(li=1; li<=n; li++) print boxline(MSG ul(LN[li]) R) }
       print GREY "╰" rule(BW-2) "╯" R }
   '
 }
