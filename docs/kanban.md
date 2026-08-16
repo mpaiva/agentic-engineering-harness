@@ -49,7 +49,11 @@ Streams rows instead of buffering; verifier checks the 1M-row case.
 ./scripts/board.sh list
 ```
 
-`add` accepts `--body` for the optional body text; new cards start as `status: waiting`.
+`add` accepts `--body` for the optional body text; new cards start as `status: waiting`. `move`
+reassigns the card's owner to the stage's role (research→researcher, plan→architect,
+implementation→implementer, verification→verifier, review→lead; `done` keeps whoever finished
+it) so the assignee always shows who holds the work now — pass an explicit third argument,
+`move <id> <stage> <owner>`, to override.
 The files are plain markdown — editing one by hand is equally valid, the viewer picks up any
 change within a second.
 

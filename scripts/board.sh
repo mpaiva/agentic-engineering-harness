@@ -2,7 +2,7 @@
 # board.sh — create and move cards on the team's kanban board (scripts/kanban.sh renders it).
 #
 #   ./scripts/board.sh add --title T [--stage S] [--owner R] [--body B]   # prints the new card's id
-#   ./scripts/board.sh move <id> <stage>
+#   ./scripts/board.sh move <id> <stage> [owner]   # owner defaults to the stage's role
 #   ./scripts/board.sh status <id> <state>
 #   ./scripts/board.sh list
 #
@@ -21,7 +21,7 @@ SEP="$(printf '\037')"
 
 usage(){
   echo "usage: board.sh add --title T [--stage S] [--owner R] [--body B]" >&2
-  echo "       board.sh move <id> <stage>      (research|plan|implementation|verification|review|done)" >&2
+  echo "       board.sh move <id> <stage> [owner]  (research|plan|implementation|verification|review|done)" >&2
   echo "       board.sh status <id> <state>    (waiting|working|blocked|done)" >&2
   echo "       board.sh list" >&2
   exit 2
@@ -29,6 +29,13 @@ usage(){
 
 valid_stage(){ case "$1" in research|plan|implementation|verification|review|done) return 0;; *) return 1;; esac; }
 valid_state(){ case "$1" in waiting|working|blocked|done) return 0;; *) return 1;; esac; }
+# stage_owner <stage> — the role that owns a stage, so a card's assignee follows its column as
+# work is handed off. `done` is terminal: it returns nothing, leaving whoever finished it as the
+# owner. A caller can always override by passing an explicit owner to `move`.
+stage_owner(){ case "$1" in
+    research) echo researcher ;; plan) echo architect ;; implementation) echo implementer ;;
+    verification) echo verifier ;; review) echo lead ;; *) echo "" ;;
+  esac; }
 # Ids from `add` are [a-z0-9-] slugs, so anything with a `/` or `..` is not a card id — it is a
 # path trying to escape build/BOARD/. Reject it before any path is built (contract: this script
 # never writes outside build/).
@@ -88,11 +95,15 @@ case "$cmd" in
     echo "$id"
     ;;
   move)
-    id="${1:-}"; stage="${2:-}"; { [ -n "$id" ] && [ -n "$stage" ]; } || usage
+    id="${1:-}"; stage="${2:-}"; owner="${3:-}"; { [ -n "$id" ] && [ -n "$stage" ]; } || usage
     valid_id "$id" || { echo "invalid card id: $id (ids never contain '/' or '..')" >&2; exit 2; }
     valid_stage "$stage" || { echo "unknown stage: $stage (research|plan|implementation|verification|review|done)" >&2; exit 2; }
     f="$BOARD/$id.md"; [ -f "$f" ] || { echo "no such card: $id" >&2; exit 1; }
     set_field "$f" stage "$stage"
+    # The assignee follows the stage: reassign to the stage's role unless the caller named an
+    # owner explicitly. An empty mapping (done) leaves the current owner untouched.
+    [ -n "$owner" ] || owner="$(stage_owner "$stage")"
+    [ -n "$owner" ] && set_field "$f" owner "$owner"
     ;;
   status)
     id="${1:-}"; state="${2:-}"; { [ -n "$id" ] && [ -n "$state" ]; } || usage

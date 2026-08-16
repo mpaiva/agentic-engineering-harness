@@ -62,7 +62,8 @@ only shows what you put there. So treat opening a card as part of starting a tas
 - **The owner keeps the card current as the work moves:**
   `scripts/board.sh status <id> working` (then `blocked` / `done`) and
   `scripts/board.sh move <id> <stage>` across the stages `research → plan → implementation →
-  verification → review → done`.
+  verification → review → done`. `move` hands the card to the stage's role automatically (so the
+  assignee always shows who holds it now); pass `move <id> <stage> <owner>` if a different role owns it.
 
 A task with no card is invisible to the human. If someone asks for a change and you cannot point
 to its card, open one first.
