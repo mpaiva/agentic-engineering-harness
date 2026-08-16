@@ -36,7 +36,7 @@ grep -rli -i "graph" herdr/ docs/ README.md atomic/README.md
 ```
 Hits: `herdr/atomic-integration.md`, `docs/operating-model.md`, `docs/architecture.md`,
 `docs/monitoring-agents.md`, `docs/getting-started.md`, `docs/samples/README.md`,
-`docs/case-study-ozymandias.md`, `docs/superpowers/plans/2026-08-13-project-agnostic-harness.md`,
+`docs/case-study-ozymandias.md`, `docs/superpowers/plans/2026-08-13-project-agnostic-cockpit.md`,
 `README.md`, `atomic/README.md`.
 
 Manually inspected every hit's actual sentence (not just the keyword). Only **one** file

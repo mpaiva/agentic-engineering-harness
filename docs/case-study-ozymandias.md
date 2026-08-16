@@ -6,7 +6,7 @@ while this was happening, taken every two seconds. Nothing in it was drawn or re
 It ran on 14 August 2026, from 05:58 to 06:43 in the morning. A person asked for a web page.
 Four agents built and checked it. It cost about four dollars.
 
-It is the third run of this harness. The first did not finish. The second did, with a
+It is the third run of atomic cockpit. The first did not finish. The second did, with a
 two-agent team and a 19-minute stall. This one is the first that was photographed while it
 happened, which is why it is the one written up.
 
@@ -145,7 +145,7 @@ deliverable stayed dependency-free, and ran headless Chromium against the real f
 It logged every network request the browser made while loading the page:
 
 ```
-All requests: ["file:///Users/mp/git-repos/agentic-engineering-harness/build/index.html"]
+All requests: ["file:///Users/mp/git-repos/atomic-cockpit/build/index.html"]
 Non-file requests: []
 ```
 
@@ -221,7 +221,7 @@ slow-answer run.
 **2. The lead looked for `TRANSPORT.md` in the wrong place.**
 
 ```
-read ~/git-repos/agentic-engineering-harness/TRANSPORT.md
+read ~/git-repos/atomic-cockpit/TRANSPORT.md
 ENOENT: no such file or directory
 find **/TRANSPORT.md
 # team/TRANSPORT.md

@@ -1,14 +1,14 @@
-# Project-Agnostic Harness Implementation Plan
+# Project-Agnostic Cockpit Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Turn this repo from "a harness demonstrated on an HRIS" into one that builds whatever the user asks for: `./build.sh` opens a popup asking what to build, the lead refines the answer with Atomic's `prompt-engineer` skill into a generated `build/MISSION.md`, then hires only the roles that mission needs and drives the build over Intercom.
+**Goal:** Turn this repo from "a cockpit demonstrated on an HRIS" into one that builds whatever the user asks for: `./build.sh` opens a popup asking what to build, the lead refines the answer with Atomic's `prompt-engineer` skill into a generated `build/MISSION.md`, then hires only the roles that mission needs and drives the build over Intercom.
 
 **Architecture:** One Herdr session hosts one Atomic session per agent. `build.sh` (humans) creates a single `lead` pane; `scripts/team.sh add <role>` (the lead) grows the team pane by pane. Two Atomic extensions do the non-conversational work: `build-intake.ts` asks the opening question, `herdr-state.ts` (already built) pushes each session's lifecycle state into Herdr's sidebar. Agents coordinate over Atomic Intercom and may run `/workflow feature-development` on their own slices.
 
 **Tech Stack:** Bash 3.2 (macOS default), TypeScript (Atomic extensions), Markdown (role briefs/docs), Herdr 0.8.0 socket API, Atomic 0.9.12.
 
-**Spec:** `docs/superpowers/specs/2026-08-13-project-agnostic-harness-design.md`
+**Spec:** `docs/superpowers/specs/2026-08-13-project-agnostic-cockpit-design.md`
 
 ## Global Constraints
 
@@ -116,7 +116,7 @@ Expected: `git status --porcelain build/` prints **nothing** (the directory is i
 git add -A
 git commit -m "cleanup: remove the domain-specific examples and workflows
 
-The harness argued its case through four worked examples, two of them HR-domain, which
+Atomic cockpit argued its case through four worked examples, two of them HR-domain, which
 tied a domain-neutral operating model to a domain nobody else is building. They are
 replaced by a generic builder that produces its own worked example on every run.
 
@@ -228,7 +228,7 @@ Reading-order items 3 and 4 point at deleted examples. Replace both with a singl
 Remove the bullets describing `examples/hcm-graph` and the recorded `goal` run. Replace the "pointed at a real product" bullet with:
 
 ```markdown
-- **The harness builds whatever you point it at.** `./build.sh` asks what you want, refines it with Atomic's `prompt-engineer` skill into a mission, and composes a team to build it. See `docs/case-study-first-run.md` for a recorded run.
+- **Atomic cockpit builds whatever you point it at.** `./build.sh` asks what you want, refines it with Atomic's `prompt-engineer` skill into a mission, and composes a team to build it. See `docs/case-study-first-run.md` for a recorded run.
 ```
 
 - [ ] **Step 7: Verify no broken references remain**
@@ -319,7 +319,7 @@ cat <<'EOF'
 
 Next:
   ./build.sh                      # asks what to build, then builds it
-  herdr --session harness         # attach and watch the cockpit
+  herdr --session cockpit         # attach and watch the cockpit
 
 See README.md before your first run (cost, autonomy, isolation).
 EOF
@@ -497,7 +497,7 @@ Record which branch you took in the commit message.
 /**
  * build-intake — ask the human what to build, once, at the start of a run.
  *
- * This is the harness's front door. It fires in the lead's pane before any tokens are
+ * This is atomic cockpit's front door. It fires in the lead's pane before any tokens are
  * spent, so the opening question cannot be skipped by the model deciding not to ask it.
  *
  * Writes the answer verbatim to $BUILD_DIR/IDEA.md. The lead then refines that raw answer
@@ -583,7 +583,7 @@ Expected: prints `resumed`, no popup appears, and `IDEA.md` still contains exact
 git add atomic/extensions/build-intake.ts
 git commit -m "atomic: add the build-intake popup extension
 
-The harness's front door. Fires on session_start in the lead's pane and asks what to build
+Atomic cockpit's front door. Fires on session_start in the lead's pane and asks what to build
 before a token is spent, so the opening question cannot be skipped by model discretion.
 
 Three guards, each earned: it fires only when ATOMIC_ROLE=lead (otherwise every specialist
@@ -733,7 +733,7 @@ CSV converter quietly becomes a plugin architecture."
 
 **Interfaces:**
 - Consumes: `team/lead.md`, `team/TRANSPORT.md`, `atomic/extensions/build-intake.ts`, `atomic/extensions/herdr-state.ts`.
-- Produces: a running `lead` pane in Herdr session `harness`; exports `BUILD_DIR`, `ATOMIC_ROLE`, `ATOMIC_INTERCOM_GROUP` into every agent process; writes `build/.launch/lead.sh`, which Task 10 mirrors for other roles.
+- Produces: a running `lead` pane in Herdr session `cockpit`; exports `BUILD_DIR`, `ATOMIC_ROLE`, `ATOMIC_INTERCOM_GROUP` into every agent process; writes `build/.launch/lead.sh`, which Task 10 mirrors for other roles.
 
 - [ ] **Step 1: Write `build.sh`**
 
@@ -753,8 +753,8 @@ CSV converter quietly becomes a plugin architecture."
 # Verified against Atomic 0.9.12 and Herdr 0.8.0. Bash 3.2 safe.
 set -euo pipefail
 
-SESSION="harness"
-GROUP="harness"
+SESSION="cockpit"
+GROUP="cockpit"
 PROVIDER="anthropic"
 MODEL="claude-sonnet-5"
 MODE="run"
@@ -828,9 +828,9 @@ mkdir -p "$BUILD" "$LAUNCHDIR"
   printf '  --append-system-prompt "$(cat %q)" \\\n' "$HERE/team/TRANSPORT.md"
   printf '  2> >(tee -a %q >&2)\n' "$LAUNCHDIR/lead.stderr.log"
   echo 'status=$?'
-  echo "echo; echo \"[harness] the lead session exited (status \$status). Pane kept open.\""
-  echo "echo \"[harness] stderr: $LAUNCHDIR/lead.stderr.log\""
-  echo "echo \"[harness] restart with: bash $LAUNCHDIR/lead.sh\""
+  echo "echo; echo \"[cockpit] the lead session exited (status \$status). Pane kept open.\""
+  echo "echo \"[cockpit] stderr: $LAUNCHDIR/lead.stderr.log\""
+  echo "echo \"[cockpit] restart with: bash $LAUNCHDIR/lead.sh\""
 } > "$LAUNCHDIR/lead.sh"
 chmod +x "$LAUNCHDIR/lead.sh"
 
@@ -843,7 +843,7 @@ for _ in $(seq 1 40); do
   herdr workspace list 2>/dev/null | grep -q '"workspaces"' && break
   sleep 0.3
 done
-herdr workspace create --label "Harness" >/dev/null 2>&1 || true
+herdr workspace create --label "Cockpit" >/dev/null 2>&1 || true
 
 # The root shell pane is NOT reliably panes[0]: Herdr plugin panes carry labels ("Sidebar",
 # "Explorer", …) and may register first. Select on the ABSENCE of a label.
@@ -946,7 +946,7 @@ Expected: a Herdr session starts with one pane named `lead`; Atomic boots; **the
 
 ```bash
 cat build/IDEA.md
-herdr --session harness pane list | python3 -c "
+herdr --session cockpit pane list | python3 -c "
 import sys,json
 for p in json.load(sys.stdin)['result']['panes']:
     if p.get('label')=='lead': print('lead state =', p.get('agent_status'))
@@ -966,7 +966,7 @@ Expected: contains **Raw idea** (your text verbatim), **Goal**, **Success criter
 - [ ] **Step 7: Stop the run and commit**
 
 ```bash
-herdr --session harness server stop
+herdr --session cockpit server stop
 git add build.sh
 git commit -m "harness: add build.sh, the human entry point
 
@@ -1187,8 +1187,8 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD="${BUILD_DIR:-$HERE/build}"
 LAUNCHDIR="$BUILD/.launch"
-SESSION="${HERDR_SESSION:-harness}"
-GROUP="${ATOMIC_INTERCOM_GROUP:-harness}"
+SESSION="${HERDR_SESSION:-cockpit}"
+GROUP="${ATOMIC_INTERCOM_GROUP:-cockpit}"
 PROVIDER="${ATOMIC_PROVIDER:-anthropic}"
 MODEL="${ATOMIC_MODEL:-claude-sonnet-5}"
 MAX_AGENTS=8
@@ -1267,8 +1267,8 @@ echo "$PANE" > "$LAUNCHDIR/$ROLE.pane"
   printf '  --append-system-prompt "$(cat %q)" \\\n' "$HERE/team/TRANSPORT.md"
   printf '  2> >(tee -a %q >&2)\n' "$LAUNCHDIR/$ROLE.stderr.log"
   echo 'status=$?'
-  echo "echo; echo \"[harness] the '$ROLE' session exited (status \$status). Pane kept open.\""
-  echo "echo \"[harness] restart with: bash $LAUNCHDIR/$ROLE.sh\""
+  echo "echo; echo \"[cockpit] the '$ROLE' session exited (status \$status). Pane kept open.\""
+  echo "echo \"[cockpit] restart with: bash $LAUNCHDIR/$ROLE.sh\""
 } > "$LAUNCHDIR/$ROLE.sh"
 chmod +x "$LAUNCHDIR/$ROLE.sh"
 
@@ -1346,7 +1346,7 @@ bash and no ceiling is the difference between a demo and a runaway."
 - Consumes: everything above.
 - Produces: the repo's evidence, replacing the deleted examples. `README.md` and `docs/getting-started.md` already link to this path from Tasks 2 and 3.
 
-- [ ] **Step 1: Run the harness on a small, cheap mission**
+- [ ] **Step 1: Run atomic cockpit on a small, cheap mission**
 
 ```bash
 ./build.sh
@@ -1359,7 +1359,7 @@ Answer the popup with: `a CLI that converts CSV to JSON, with tests`
 cat build/IDEA.md          # raw answer, verbatim
 cat build/MISSION.md       # refined; must contain Raw idea + Goal + Success criteria + Non-goals
 cat build/ROSTER.md        # who was hired and why
-herdr --session harness pane list | python3 -c "
+herdr --session cockpit pane list | python3 -c "
 import sys,json
 ps=[p for p in json.load(sys.stdin)['result']['panes'] if p.get('label') and p.get('label') not in ('Sidebar','Explorer')]
 print(len(ps),'agents:')
@@ -1407,7 +1407,7 @@ Expected: **no output.** The `docs/case-study-first-run.md` links from Tasks 2 a
 - [ ] **Step 7: Stop the run and commit**
 
 ```bash
-herdr --session harness server stop
+herdr --session cockpit server stop
 git add docs/case-study-first-run.md
 git commit -m "docs: record the first project-agnostic run
 

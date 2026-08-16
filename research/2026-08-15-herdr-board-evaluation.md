@@ -1,7 +1,7 @@
 # herdr-board evaluation — can it be our kanban tab?
 
 Date: 2026-08-15. Repo: nelsonPires5/herdr-board @ v0.14.0. Verified against the installed
-Herdr 0.8.0 and this harness (Atomic-based).
+Herdr 0.8.0 and atomic cockpit (Atomic-based).
 
 ## What herdr-board is
 
@@ -14,7 +14,7 @@ a run, manual columns are human gates. State lives in SQLite under
 Install: `herdr plugin install nelsonPires5/herdr-board --ref v0.14.0`
 Open as tab: `herdr plugin pane open --plugin herdr-board --entrypoint board --placement tab --focus`
 
-## Fit against THIS harness — the facts
+## Fit against THIS cockpit — the facts
 
 | Check | Result |
 |---|---|
@@ -26,7 +26,7 @@ Open as tab: `herdr plugin pane open --plugin herdr-board --entrypoint board --p
 
 ## The decisive mismatch
 
-Our harness orchestrates **Atomic** agents: `build.sh` boots a `lead`, the lead hires roles with
+Our cockpit orchestrates **Atomic** agents: `build.sh` boots a `lead`, the lead hires roles with
 `scripts/team.sh`, and they coordinate over Herdr intercom (the team-chat feed). herdr-board
 brings its **own** orchestrator (daemon + queue + dispatch) that launches **Pi/Claude/Codex/
 OpenCode** agents — not Atomic. So its headline feature (move a card → an agent runs the stage)
@@ -44,7 +44,7 @@ orchestration system** that does not know about our lead, our roster, or interco
    - Gain: a real, polished kanban TUI with history, comments, mobile layout — for free.
 
 2. **Adopt herdr-board's own dispatch (Pi/Claude agents).**
-   - Rejected for this harness: it replaces, not complements, the Atomic lead/intercom model the
+   - Rejected for atomic cockpit: it replaces, not complements, the Atomic lead/intercom model the
      rest of the repo is built on. Two competing orchestrators is a maintenance and mental-model tax.
 
 3. **Home-grown kanban tab, same ethos as `team-chat.sh`.**
@@ -59,14 +59,14 @@ orchestration system** that does not know about our lead, our roster, or interco
 
 For a kanban that reflects **our Atomic team's** work, Option 1's value is undercut by the
 Atomic mismatch (no precise signals) plus a Rust daemon and a duplicate state store; Option 2 is
-a non-starter here. **Option 3 (home-grown, build/-backed) is the closest fit to this harness's
+a non-starter here. **Option 3 (home-grown, build/-backed) is the closest fit to atomic cockpit's
 architecture and conventions** — the same choice we made for team-chat. Keep herdr-board on the
 radar as a strong standalone tool; revisit Option 1 if Atomic ever becomes a supported harness or
 if we want its history/comments UI badly enough to run its daemon.
 
 ## Also true
 
-- The named tabs (`monitor` / `kanban` / `team` / `chat`) are **not** created by any harness
+- The named tabs (`monitor` / `kanban` / `team` / `chat`) are **not** created by any cockpit
   script today — they were made by hand. `build.sh` only splits `lead` + `team-chat` panes into
   one tab. Automating tab creation (`herdr tab create` + pane layout) is a separate, straightforward
   change regardless of which kanban option we pick.

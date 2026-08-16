@@ -64,7 +64,7 @@ The broker self-starts on `bun broker.ts` and exits when the last session discon
   Atomic version and re-verify on upgrade; keep the client tolerant of unknown message types.
 - **`ask` reply window.** Answering an agent's blocking `ask` from the pane still has the ~10-min
   limit; phase the chat client for `send` first, reply-into-`ask` later.
-- **Group.** Register in the run's intercom group (default is `default`; the harness sets
+- **Group.** Register in the run's intercom group (default is `default`; atomic cockpit sets
   `ATOMIC_INTERCOM_GROUP`). A `chat` peer must join the same group as the team to see/address it.
 
 ## Reproduce

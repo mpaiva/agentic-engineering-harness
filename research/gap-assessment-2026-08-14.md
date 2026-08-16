@@ -1,12 +1,12 @@
 # Gap assessment — atomic-cockpit
 
 Date: 2026-08-14. Author: review-and-fix loop (Atomic session).
-Method: static review only. No live harness run was performed (that costs money and
+Method: static review only. No live atomic cockpit run was performed (that costs money and
 needs a human in the loop). Claims below are backed by the tool results noted.
 
 ## What the repo is
 
-A reference harness that wires Ghostty (terminal) + Herdr (workspace/panes) + Atomic
+A reference implementation that wires Ghostty (terminal) + Herdr (workspace/panes) + Atomic
 (agent orchestration). Mostly Markdown, plus shell (`build.sh`, `scripts/*.sh`) and a
 little TypeScript (`atomic/extensions/*.ts`, `atomic/workflows/feature-development.ts`).
 No application to build, no test suite. Success = clarity, accuracy, groundedness.

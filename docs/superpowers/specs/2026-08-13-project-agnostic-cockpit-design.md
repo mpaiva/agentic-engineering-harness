@@ -1,9 +1,9 @@
-# Design: a project-agnostic harness
+# Design: a project-agnostic cockpit
 
 **Date:** 2026-08-13
 **Status:** approved, not yet implemented
 
-Turn this repository from *a harness demonstrated on an HRIS* into *a harness that builds
+Turn this repository from *a cockpit demonstrated on an HRIS* into *a cockpit that builds
 whatever you ask it for*. A human runs one command, is asked what they want to build, and a
 lead agent refines that answer into a mission, hires the team the mission actually needs, and
 drives the build — with every agent free to trigger workflows on its own slice.
@@ -73,7 +73,7 @@ The governing split: **humans run `build.sh`, agents run `team.sh`.**
 ```
 ./build.sh
    │
-   ├─ Herdr session `harness`, ONE pane, named `lead`
+   ├─ Herdr session `cockpit`, ONE pane, named `lead`
    ├─ Atomic boots with -e herdr-state.ts -e build-intake.ts
    │
    ▼
@@ -101,14 +101,14 @@ verifier proves it · pm accepts it · build/EVIDENCE.md · stop
 ```
 
 `MISSION.md` changes status from a hand-written input to a generated output. That single
-inversion is what makes the harness project-agnostic.
+inversion is what makes atomic cockpit project-agnostic.
 
 ## Components
 
 ### `build.sh` — human entry point
 
 **Does:** creates the Herdr session, builds one pane, boots the lead, hands off to the popup.
-**Interface:** `./build.sh [--model claude-sonnet-5] [--session harness] [--dry-run] [--resume]`
+**Interface:** `./build.sh [--model claude-sonnet-5] [--session cockpit] [--dry-run] [--resume]`
 **Depends on:** herdr, atomic, `team/lead.md`, both extensions.
 
 Carries forward four mechanics the current `launch-atomic.sh` established by failing first:
