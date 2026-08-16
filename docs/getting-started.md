@@ -136,6 +136,7 @@ follows, and `scripts/launch-feature.sh` for a worked example of driving panes b
 
 ## Where to go next
 
+- **Something went wrong mid-run** → [docs/troubleshooting.md](troubleshooting.md) — stuck panes, unclear agent state, reading `build/BLOCKED.md`
 - **How to think about supervising** → [docs/operating-model.md](operating-model.md)
 - **How verification and human gates work** → [docs/verification-and-gates.md](verification-and-gates.md)
 - **How to define a workflow** → [atomic/README.md](../atomic/README.md)

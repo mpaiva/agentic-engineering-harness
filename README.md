@@ -253,6 +253,7 @@ You can use any name in place of `beta`. Each name is a separate, isolated build
 | "build/ already holds a run" | You have an unfinished build. Run `./cockpit.sh` and pick **Resume** to continue it, or **Start FRESH** to archive it and begin again. (By hand: `./build.sh --resume`, or rename the `build` folder then `./build.sh`.) |
 | An agent stopped and you do not know why | Its notes are saved in `build/.launch/`. Each agent has a file ending in `.stderr.log`. |
 | You want to start over completely | Run `./cockpit.sh` and choose **Start FRESH** — it archives `build/` and restarts for you. (By hand: run the stop command above, rename the `build` folder, then `./build.sh`.) |
+| A pane looks stuck, or `build/BLOCKED.md` shows up | See [docs/troubleshooting.md](docs/troubleshooting.md) — stuck panes, unclear agent state, and how to read `BLOCKED.md`. |
 
 ## Words used in this project
 
@@ -296,6 +297,7 @@ through you.
 These pages have more detail. They are written for people who want the full picture.
 
 - [docs/getting-started.md](docs/getting-started.md) — setup, with every step spelled out
+- [docs/troubleshooting.md](docs/troubleshooting.md) — intake timeouts, stuck panes, unclear agent state, reading `build/BLOCKED.md`
 - [docs/case-study-ozymandias.md](docs/case-study-ozymandias.md) — a real run, screenshot by screenshot, including what broke
 - [docs/architecture.md](docs/architecture.md) — how the three tools fit together
 - [docs/monitoring-agents.md](docs/monitoring-agents.md) — how to watch a team without reading everything
