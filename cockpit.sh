@@ -35,8 +35,9 @@ assess(){
   AGENTS=0; WORKING=0; BLOCKED=0
   if [ "$SERVER_UP" = 1 ]; then
     eval "$(herdr agent list 2>/dev/null | python3 -c "
+import json,sys
 try: a=json.load(sys.stdin)['result'].get('agents',[])
-except Exception: a=[]
+except (ValueError, KeyError): a=[]
 w=sum(1 for x in a if x.get('agent_status')=='working')
 b=sum(1 for x in a if x.get('agent_status') in ('blocked','unknown'))
 print('AGENTS=%d;WORKING=%d;BLOCKED=%d'%(len(a),w,b))
