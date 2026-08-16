@@ -69,7 +69,14 @@ render() {
     # never mangle the middle of an ordinary word. No regex interval expressions ({n,m}) — the
     # macOS awk this ships against does not reliably support them.
     function hasdigit(t,   i){ for(i=1;i<=length(t);i++) if(substr(t,i,1)~/[0-9]/) return 1; return 0 }
-    function glosstok(t,   pre,punct,core,i,nh,res){
+    # normw: the bare lowercase word, so the preceding token can be compared to the noun a rule
+    # is about to add. Without this the gloss repeats a word the author already wrote —
+    # "commit 3f8f664" became "commit change 3f8f664", "pane w1:p1" became "pane pane w1:p1".
+    # Only exact synonyms suppress the prefix: "in c425783" -> "in change c425783" still reads
+    # correctly and is left alone.
+    function normw(x){ gsub(/[^A-Za-z]/,"",x); return tolower(x) }
+    # nxt, not "next": next is an awk keyword and using it as a parameter is a syntax error.
+    function glosstok(t,prev,nxt,   pre,punct,core,i,nh,res,pw,nw){
       # Strip wrapping punctuation from BOTH ends before matching, then put it back. Without
       # the leading strip a token like "(c14ea50," never matches the sha rule and ships
       # unglossed. index() rather than a regex: it compares bytes, so a stray UTF-8
@@ -78,15 +85,21 @@ render() {
       while(length(t)>0 && index("([{<\"", substr(t,1,1))>0){ pre=pre substr(t,1,1); t=substr(t,2) }
       while(length(t)>0 && index(",.;:!?)]}>\"", substr(t,length(t),1))>0){ punct=substr(t,length(t),1) punct; t=substr(t,1,length(t)-1) }
       core=t; if(core=="") return pre punct;
-      res=core;
+      res=core; pw=normw(prev); nw=normw(nxt);
       # commit sha -> "change 3f8f664"
-      if(core ~ /^[0-9a-f]+$/ && length(core)>=7 && length(core)<=40 && hasdigit(core)) res="change " core;
+      if(core ~ /^[0-9a-f]+$/ && length(core)>=7 && length(core)<=40 && hasdigit(core))
+        res=(pw=="commit"||pw=="change"||pw=="sha"||pw=="revision") ? core : "change " core;
       # run uuid -> a short phrase; the raw id stays visible in the body below
-      else if(core ~ /^[0-9a-f]+-[0-9a-f]+-[0-9a-f]+-[0-9a-f]+-[0-9a-f]+$/) res="a run id";
+      else if(core ~ /^[0-9a-f]+-[0-9a-f]+-[0-9a-f]+-[0-9a-f]+-[0-9a-f]+$/)
+        res=(pw=="run") ? "id" : "a run id";
       # herdr pane id -> "pane w1:p6"
-      else if(core ~ /^w[0-9]+:p[0-9A-Za-z]+$/) res="pane " core;
-      # cli flag -> "the --resume option"
-      else if(core ~ /^--[a-z][a-z-]*$/) res="the " core " option";
+      else if(core ~ /^w[0-9]+:p[0-9A-Za-z]+$/)
+        res=(pw=="pane") ? core : "pane " core;
+      # cli flag -> "the --resume option". Both halves are added only if the sentence does not
+      # already supply them, so "use the --resume option" is left exactly as written instead of
+      # becoming "the --resume option option".
+      else if(core ~ /^--[a-z][a-z-]*$/)
+        res=((pw=="the") ? "" : "the ") core ((nw=="option"||nw=="flag"||nw=="switch") ? "" : " option");
       # file:line -> "docs/troubleshooting.md line 42"
       else if(core ~ /^[A-Za-z0-9_.\/-]+\.(sh|md|ts|json|toml):[0-9]+$/){
         i=length(core); while(i>0 && substr(core,i,1)!=":") i--;
@@ -98,7 +111,8 @@ render() {
       else { nh=gsub(/-/,"-",core);
         if(core ~ /^[a-z0-9]+(-[a-z0-9]+)+$/ && nh>=3){ gsub(/-/," ",core); res="\"" core "\"" } }
       return pre res punct }
-    function gloss(s,   n,w,i,out){ n=split(s,w," "); out=""; for(i=1;i<=n;i++) out = out (i>1?" ":"") glosstok(w[i]); return out }
+    function gloss(s,   n,w,i,out){ n=split(s,w," "); out="";
+      for(i=1;i<=n;i++) out = out (i>1?" ":"") glosstok(w[i], (i>1) ? w[i-1] : "", (i<n) ? w[i+1] : ""); return out }
     # First sentence, or a bounded prefix when the author never punctuated one. Truncation
     # backs up to a space so it can never split a multibyte character — cutting mid-character
     # makes awk abort the record with "towc: multibyte conversion failure". With no space to
