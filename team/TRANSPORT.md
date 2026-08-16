@@ -49,6 +49,20 @@ so and stop generating; the human decides when this team shuts down.
 
 All outputs go under `build/`. `team/` and `scripts/` are read-only harness inputs — you may
 read the role briefs under `team/` and execute `scripts/team.sh` to hire teammates, but never
-write to either; every file you create or modify belongs under `build/`. You may reflect your
-work on the shared kanban board with `scripts/board.sh` (e.g. `scripts/board.sh add --title
-"..." --stage implementation --owner <your-role>`) — it writes only under `build/BOARD/`.
+write to either; every file you create or modify belongs under `build/`.
+
+## Every task is a card on the board — open it before you start
+
+The `kanban` tab shows the human what work is in flight without them reading your pane, but it
+only shows what you put there. So treat opening a card as part of starting a task. Use
+`scripts/board.sh` (it writes only under `build/BOARD/` and prints the card id):
+
+- **The lead opens a card the moment it accepts a work item, before delegating:**
+  `scripts/board.sh add --title "add a print button" --owner <role> --stage plan`
+- **The owner keeps the card current as the work moves:**
+  `scripts/board.sh status <id> working` (then `blocked` / `done`) and
+  `scripts/board.sh move <id> <stage>` across the stages `research → plan → implementation →
+  verification → review → done`.
+
+A task with no card is invisible to the human. If someone asks for a change and you cannot point
+to its card, open one first.
