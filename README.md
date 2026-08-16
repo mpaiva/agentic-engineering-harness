@@ -110,6 +110,12 @@ In your first terminal window, type this and press Return:
 **You will see:** a message telling you to open a second window. The first window then waits.
 This is normal. Leave it open.
 
+> **Tip — one command that knows what to do next.** Instead of remembering flags, run
+> `./cockpit.sh`. It looks at what already exists (is a cockpit running? is there a mission in
+> `build/`? any archived runs?) and shows a short menu of only the sensible next steps — attach,
+> resume, start fresh (it archives `build/` for you), show status, or stop. New here? `./build.sh`
+> below is the plain path; `./cockpit.sh` is the shortcut once you have runs to manage.
+
 ### Step 2: Open the second window
 
 Open a new terminal window. Type this and press Return:
@@ -170,11 +176,20 @@ needs you.
 
 Your files are saved in a folder called `build`.
 
-### The team chat pane
+**Watching an agent's live workflow graph:** if a box is running a named Atomic workflow
+(the lead may hire specialists this way for bigger jobs), you can watch its stage-by-stage
+progress. Click into that agent's own box, then press **F2**, or type `/workflow connect
+<run-id>` and press Return. The run id appears in that agent's own on-screen output right
+after it starts the workflow. This shows one agent's own graph, in its own box — it does
+not appear anywhere else. See [herdr/atomic-integration.md](herdr/atomic-integration.md#watching-a-workflow-graph-today)
+for the full recipe.
 
-When the build starts, a pane called **team-chat** opens on the right. It shows every message
-the agents send each other as one running conversation — each in a box with the sender's name,
-the kind of message (SEND, ASK, REPLY), and the time. The first sentence is bold so you can skim.
+### The team chat tab
+
+When the build starts, a Herdr tab called **team-chat** opens next to the tab holding the
+agent boxes. It shows every message the agents send each other as one running conversation —
+each in a box with the sender's name, the kind of message (SEND, ASK, REPLY), and the time.
+The first sentence is bold so you can skim.
 
 You can:
 
@@ -235,9 +250,9 @@ You can use any name in place of `beta`. Each name is a separate, isolated build
 | The second window is empty, with no question | Wait 30 seconds. The agent may still be starting. |
 | "atomic has no usable credential" | You are not logged in. Do [Step 3: Log in](#step-3-log-in) again. |
 | "herdr not found" or "atomic not found" | The setup did not finish. Run `./scripts/setup.sh` again. |
-| "build/ already holds a run" | You have an unfinished build. To continue it, run `./build.sh --resume`. To start fresh, rename the `build` folder. |
+| "build/ already holds a run" | You have an unfinished build. Run `./cockpit.sh` and pick **Resume** to continue it, or **Start FRESH** to archive it and begin again. (By hand: `./build.sh --resume`, or rename the `build` folder then `./build.sh`.) |
 | An agent stopped and you do not know why | Its notes are saved in `build/.launch/`. Each agent has a file ending in `.stderr.log`. |
-| You want to start over completely | Run the stop command above. Then rename the `build` folder. Then run `./build.sh`. |
+| You want to start over completely | Run `./cockpit.sh` and choose **Start FRESH** — it archives `build/` and restarts for you. (By hand: run the stop command above, rename the `build` folder, then `./build.sh`.) |
 
 ## Words used in this project
 
@@ -284,6 +299,7 @@ These pages have more detail. They are written for people who want the full pict
 - [docs/case-study-ozymandias.md](docs/case-study-ozymandias.md) — a real run, screenshot by screenshot, including what broke
 - [docs/architecture.md](docs/architecture.md) — how the three tools fit together
 - [docs/monitoring-agents.md](docs/monitoring-agents.md) — how to watch a team without reading everything
+- [docs/operating-model.md](docs/operating-model.md) — the mental shift: how to supervise instead of type
 - [docs/kanban.md](docs/kanban.md) — the kanban board: columns are the workflow stages, cards are files under `build/BOARD/`
 - [docs/verification-and-gates.md](docs/verification-and-gates.md) — how the work gets checked
 - [docs/security.md](docs/security.md) — how to run this safely
@@ -361,4 +377,4 @@ The test found three problems. All three are fixed.
   not proven.
 - Bigger jobs have not been finished yet. The largest job tried so far was stopped early.
 
-Tested with Atomic 0.9.12, Herdr 0.8.0, and Ghostty 1.3.1.
+Tested with Atomic 0.9.13, Herdr 0.8.0, and Ghostty 1.3.1.
