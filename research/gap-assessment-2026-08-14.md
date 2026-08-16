@@ -1,4 +1,4 @@
-# Gap assessment — agentic-engineering-harness
+# Gap assessment — atomic-cockpit
 
 Date: 2026-08-14. Author: review-and-fix loop (Atomic session).
 Method: static review only. No live harness run was performed (that costs money and

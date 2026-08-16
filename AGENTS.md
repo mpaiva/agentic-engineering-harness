@@ -1,6 +1,6 @@
 # AGENTS.md — rules for coding agents working in this repository
 
-This file is instructions for **any coding agent** (Claude Code, Codex, Atomic, etc.) operating inside `agentic-engineering-harness`. It follows the `AGENTS.md` convention and is also read by Atomic and Claude Code as context.
+This file is instructions for **any coding agent** (Claude Code, Codex, Atomic, etc.) operating inside `atomic-cockpit`. It follows the `AGENTS.md` convention and is also read by Atomic and Claude Code as context.
 
 ## What this repository is
 

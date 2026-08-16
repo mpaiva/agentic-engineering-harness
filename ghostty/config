@@ -1,4 +1,4 @@
-# Ghostty config for the agentic engineering harness
+# Ghostty config for atomic cockpit
 # Install:  cp ghostty/config ~/.config/ghostty/config   (then super+shift+, to reload)
 # Verified against Ghostty 1.3.1. All keys validated with:
 #   /Applications/Ghostty.app/Contents/MacOS/ghostty +show-config --default

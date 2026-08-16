@@ -166,7 +166,7 @@ watch the cockpit grow from one pane to N, and `build/ROSTER.md` records who was
 
 ```markdown
 ```text
-agentic-engineering-harness/
+atomic-cockpit/
 ├── README.md                     ← you are here
 ├── AGENTS.md                     ← rules for coding agents working in THIS repo
 ├── build.sh                      ← the one command you run
@@ -562,7 +562,7 @@ export default function (pi: ExtensionAPI) {
 - [ ] **Step 4: Verify it loads without error outside Herdr**
 
 ```bash
-cd /tmp && ATOMIC_ROLE=specialist atomic -e /Users/mp/git-repos/agentic-engineering-harness/atomic/extensions/build-intake.ts -p "reply with the single word: loaded"
+cd /tmp && ATOMIC_ROLE=specialist atomic -e /Users/mp/git-repos/atomic-cockpit/atomic/extensions/build-intake.ts -p "reply with the single word: loaded"
 ```
 Expected: prints `loaded` with no extension error and **no popup** — the `ROLE !== "lead"` guard suppresses it. This proves the guard works and the module parses.
 
@@ -571,7 +571,7 @@ Expected: prints `loaded` with no extension error and **no popup** — the `ROLE
 ```bash
 mkdir -p /tmp/intake-test/build && echo "existing" > /tmp/intake-test/build/IDEA.md
 cd /tmp/intake-test && ATOMIC_ROLE=lead BUILD_DIR=/tmp/intake-test/build \
-  atomic -e /Users/mp/git-repos/agentic-engineering-harness/atomic/extensions/build-intake.ts \
+  atomic -e /Users/mp/git-repos/atomic-cockpit/atomic/extensions/build-intake.ts \
   -p "reply with the single word: resumed"
 cat /tmp/intake-test/build/IDEA.md
 ```

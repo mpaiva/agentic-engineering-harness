@@ -16,7 +16,7 @@
 # Markdown files here have no YAML front matter on purpose — GitHub Pages runs
 # jekyll-optional-front-matter, so they render anyway and stay readable in a plain editor.
 
-title: Agentic engineering harness
+title: Atomic cockpit
 description: >-
   Ask AI agents to build software for you. They plan it, build it, and check each other's
   work. You watch, and you make the big decisions.

@@ -47,7 +47,7 @@ Verified against the installed tools, per `AGENTS.md`:
 ## Architecture
 
 ```
-agentic-engineering-harness/
+atomic-cockpit/
 ├── build.sh                  ← NEW. the one command a human runs
 ├── scripts/team.sh           ← NEW. the one command the lead runs
 ├── team/                     ← NEW. the role library

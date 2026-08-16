@@ -13,7 +13,7 @@ info(){ printf '  \033[34m›\033[0m %s\n' "$1"; }
 have(){ command -v "$1" >/dev/null 2>&1; }
 UNAME="$(uname -s)"
 
-echo "── Agentic Engineering Harness — setup ──"
+echo "── Atomic cockpit — setup ──"
 
 # 1) Node (Atomic needs >= 22.19)
 if have node; then ok "node $(node -v)"; else no "node missing — install Node 22.19+ (https://nodejs.org), then re-run"; fi

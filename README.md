@@ -1,4 +1,4 @@
-# Agentic engineering harness
+# Atomic cockpit
 
 This project lets you ask AI agents to build software for you.
 
@@ -30,13 +30,13 @@ Then:
     checks passed, proved by an agent that did not write the code, then watched by a person.
     It cost $4.21. It also turned up four things that were wrong, one of which needed a human
     to work around it mid-run. Every stage above is described in words, with still pictures,
-    in <a href="https://mpaiva.github.io/agentic-engineering-harness/docs/case-study-ozymandias.html">the
+    in <a href="https://mpaiva.github.io/atomic-cockpit/docs/case-study-ozymandias.html">the
     case study</a>.</em>
   </figcaption>
 </figure>
 
 Everything here is also published as a website:
-**[mpaiva.github.io/agentic-engineering-harness](https://mpaiva.github.io/agentic-engineering-harness/)**.
+**[mpaiva.github.io/atomic-cockpit](https://mpaiva.github.io/atomic-cockpit/)**.
 The pages the agents built run there, so you can watch one instead of reading its HTML.
 
 ## Before you start
@@ -59,8 +59,8 @@ agents costs about five times as much as one. You can stop them at any time. See
 Open your terminal app. Type this and press Return:
 
 ```bash
-git clone https://github.com/mpaiva/agentic-engineering-harness
-cd agentic-engineering-harness
+git clone https://github.com/mpaiva/atomic-cockpit
+cd atomic-cockpit
 ```
 
 **You will see:** lines of text about downloading files.
@@ -324,7 +324,7 @@ not write the code, and then watched by a person. It cost $4.21 in total.
   <figcaption>
     <em>The page this run built, photographed from the screen the moment the reveal
     finished and the timer stopped.
-    <a href="https://mpaiva.github.io/agentic-engineering-harness/docs/samples/ozymandias.html">Watch
+    <a href="https://mpaiva.github.io/atomic-cockpit/docs/samples/ozymandias.html">Watch
     it run</a> — it takes about 30 seconds, and there is a Pause button while it goes. The file
     itself is <a href="docs/samples/ozymandias.html">docs/samples/ozymandias.html</a>.</em>
   </figcaption>
