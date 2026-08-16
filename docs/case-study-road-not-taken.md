@@ -25,7 +25,7 @@ The question was *What do you want to build today?* The answer, typed in plain w
 
 <figure>
   <img src="media/steps/02-answer-captured.png" width="1400"
-       alt="The same pane after Enter, filled by Atomic's start-up banner: version 0.9.12, model claude-sonnet-5 medium, working directory ~/git-repos/atomic-cockpit. Below it a yellow billing warning, then the lines &quot;Captured. Refining into /Users/mp/git-repos/atomic-cockpit/build/MISSION.md…&quot; and &quot;Session name set: lead&quot;. The input line under them is empty." />
+       alt="The same pane after Enter, filled by Atomic's start-up banner: version v0.9.13, provider anthropic, model claude-sonnet-5 medium, working directory ~/git-repos/atomic-cockpit. Below it a yellow warning that subscription usage is billed per token as extra usage, then the lines &quot;Captured. Refining into /Users/mp/git-repos/atomic-cockpit/build/MISSION.md…&quot; and &quot;Session name set: lead&quot;. The input line under them is empty, and the tab bar still holds only the crew tab." />
   <figcaption>
     <em>Step 2. The answer is saved word for word, then the lead starts turning it into a plan.</em>
   </figcaption>
@@ -320,8 +320,15 @@ is the reason 115 of the 341 kept frames are of something other than the build.
 | 18:15 | the lead closes the mission |
 | 18:18 | the page opened in a browser and watched end to end |
 
-**Fourteen minutes** from *yes* to *proven*. The forty-three minutes before it were a person
-getting round to answering the question — which costs nothing, because `build.sh` waits.
+**Fourteen minutes** from *yes* to *proven*.
+
+The forty-three minutes before it were a person getting round to answering the question, and
+they cost nothing — which is the point worth recording. An earlier version of `build.sh` gave
+up on the intake popup after ten minutes, and a slow answer once left a live agent stranded
+with a question on screen and no script left to send its kickoff. That cap was removed, but
+the fix had never been exercised by an actual slow answer. This run exercised it: forty-three
+one-minute heartbeats, then a normal answer, then a build that finished and verified. The
+caveat that used to sit in the README under "still rough" is retired by this run.
 
 ## How the picture was made
 

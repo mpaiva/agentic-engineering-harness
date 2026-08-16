@@ -12,7 +12,7 @@
 # build-intake extension), refines the answer into build/MISSION.md, and then hires its own
 # team with scripts/team.sh — so the cockpit grows from one pane to N as it decides.
 #
-# Verified against Atomic 0.9.12 and Herdr 0.8.0. Bash 3.2 safe.
+# Verified against Atomic 0.9.13 and Herdr 0.8.0. Bash 3.2 safe.
 set -euo pipefail
 
 SESSION="cockpit"

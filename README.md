@@ -382,11 +382,11 @@ The test found three problems. All three are fixed.
   to answer the opening question, the script exited; the agent kept running with your
   question on screen, but the two messages that get it moving never arrived, and `--resume`
   was not a safe fix (it restarts the server and would throw away the answer you just typed).
-  This happened in the run pictured above and needed a human to work around it. **Fixed in
-  code:** the intake wait no longer has a cap — `build.sh` waits as long as it takes and
-  prints a heartbeat every minute so a long wait does not look like a hang. The fix has not
-  yet been exercised in a live run where a human deliberately answers slowly, so it is
-  corrected but not yet proven end to end.
+  It happened once for real, and needed a human to work around it mid-run. **Fixed, and now
+  proven:** the intake wait no longer has a cap. In the run pictured above the question sat
+  unanswered for **forty-three minutes** while `build.sh` printed a heartbeat every minute;
+  the answer was then typed normally and the build ran through to a verified finish. Nothing
+  was lost and nothing had to be worked around.
 - We have not yet used `--resume` to finish a job that was left half done. Our test brought
   back a job that was already complete. So restarting works. Picking up unfinished work is
   not proven.

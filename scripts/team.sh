@@ -8,7 +8,7 @@
 # `add` splits a pane, boots that role's Atomic session with its brief, names it for
 # intercom, and appends the hire (with the lead's reason) to build/ROSTER.md.
 #
-# Verified against Atomic 0.9.12 and Herdr 0.8.0. Bash 3.2 safe.
+# Verified against Atomic 0.9.13 and Herdr 0.8.0. Bash 3.2 safe.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")/.." && pwd)"
