@@ -2,6 +2,8 @@
 # pane.sh — rearrange Herdr panes/tabs by agent name or tab label, not raw wN:pM IDs.
 #
 #   ./scripts/pane.sh list                              # every pane: name, pane id, tab
+#   (<name> can be an agent name, a tab label, a raw wN:pM id, or "focused"/"." for the
+#    currently-focused pane — handy when bound to a hotkey.)
 #   ./scripts/pane.sh totab <name>                       # open a pane as its own new tab
 #   ./scripts/pane.sh tab <name> <existing-tab-label> [right|down]  # move into a tab (default: right)
 #   ./scripts/pane.sh split <name> right|down [target]    # split, optionally next to <target>
@@ -11,16 +13,26 @@
 #   ./scripts/pane.sh zoom <name> [on|off|toggle]         # default: toggle
 #   ./scripts/pane.sh close <name>
 #
-# <name> is resolved in this order: (1) a raw pane id like w1:p3, used as-is; (2) a live
-# agent name (lead/researcher/implementer/...), via `herdr pane list`'s "agent" field; (3) a
-# tab label (kanban/team/workflows/team-chat/...), via `herdr tab list` — the first pane in
-# that tab is used, which is exactly right for this repo's single-pane utility tabs.
+# <name> is resolved in this order: (1) "focused" / "." → the currently-focused pane, so a
+# hotkey can act on whatever you're looking at; (2) a raw pane id like w1:p3, used as-is;
+# (3) a live agent name (lead/researcher/implementer/...), via `herdr pane list`'s "agent"
+# field; (4) a tab label (kanban/team/workflows/team-chat/...), via `herdr tab list` — the
+# first pane in that tab is used, which is exactly right for this repo's single-pane tabs.
 #
 # Built after live-checking Herdr's actual right-click pane menu (2026-08-16): it offers
 # Rename/Clear name/Swap/Split right/Split down/Zoom/Close — but NOT "open as tab", even
 # though the CLI supports it (`herdr pane move --new-tab`). This script fills that gap and
 # gives every action a name-based interface instead of raw IDs, for both menu-covered and
 # menu-missing actions alike.
+#
+# HOTKEY RECIPE — Herdr's right-click pane menu is NOT extensible (hardcoded in the binary),
+# but custom command keybindings are. Bind pane.sh to the "focused" target for menu-item-like
+# hotkeys. Add to ~/.config/herdr/config.toml (user config, not committed — see AGENTS.md),
+# then `herdr server reload-config`. Default prefix is ctrl+b, so ctrl+b then alt+t = totab:
+#   [[keys.command]]
+#   key = "prefix+alt+t"
+#   type = "shell"
+#   command = "/abs/path/to/scripts/pane.sh totab focused"
 #
 # Verified against Herdr 0.8.0. Bash 3.2 safe.
 set -uo pipefail
@@ -47,6 +59,19 @@ if ! command -v python3 >/dev/null 2>&1; then echo "python3 not found on PATH." 
 resolve(){
   local name="$1"
   case "$name" in
+    focused|.)
+      # The currently-focused pane — lets a hotkey act on whatever you're looking at.
+      herdr pane list 2>/dev/null | python3 -c "
+import sys, json
+try: data = json.load(sys.stdin)
+except Exception: sys.exit(1)
+for p in data.get('result', {}).get('panes', []):
+    if p.get('focused') is True:
+        print(p.get('pane_id','') + '\t' + p.get('tab_id',''))
+        sys.exit(0)
+sys.exit(1)
+"
+      return $? ;;
     w*:p*)
       # Raw pane id: still need its tab_id, so look it up rather than trusting the caller.
       herdr pane list 2>/dev/null | python3 -c "
