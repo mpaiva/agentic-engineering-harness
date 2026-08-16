@@ -48,8 +48,19 @@ have_jq=0; command -v jq >/dev/null 2>&1 && have_jq=1
 render() {
   local w="$1"
   if [ "$have_jq" != 1 ]; then cat "$FEED"; return; fi
-  jq -r '[ (if (.ts|type)=="string" and (.ts|length)>=16 then .ts[11:16] else (.ts//"") end), (.from//"?"), (.to//""), (.action//"?"), (.message//""|gsub("[\n\t]";" ")) ] | join("\u001f")' "$FEED" 2>/dev/null \
-  | LC_ALL=C awk -v W="$w" -v margin="$MARGIN" -v sep="$SEP" -v teal="$ACCENT" -v palstr="$PAL" '
+  # Read the feed line-by-line (-R) and parse each with fromjson? so ONE malformed line skips
+  # only itself instead of aborting jq mid-stream and blanking the whole tab (this is a
+  # stakeholder-facing surface). Ordering-independent: a bad FIRST line no longer kills the
+  # lines after it, and a bad middle line no longer truncates the feed.
+  local rows
+  rows="$(jq -R -r 'fromjson? | [ (if (.ts|type)=="string" and (.ts|length)>=16 then .ts[11:16] else (.ts//"") end), (.from//"?"), (.to//""), (.action//"?"), (.message//""|gsub("[\n\t]";" ")) ] | join("\u001f")' "$FEED" 2>/dev/null)"
+  # A non-empty feed that produced no parseable row must not render as a silent blank: say so,
+  # rather than exiting 0 on an empty screen with no signal of why.
+  if [ -z "$rows" ]; then
+    [ -s "$FEED" ] && printf '\n  \033[2m(the chat feed has lines but none parse as JSON yet — nothing to render. Raw feed: %s)\033[0m\n' "$FEED"
+    return
+  fi
+  printf '%s\n' "$rows" | LC_ALL=C awk -v W="$w" -v margin="$MARGIN" -v sep="$SEP" -v teal="$ACCENT" -v palstr="$PAL" '
     function ord(ch){ return ORDT[ch]+0 }
     function cwidth(s,   t,i,b,w){ t=s; gsub(reESC,"",t); w=0; for(i=1;i<=length(t);i++){ b=ord(substr(t,i,1)); if(b>=128 && b<192) continue; w++ } return w }
     function pad(n,   s){ s=""; while(n-- > 0) s=s" "; return s }
@@ -212,7 +223,7 @@ paint(){
 build_links(){
   : > "$LINKS"; LINKCOUNT=0
   local tok abs
-  { [ "$have_jq" = 1 ] && jq -r '.message // ""' "$FEED" 2>/dev/null || cat "$FEED"; } \
+  { [ "$have_jq" = 1 ] && jq -R -r 'fromjson? | .message // ""' "$FEED" 2>/dev/null || cat "$FEED"; } \
   | grep -oE '([A-Za-z0-9_.~{}-]*/[A-Za-z0-9_.~{},/-]*\.[A-Za-z0-9]+)' 2>/dev/null \
   | sort -u > "$TMP.links" 2>/dev/null || true
   while IFS= read -r tok; do
