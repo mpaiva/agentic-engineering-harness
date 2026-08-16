@@ -132,10 +132,35 @@ render(){
   ' "$CARDS"
 }
 
+# now_line / now_block — "who is working on what right now", read straight from the board so a
+# stakeholder answers it without opening a card (VISUAL-COMMS-SPEC §2.2). Both read $CARDS
+# (populated by scan_cards, which render() calls). now_line is one ASCII line for the pinned TUI
+# strip; now_block is a labelled multi-line list for the piped/non-interactive render. ASCII "->"
+# and " | " (no multibyte) so the pinned line's width cut stays byte = char safe.
+now_line(){
+  LC_ALL=C awk -F"$SEP" '
+    $3=="working"{ ow=($4==""?"?":$4); t=$5; if(t==""){ t=$2; sub(/^.*\//,"",t) }
+      out=out (out==""?"":"   |   ") ow " -> " t }
+    END{ if(out=="") out="no cards in progress"; print out }
+  ' "$CARDS"
+}
+now_block(){
+  local n; n="$(LC_ALL=C awk -F"$SEP" '$3=="working"{c++} END{print c+0}' "$CARDS")"
+  printf '\033[1mNOW WORKING\033[0m  \033[2m(%s in progress)\033[0m\n' "$n"
+  if [ "$n" -eq 0 ]; then
+    printf '  \033[2mno cards in progress\033[0m\n'
+  else
+    LC_ALL=C awk -F"$SEP" '$3=="working"{ ow=($4==""?"?":$4); t=$5; if(t==""){ t=$2; sub(/^.*\//,"",t) }
+      printf "  \033[38;2;138;190;183m%s\033[0m -> %s\n", ow, t }' "$CARDS"
+  fi
+}
+
 # Non-interactive (piped/redirected): no resize or keys to handle — render once and exit.
 if [ ! -t 1 ] || [ ! -t 0 ]; then
   SELC=-1; SELR=-1
   render "${COLUMNS:-80}"
+  echo
+  now_block
   rm -f "$CARDS"
   exit 0
 fi
@@ -168,7 +193,7 @@ rerender(){ term_size; render "$COLS" > "$TMP"; total="$(wc -l < "$TMP" | tr -d 
 K=$'\033[K'          # clear to end of line
 VOFF=0               # card-area rows scrolled off the top; paint clamps it to keep the selection visible
 paint(){
-  local view=$((ROWS-1)); [ "$view" -lt 3 ] && view=3
+  local view=$((ROWS-2)); [ "$view" -lt 3 ] && view=3   # ROWS-2: reserve one row for the pinned NOW strip, one for the status bar
   # Below ~90 columns each 89-wide board row wraps onto wf physical lines (the documented
   # degraded mode); divide the viewport by wf so the pinned header and the selected card are
   # still on screen even when every logical row costs two rows of the pane.
@@ -191,10 +216,13 @@ paint(){
   [ "$VOFF" -gt "$maxoff" ] && VOFF=$maxoff; [ "$VOFF" -lt 0 ] && VOFF=0
   # Flicker-free: home the cursor, redraw each visible line with a clear-to-EOL, clear anything
   # left below, then the status bar — all in ONE write, with NO full-screen clear (that flashes).
-  local body
+  local body now
   body="$({ sed -n '1,2p' "$TMP"; sed -n "$((3+VOFF)),$((2+VOFF+carea))p" "$TMP"; } | awk -v k="$K" '{print $0 k}')"
-  printf '\033[H%s\033[J\033[%d;1H\033[7m kanban  [%sx%s]  ←→/h/l column · ↑↓/j/k card · p preview · q quit \033[0m%s' \
-    "$body" "$ROWS" "$COLS" "$ROWS" "$K"
+  # Pinned "who is working on what right now" strip, one row above the status bar — answers the
+  # stakeholder question without scrolling or opening a card (VISUAL-COMMS-SPEC §2.2).
+  now="NOW  $(now_line)"; now="$(printf '%s' "$now" | cut -c1-"$COLS")"
+  printf '\033[H%s\033[J\033[%d;1H\033[38;2;%sm%s\033[0m%s\033[%d;1H\033[7m kanban  [%sx%s]  ←→/h/l column · ↑↓/j/k card · p preview · q quit \033[0m%s' \
+    "$body" "$((ROWS-1))" "$ACCENT" "$now" "$K" "$ROWS" "$COLS" "$ROWS" "$K"
 }
 
 # render_md <file> <width> — lightweight markdown -> ANSI wrapped to <width>. Handles headings,

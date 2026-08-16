@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # board.sh — create and move cards on the team's kanban board (scripts/kanban.sh renders it).
 #
-#   ./scripts/board.sh add --title T [--stage S] [--owner R] [--body B]   # prints the new card's id
+#   ./scripts/board.sh add --title T --owner R [--stage S] [--body B]   # prints the new card's id
 #   ./scripts/board.sh move <id> <stage> [owner]   # owner defaults to the stage's role
 #   ./scripts/board.sh status <id> <state>
 #   ./scripts/board.sh list
@@ -20,7 +20,7 @@ BOARD="${BOARD_DIR:-$BUILD/BOARD}"
 SEP="$(printf '\037')"
 
 usage(){
-  echo "usage: board.sh add --title T [--stage S] [--owner R] [--body B]" >&2
+  echo "usage: board.sh add --title T --owner R [--stage S] [--body B]" >&2
   echo "       board.sh move <id> <stage> [owner]  (research|plan|implementation|verification|review|done)" >&2
   echo "       board.sh status <id> <state>    (waiting|working|blocked|done)" >&2
   echo "       board.sh list" >&2
@@ -81,6 +81,10 @@ case "$cmd" in
       esac; shift
     done
     [ -n "$title" ] || { echo "add needs --title" >&2; exit 2; }
+    # Every card is attributed to exactly one crew member — an ownerless card is not creatable
+    # (VISUAL-COMMS-SPEC §2.3). --owner is required, not defaulted, so the board never shows a
+    # task with no one accountable for it.
+    [ -n "$owner" ] || { echo "add needs --owner (every card must name a crew member)" >&2; exit 2; }
     valid_stage "$stage" || { echo "unknown stage: $stage (research|plan|implementation|verification|review|done)" >&2; exit 2; }
     mkdir -p "$BOARD"
     # id = a filename-safe slug of the title; suffix a counter on collision.
