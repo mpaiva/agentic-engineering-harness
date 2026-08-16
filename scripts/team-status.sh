@@ -156,8 +156,12 @@ trap 'printf "\033[?25h\033[?1049l"; exit 0' INT TERM
 printf '\033[?1049h\033[?25l'                 # alt screen + hide cursor
 
 # Flicker-free: home the cursor, redraw each line with a clear-to-EOL, then clear anything left
-# below — no full-screen clear (that flashes on every 2s refresh).
-paint(){ render > "$TMP"; printf '\033[H'; sed 's/$/\033[K/' "$TMP"; printf '\033[J'; }
+# below — no full-screen clear (that flashes on every 2s refresh). The clear-to-EOL must be a
+# REAL escape byte: this platform's sed does not interpret '\033' (it prints the literal text
+# "033[K"), so the ESC comes from $'\033[K' (bash ANSI-C quoting) appended in awk — the same way
+# team-chat.sh and kanban.sh do it. printf below DOES interpret \033, so home/clear-below are fine.
+K=$'\033[K'
+paint(){ render > "$TMP"; printf '\033[H'; awk -v k="$K" '{print $0 k}' "$TMP"; printf '\033[J'; }
 
 while :; do
   paint
