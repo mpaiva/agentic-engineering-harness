@@ -28,7 +28,8 @@
 # extension directly, no LLM call. Still: refresh is manual (r), not a 1s auto-loop like
 # kanban.sh/team-status.sh, so idling here does not repeatedly spawn processes.
 #
-# Keys: ↑↓/j/k select run · Enter/p stage detail · r refresh (re-queries every run) · q quit.
+# Keys: ↑↓/j/k select run · r refresh (re-queries every run) · q quit.
+# The selected run's dependency tree renders automatically below the list — no Enter needed.
 # Piped or non-interactive output renders once (using cached data if present) and exits.
 #
 # Verified against Atomic 0.9.13 / Herdr 0.8.0. Bash 3.2 safe.
@@ -60,7 +61,12 @@ read_registry(){
 
 # query_one <run-id> — run `/workflow status <run-id>` headlessly and print a compact summary:
 #   line 1: <run-id> SEP <name> SEP <status> SEP <durationMs> SEP <stageCount>
-#   line 2+: STAGE SEP <name> SEP <status> SEP <durationMs>   (one per stage)
+#   line 2+: TREE SEP <pre-rendered, indented tree-topology line for one stage>
+# The dependency tree (which stage ran after/parallel to which) is built here in Python from
+# each stage's real `parentIds` — the same data Atomic's own graph overlay uses, just
+# rendered as plain text since we cannot attach to the live overlay cross-process (see the
+# file header and specs/2026-08-16-graph-tab.md). Multi-parent stages (fan-in) render once
+# under their first parent by executionOrder, with other parents noted inline.
 # Prints nothing (and returns nonzero) if the run truly cannot be found.
 query_one(){
   local run_id="$1"
@@ -92,11 +98,46 @@ status = detail.get('status', '?')
 dur = detail.get('durationMs', 0) or 0
 stages = detail.get('stages', []) or []
 print(sep.join([run_id, name, status, str(int(dur)), str(len(stages))]))
+
+def glyph(s):
+    return {'completed': '\u2713', 'crashed': '\u2717', 'failed': '\u2717', 'running': '\u25cf'}.get(s, '\u25cb')
+
+def fmt_dur(ms):
+    s = int((ms or 0) + 500) // 1000
+    return (str(s) + 's') if s < 60 else (str(s // 60) + 'm ' + str(s % 60) + 's')
+
+by_id = {s.get('id'): s for s in stages if s.get('id')}
+children = {}
+roots = []
 for s in stages:
-    sname = s.get('name', '?')
-    sstatus = s.get('status', '?')
-    sdur = s.get('durationMs', 0) or 0
-    print(sep.join(['STAGE', sname, sstatus, str(int(sdur))]))
+    sid = s.get('id')
+    pids = [p for p in (s.get('parentIds') or []) if p in by_id]
+    if pids:
+        primary = min(pids, key=lambda p: by_id[p].get('executionOrder', 0))
+        children.setdefault(primary, []).append(sid)
+        extra = [by_id[p].get('name', p) for p in pids if p != primary]
+        s['_extra_parents'] = extra
+    else:
+        roots.append(sid)
+roots.sort(key=lambda sid: by_id[sid].get('executionOrder', 0))
+for kids in children.values():
+    kids.sort(key=lambda sid: by_id[sid].get('executionOrder', 0))
+
+def render(sid, prefix, is_last, is_root):
+    s = by_id[sid]
+    branch = '' if is_root else (' \u2514\u2500 ' if is_last else ' \u251c\u2500 ')
+    line = prefix + branch + glyph(s.get('status')) + ' ' + s.get('name', '?') + '  ' + s.get('status', '?') + '  ' + fmt_dur(s.get('durationMs'))
+    extra = s.get('_extra_parents') or []
+    if extra:
+        line += '  (also after: ' + ', '.join(extra) + ')'
+    print(sep.join(['TREE', line]))
+    kids = children.get(sid, [])
+    child_prefix = prefix + ('    ' if (is_root or is_last) else ' \u2502  ')
+    for i, kid in enumerate(kids):
+        render(kid, child_prefix, i == len(kids) - 1, False)
+
+for i, r in enumerate(roots):
+    render(r, '', i == len(roots) - 1, True)
 " "$run_id"
 }
 
@@ -144,12 +185,12 @@ render(){
 
 show_detail(){
   local target="$1" n=0
-  while IFS="$SEP" read -r tag a b c _d _e; do
+  while IFS="$SEP" read -r tag a _b _c _d _e; do
     if [ "$tag" = "RUN" ]; then
       n=$((n+1))
       cur=$([ "$n" -eq "$target" ] && echo 1 || echo 0)
-    elif [ "$tag" = "STAGE" ] && [ "${cur:-0}" = "1" ]; then
-      printf '    %s %-30s %-11s %s\n' "$(status_glyph "$b")" "$a" "$b" "$(fmt_dur "${c:-0}")"
+    elif [ "$tag" = "TREE" ] && [ "${cur:-0}" = "1" ]; then
+      printf '    %s\n' "$a"
     fi
   done < "$CACHE"
 }
@@ -173,7 +214,7 @@ paint(){
   render
   echo
   if [ "$TOTAL" -gt 0 ]; then
-    echo "  Selected run's stages:"
+    echo "  Selected run's stage graph (real topology from parentIds):"
     show_detail "$SEL"
   fi
   printf '\n\033[7m workflows  ↑↓/j/k select · r refresh (re-queries) · q quit \033[0m%s\n' "$K"
