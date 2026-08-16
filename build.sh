@@ -346,109 +346,36 @@ else
   echo "answer the question, then re-run: ./build.sh --resume" >&2
 fi
 
-# Open a read-only "team chat" tab so the human can watch the whole intercom conversation as
-# one feed (intercom-bridge.ts writes it — see specs/2026-08-14-intercom-team-chat-pane.md).
-# Idempotent: skip if a team-chat tab already exists (e.g. on --resume). Best-effort: a
-# failure here must never fail the run, so every herdr call swallows its error. Same pattern
-# as the kanban/team tabs below: label-idempotent `herdr tab create`, and deliberately NO
-# $LAUNCHDIR/*.pane record — scripts/team.sh hires by splitting the newest
-# $LAUNCHDIR/*.pane file, and a team-chat.pane entry would make every hire land in this tab
-# (and count against the agent cap) instead of splitting from the lead/hire grid.
-if ! herdr tab list 2>/dev/null | python3 -c "
-import sys, json
-def labelled(o):
-    if isinstance(o, dict):
-        return o.get('label') == 'team-chat' or any(labelled(v) for v in o.values())
-    if isinstance(o, list):
-        return any(labelled(v) for v in o)
-    return False
-try: sys.exit(0 if labelled(json.load(sys.stdin)) else 1)
-except Exception: sys.exit(1)
-"; then
-  CHATPANE="$(herdr tab create --label team-chat --cwd "$HERE" --no-focus 2>/dev/null \
-    | python3 -c "
-import sys, json
-def find(o):
-    if isinstance(o, dict):
-        if 'pane_id' in o: return o['pane_id']
-        for v in o.values():
-            r = find(v)
-            if r: return r
-    if isinstance(o, list):
-        for v in o:
-            r = find(v)
-            if r: return r
-    return None
-try: print(find(json.load(sys.stdin)) or '')
-except Exception: pass
-" 2>/dev/null || true)"
-  if [ -n "$CHATPANE" ]; then
-    # Pass the feed and the team's intercom group so the viewer's "chat" peer joins the same
-    # group as the agents (otherwise the human could not message them). BUILD_DIR-derived
-    # path means --session beta watches build-beta/team-chat.log.
-    herdr pane run "$CHATPANE" env "TEAMCHAT_FEED=$BUILD/team-chat.log" "ATOMIC_INTERCOM_GROUP=$GROUP" ./scripts/team-chat.sh >/dev/null 2>&1 || true
-  fi
-fi
+# Open the team-chat, kanban, and team-roster tabs via one idempotent, best-effort-but-VISIBLE
+# helper. Each tab: skip if a tab with that label already exists (e.g. on --resume); otherwise
+# create it and run the viewer script in it. A `herdr` hiccup here must never fail the whole
+# run, so failures are swallowed — but silently swallowing them left a tab simply missing with
+# no clue why (see: kanban tab not appearing). Every failure now prints a one-line warning plus
+# the exact manual-recovery command, so a miss is visible instead of a mystery.
+#
+# No $LAUNCHDIR/*.pane record is written for any of these: scripts/team.sh hires by splitting
+# the newest $LAUNCHDIR/*.pane file, and a record here would make every hire land in this tab
+# (and count against the agent cap) instead of the lead/hire grid. Find-by-label only.
 
-# Open the kanban board in its own tab so every card's stage is one glance away (cards live
-# under build/BOARD/, written with scripts/board.sh — see docs/kanban.md). Idempotent: skip if
-# a kanban tab already exists (e.g. on --resume). Best-effort: a failure here must never fail
-# the run, so every herdr call swallows its error. The JSON shapes are searched rather than
-# assumed (flags verified against `herdr tab --help` / `herdr pane --help`, Herdr 0.8.0).
-if ! herdr tab list 2>/dev/null | python3 -c "
+_tab_has_label(){
+  # _tab_has_label <label> — exit 0 if a tab with that label exists in `herdr tab list`.
+  herdr tab list 2>/dev/null | python3 -c "
 import sys, json
+label = sys.argv[1]
 def labelled(o):
     if isinstance(o, dict):
-        return o.get('label') == 'kanban' or any(labelled(v) for v in o.values())
+        return o.get('label') == label or any(labelled(v) for v in o.values())
     if isinstance(o, list):
         return any(labelled(v) for v in o)
     return False
 try: sys.exit(0 if labelled(json.load(sys.stdin)) else 1)
 except Exception: sys.exit(1)
-"; then
-  KANBANPANE="$(herdr tab create --label kanban --cwd "$HERE" --no-focus 2>/dev/null \
-    | python3 -c "
-import sys, json
-def find(o):
-    if isinstance(o, dict):
-        if 'pane_id' in o: return o['pane_id']
-        for v in o.values():
-            r = find(v)
-            if r: return r
-    if isinstance(o, list):
-        for v in o:
-            r = find(v)
-            if r: return r
-    return None
-try: print(find(json.load(sys.stdin)) or '')
-except Exception: pass
-" 2>/dev/null || true)"
-  if [ -n "$KANBANPANE" ]; then
-    # No pane record is written for this tab: scripts/team.sh hires by splitting the NEWEST
-    # $LAUNCHDIR/*.pane record, and a kanban.pane entry would make every hire land in this
-    # tab (and count against the agent cap). The board pane is find-by-label only.
-    # BUILD_DIR points the viewer at THIS run's board, so --session beta watches build-beta/.
-    herdr pane run "$KANBANPANE" env "BUILD_DIR=$BUILD" ./scripts/kanban.sh >/dev/null 2>&1 || true
-  fi
-fi
+" "$1"
+}
 
-# Open the team roster board in its own tab: who was hired, why, and each agent's live state
-# (working/blocked/idle/done). Same idempotent + best-effort contract as the kanban tab above,
-# and — like it — writes NO $LAUNCHDIR/*.pane record, so scripts/team.sh keeps splitting from
-# the newest hire pane rather than landing hires in this tab. See scripts/team-status.sh.
-if ! herdr tab list 2>/dev/null | python3 -c "
-import sys, json
-def labelled(o):
-    if isinstance(o, dict):
-        return o.get('label') == 'team' or any(labelled(v) for v in o.values())
-    if isinstance(o, list):
-        return any(labelled(v) for v in o)
-    return False
-try: sys.exit(0 if labelled(json.load(sys.stdin)) else 1)
-except Exception: sys.exit(1)
-"; then
-  TEAMPANE="$(herdr tab create --label team --cwd "$HERE" --no-focus 2>/dev/null \
-    | python3 -c "
+_find_pane_id(){
+  # _find_pane_id — reads a `herdr tab create` JSON response on stdin, prints the new pane id.
+  python3 -c "
 import sys, json
 def find(o):
     if isinstance(o, dict):
@@ -463,12 +390,37 @@ def find(o):
     return None
 try: print(find(json.load(sys.stdin)) or '')
 except Exception: pass
-" 2>/dev/null || true)"
-  if [ -n "$TEAMPANE" ]; then
-    # BUILD_DIR + HERDR_SESSION point the viewer at THIS run's roster and session.
-    herdr pane run "$TEAMPANE" env "BUILD_DIR=$BUILD" "HERDR_SESSION=$SESSION" ./scripts/team-status.sh >/dev/null 2>&1 || true
+"
+}
+
+_open_side_tab(){
+  # _open_side_tab <label> <cmd...> — idempotent create-and-run, with a visible warning and
+  # exact manual-recovery command if creation or the viewer launch did not stick.
+  LABEL="$1"; shift
+  if _tab_has_label "$LABEL"; then return 0; fi
+  PANE_ID="$(herdr tab create --label "$LABEL" --cwd "$HERE" --no-focus 2>/dev/null | _find_pane_id || true)"
+  if [ -n "$PANE_ID" ]; then
+    herdr pane run "$PANE_ID" "$@" >/dev/null 2>&1 || true
   fi
-fi
+  if ! _tab_has_label "$LABEL"; then
+    echo "Warning: the '$LABEL' tab did not open automatically. Reopen it by hand:" >&2
+    echo "  herdr tab create --label $LABEL --cwd $HERE --no-focus" >&2
+    echo "  herdr pane run <new-pane-id> $*" >&2
+  fi
+}
+
+# Read-only "team chat" tab: the whole intercom conversation as one feed
+# (intercom-bridge.ts writes it — see specs/2026-08-14-intercom-team-chat-pane.md).
+_open_side_tab team-chat env "TEAMCHAT_FEED=$BUILD/team-chat.log" "ATOMIC_INTERCOM_GROUP=$GROUP" ./scripts/team-chat.sh
+
+# Kanban board: every card's stage at a glance (cards live under build/BOARD/, written with
+# scripts/board.sh — see docs/kanban.md). BUILD_DIR points the viewer at THIS run's board, so
+# --session beta watches build-beta/.
+_open_side_tab kanban env "BUILD_DIR=$BUILD" ./scripts/kanban.sh
+
+# Team roster board: who was hired, why, and each agent's live state (working/blocked/idle/
+# done). BUILD_DIR + HERDR_SESSION point the viewer at THIS run's roster and session.
+_open_side_tab team env "BUILD_DIR=$BUILD" "HERDR_SESSION=$SESSION" ./scripts/team-status.sh
 
 if [ "$MODE" = "resume" ]; then
   HEADLINE=" The lead is back. It is re-reading the mission and continuing."
