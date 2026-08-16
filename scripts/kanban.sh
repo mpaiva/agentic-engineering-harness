@@ -49,12 +49,12 @@ scan_cards(){
     function colof(s){ if(s=="plan")return 1; if(s=="implementation")return 2; if(s=="verification")return 3; if(s=="review")return 4; if(s=="done")return 5; return 0 }
     function flush(){ if(fn!=""){ gsub(sep,"",t); print colof(st) sep fn sep ss sep ow sep t } }
     FNR==1 { flush(); fn=FILENAME; st=""; ss=""; ow=""; t=""; body=0 }
-    !body && /^---[ \t]*$/ { body=1; next }
+    !body && /^---[ \t\r]*$/ { body=1; next }
     !body { if (match($0,/^stage:[ \t]*/))  { st=substr($0,RLENGTH+1); sub(/[ \t\r]+$/,"",st) }
             else if (match($0,/^status:[ \t]*/)) { ss=substr($0,RLENGTH+1); sub(/[ \t\r]+$/,"",ss) }
             else if (match($0,/^owner:[ \t]*/))  { ow=substr($0,RLENGTH+1); sub(/[ \t\r]+$/,"",ow) }
             next }
-    body && t=="" && $0 !~ /^[ \t]*$/ { t=$0 }
+    body && t=="" && $0 !~ /^[ \t\r]*$/ { t=$0; sub(/\r$/,"",t) }
     END { flush() }
   ' "$@" > "$CARDS"
 }
@@ -64,11 +64,13 @@ scan_cards(){
 # columns align. The selected card (SELC/SELR, -1 in one-shot mode) gets a white border; the
 # selected column's header renders as a reverse-video pill. Card colour reflects status:
 # waiting = dim grey, working = teal accent, blocked = yellow (red glyph), done = green.
+# When $SELFILE is set, the selected card's first/last output line numbers are written there
+# so paint can keep the selection scrolled into view.
 render(){
   local w="$1"
   scan_cards
   awk -v W="$w" -v margin="$MARGIN" -v sep="$SEP" -v teal="$ACCENT" -v palstr="$PAL" \
-      -v selc="${SELC:--1}" -v selr="${SELR:--1}" '
+      -v selc="${SELC:--1}" -v selr="${SELR:--1}" -v selfile="${SELFILE:-/dev/null}" '
     function ord(ch){ return ORDT[ch]+0 }
     function cwidth(s,   t,i,b,w){ t=s; gsub(reESC,"",t); w=0; for(i=1;i<=length(t);i++){ b=ord(substr(t,i,1)); if(b>=128 && b<192) continue; w++ } return w }
     function pad(n,   s){ s=""; while(n-- > 0) s=s" "; return s }
@@ -95,17 +97,20 @@ render(){
       if(t==""){ t=$2; sub(/^.*\//,"",t) }                  # bodyless card: fall back to the filename
       sel = (c-1==selc && cnt[c]==selr); cnt[c]++;
       bord = sel ? WHITE : GREY; sc = scolor(ss);
+      if(sel) s0=nl[c]+1;                                   # selected card: remember its row span
       put(c, bord "╭" rule(colw-2) "╮" R);
       n=wrap(t,IN,LN); if(n>2){ n=2; LN[2]=substr(LN[2],1,IN-1) "…" }
       for(i=1;i<=n;i++) put(c, boxline(sc LN[i] R, bord));
       if(cwidth(ow)>IN-4) ow=substr(ow,1,IN-4);             # keep glyph + chip inside the box
       put(c, boxline(sglyph(ss) " " (ow!="" ? chip(ow) : DIM "—" R), bord));
-      put(c, bord "╰" rule(colw-2) "╯" R) }
+      put(c, bord "╰" rule(colw-2) "╯" R); if(sel) s1=nl[c] }
     END{
       hline=""; uline="";
       for(c=1;c<=6;c++){
         nm=NAME[c];
-        if(c-1==selc){ if(length(nm)>colw-2) nm=substr(nm,1,colw-2); h=REV " " nm " " RO }
+        # the pill spends 2 cells on padding; drop them when the name only just fits, so the
+        # column name itself is never truncated (colw floors at 14 = length("IMPLEMENTATION"))
+        if(c-1==selc){ if(length(nm)+2<=colw) h=REV " " nm " " RO; else h=REV nm RO }
         else { if(length(nm)>colw) nm=substr(nm,1,colw); h=B nm R }
         hline = hline (c>1?" ":"") h pad(colw-cwidth(h));
         uline = uline (c>1?" ":"") GREY rule(colw) R }
@@ -113,7 +118,9 @@ render(){
       maxr=0; for(c=1;c<=6;c++) if(nl[c]>maxr) maxr=nl[c];
       for(r=1;r<=maxr;r++){ line="";
         for(c=1;c<=6;c++){ s=(r<=nl[c])?L[c,r]:""; v=cwidth(s); line=line (c>1?" ":"") s pad(colw-v) }
-        print line } }
+        print line }
+      # +2: the card rows are printed after the two header lines
+      print (s0>0 ? s0+2 : 0), (s0>0 ? s1+2 : 0) > selfile }
   ' "$CARDS"
 }
 
@@ -127,7 +134,8 @@ fi
 
 # ---- live TUI ----
 TMP="$(mktemp "${TMPDIR:-/tmp}/kanban.XXXXXX")"
-cleanup(){ printf '\033[?25h\033[?1049l'; rm -f "$TMP" "$TMP.prev" "$CARDS"; }
+SELFILE="$TMP.sel"                            # render writes the selected card's row span here
+cleanup(){ printf '\033[?25h\033[?1049l'; rm -f "$TMP" "$TMP.prev" "$TMP.sel" "$CARDS"; }
 trap cleanup EXIT
 trap 'printf "\033[?25h\033[?1049l"; exit 0' INT TERM
 trap 'RESIZED=1' WINCH
@@ -150,14 +158,35 @@ clamp_sel(){ local n
 
 rerender(){ term_size; render "$COLS" > "$TMP"; total="$(wc -l < "$TMP" | tr -d ' ')"; }
 K=$'\033[K'          # clear to end of line
+VOFF=0               # card-area rows scrolled off the top; paint clamps it to keep the selection visible
 paint(){
   local view=$((ROWS-1)); [ "$view" -lt 3 ] && view=3
+  # Below ~90 columns each 89-wide board row wraps onto wf physical lines (the documented
+  # degraded mode); divide the viewport by wf so the pinned header and the selected card are
+  # still on screen even when every logical row costs two rows of the pane.
+  local colw=$(( (COLS-MARGIN-5)/6 )); [ "$colw" -lt 14 ] && colw=14
+  local wf=$(( (colw*6+5+COLS-1)/COLS )); [ "$wf" -lt 1 ] && wf=1
+  view=$((view/wf)); [ "$view" -lt 3 ] && view=3
+  # The two header lines stay pinned; only the card area below them scrolls, following the
+  # selection the same way preview_doc follows its offset — clamp VOFF so the selected card
+  # (row span from $SELFILE, written by render) is always inside the visible card area.
+  local carea=$((view-2)); [ "$carea" -lt 1 ] && carea=1
+  local s0=0 s1=0
+  [ -f "$TMP.sel" ] && { read -r s0 s1 < "$TMP.sel"; } 2>/dev/null
+  case "$s0" in ''|*[!0-9]*) s0=0;; esac; case "$s1" in ''|*[!0-9]*) s1=0;; esac
+  if [ "$s1" -gt 0 ]; then
+    local top=$((s0-2)) bot=$((s1-2))          # 1-based rows within the card area
+    [ "$bot" -gt $((VOFF+carea)) ] && VOFF=$((bot-carea))
+    [ "$top" -le "$VOFF" ] && VOFF=$((top-1))
+  fi
+  local maxoff=$((total-2-carea)); [ "$maxoff" -lt 0 ] && maxoff=0
+  [ "$VOFF" -gt "$maxoff" ] && VOFF=$maxoff; [ "$VOFF" -lt 0 ] && VOFF=0
   # Flicker-free: home the cursor, redraw each visible line with a clear-to-EOL, clear anything
   # left below, then the status bar — all in ONE write, with NO full-screen clear (that flashes).
   local body
-  body="$(sed -n "1,${view}p" "$TMP" | awk -v k="$K" '{print $0 k}')"
+  body="$({ sed -n '1,2p' "$TMP"; sed -n "$((3+VOFF)),$((2+VOFF+carea))p" "$TMP"; } | awk -v k="$K" '{print $0 k}')"
   printf '\033[H%s\033[J\033[%d;1H\033[7m kanban  [%sx%s]  ←→/h/l column · ↑↓/j/k card · p preview · q quit \033[0m%s' \
-    "$body" "$ROWS" "$COLS" "$K"
+    "$body" "$ROWS" "$COLS" "$ROWS" "$K"
 }
 
 # render_md <file> <width> — lightweight markdown -> ANSI wrapped to <width>. Handles headings,

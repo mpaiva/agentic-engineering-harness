@@ -29,6 +29,10 @@ usage(){
 
 valid_stage(){ case "$1" in research|plan|implementation|verification|review|done) return 0;; *) return 1;; esac; }
 valid_state(){ case "$1" in waiting|working|blocked|done) return 0;; *) return 1;; esac; }
+# Ids from `add` are [a-z0-9-] slugs, so anything with a `/` or `..` is not a card id — it is a
+# path trying to escape build/BOARD/. Reject it before any path is built (contract: this script
+# never writes outside build/).
+valid_id(){ case "$1" in ""|*/*|*..*) return 1;; *) return 0;; esac; }
 
 # set_field <file> <key> <value> — rewrite one header line in place. If the key is missing from
 # the header, insert it just before the `---` separator so `move` works on hand-written cards too.
@@ -36,7 +40,7 @@ set_field(){
   local f="$1" key="$2" val="$3" tmp="$1.tmp.$$"
   awk -v k="$key" -v v="$val" '
     body { print; next }
-    /^---[ \t]*$/ { if (!done) { print k ": " v; done=1 }; body=1; print; next }
+    /^---[ \t\r]*$/ { if (!done) { print k ": " v; done=1 }; body=1; print; next }
     index($0, k ":") == 1 { if (!done) { print k ": " v; done=1 }; next }
     { print }
   ' "$f" > "$tmp" && mv "$tmp" "$f"
@@ -48,10 +52,10 @@ case "$cmd" in
     title=""; stage="research"; owner=""; body=""
     while [ $# -gt 0 ]; do
       case "$1" in
-        --title) title="${2:-}"; shift ;;
-        --stage) stage="${2:-}"; shift ;;
-        --owner) owner="${2:-}"; shift ;;
-        --body)  body="${2:-}";  shift ;;
+        --title) [ $# -ge 2 ] || { echo "--title needs a value" >&2; exit 2; }; title="$2"; shift ;;
+        --stage) [ $# -ge 2 ] || { echo "--stage needs a value" >&2; exit 2; }; stage="$2"; shift ;;
+        --owner) [ $# -ge 2 ] || { echo "--owner needs a value" >&2; exit 2; }; owner="$2"; shift ;;
+        --body)  [ $# -ge 2 ] || { echo "--body needs a value"  >&2; exit 2; }; body="$2";  shift ;;
         *) usage ;;
       esac; shift
     done
@@ -71,12 +75,14 @@ case "$cmd" in
     ;;
   move)
     id="${1:-}"; stage="${2:-}"; { [ -n "$id" ] && [ -n "$stage" ]; } || usage
+    valid_id "$id" || { echo "invalid card id: $id (ids never contain '/' or '..')" >&2; exit 2; }
     valid_stage "$stage" || { echo "unknown stage: $stage (research|plan|implementation|verification|review|done)" >&2; exit 2; }
     f="$BOARD/$id.md"; [ -f "$f" ] || { echo "no such card: $id" >&2; exit 1; }
     set_field "$f" stage "$stage"
     ;;
   status)
     id="${1:-}"; state="${2:-}"; { [ -n "$id" ] && [ -n "$state" ]; } || usage
+    valid_id "$id" || { echo "invalid card id: $id (ids never contain '/' or '..')" >&2; exit 2; }
     valid_state "$state" || { echo "unknown state: $state (waiting|working|blocked|done)" >&2; exit 2; }
     f="$BOARD/$id.md"; [ -f "$f" ] || { echo "no such card: $id" >&2; exit 1; }
     set_field "$f" status "$state"
@@ -89,12 +95,12 @@ case "$cmd" in
       function flush(   id){ if (fn != "") { id=fn; sub(/^.*\//,"",id); sub(/\.md$/,"",id);
         printf "%-32s %-15s %-8s %-12s %s\n", id, (st==""?"research":st), (ss==""?"waiting":ss), (ow==""?"-":ow), t } }
       FNR==1 { flush(); fn=FILENAME; st=""; ss=""; ow=""; t=""; body=0 }
-      !body && /^---[ \t]*$/ { body=1; next }
+      !body && /^---[ \t\r]*$/ { body=1; next }
       !body { if (match($0,/^stage:[ \t]*/))  { st=substr($0,RLENGTH+1); sub(/[ \t\r]+$/,"",st) }
               else if (match($0,/^status:[ \t]*/)) { ss=substr($0,RLENGTH+1); sub(/[ \t\r]+$/,"",ss) }
               else if (match($0,/^owner:[ \t]*/))  { ow=substr($0,RLENGTH+1); sub(/[ \t\r]+$/,"",ow) }
               next }
-      body && t=="" && $0 !~ /^[ \t]*$/ { t=$0 }
+      body && t=="" && $0 !~ /^[ \t\r]*$/ { t=$0; sub(/\r$/,"",t) }
       END { flush() }
     ' "$@"
     ;;
