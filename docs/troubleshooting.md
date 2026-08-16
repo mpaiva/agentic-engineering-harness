@@ -83,45 +83,58 @@ If neither lists a lead, the lead is genuinely gone rather than merely busy. In 
 case the lead's whole pane had disappeared — not just its agent label — while
 `build/.launch/lead.pane` still recorded the old pane id.
 
-**Before you reach for `--resume`, check which pane it would claim.** This is the part that
-bites. When no pane is labelled `lead`, `build.sh` falls back to picking the
-first pane with **no label** — and a pane having no label does not mean it is free. The
-team-chat, kanban, roster and workflow tabs are all unlabelled, and so is any specialist whose
-pane label was lost. Run this first:
+**Recovery.** Run:
 
 ```bash
-herdr pane list | python3 -c "
-import sys,json
-p=json.load(sys.stdin)['result']['panes']
-free=[x for x in sorted(p,key=lambda y:y['pane_id']) if not x.get('label')]
-print('build.sh would claim:', free[0]['pane_id'] if free else '(none)')
-for x in free: print(' ', x['pane_id'], x.get('terminal_title_stripped') or x.get('terminal_title'))
-"
+./build.sh --resume
 ```
 
-If the pane it names is running something you care about — a `team-chat.sh`, a `kanban.sh`, or
-an `atomic` specialist — do **not** run `./build.sh --resume` against the live session. It
-would rename that pane `lead` and start a new agent inside it, taking the pane's current
-occupant with it.
+This prunes the stale `lead.pane` record, keeps your confirmed `build/MISSION.md`, and skips
+both the opening question and the approval gate — you do not re-answer or re-approve anything.
 
-**Recovery.** If the pane it would claim is genuinely an idle shell, `./build.sh --resume`
-re-attaches a lead to the existing `build/` run: it prunes the stale `lead.pane` record, keeps
-your confirmed `build/MISSION.md`, and skips both the opening question and the approval gate.
+If it stops with:
 
-If the pane it would claim is occupied, stop the session first so Herdr rebuilds its panes,
-then resume:
+```text
+could not find a shell pane to start the lead in
+```
+
+then every pane on the main tab is still occupied by a live agent, so there is nowhere to put
+a new lead. Stop the session and resume — a restart brings the panes back with their agents
+dead, which frees one:
 
 ```bash
 herdr --session harness server stop
 ./build.sh --resume
 ```
 
+That error is the safe outcome, not a fault. `build.sh` only ever claims an unoccupied pane on
+the **main** tab, so it will refuse rather than take a pane that is in use.
+
+> **Historical note.** Before commit `c425783`, `build.sh` picked the first pane with no
+> *label*, and an unlabelled pane is not necessarily a free one — the team-chat, kanban, roster
+> and workflow tabs all run unlabelled. On the session where this was found, `--resume` would
+> have renamed the **team-chat** pane to `lead` and started an agent inside it, destroying the
+> pane the human was using to talk to the team. It now filters on live-agent status and
+> restricts to the main tab. If you are running an older checkout, check what it would claim
+> before resuming:
+>
+> ```bash
+> herdr pane list | python3 -c "
+> import sys,json
+> p=json.load(sys.stdin)['result']['panes']
+> free=[x for x in sorted(p,key=lambda y:y['pane_id']) if not x.get('label')]
+> print('an old build.sh would claim:', free[0]['pane_id'] if free else '(none)')
+> for x in free: print(' ', x['pane_id'], x.get('terminal_title_stripped') or x.get('terminal_title'))
+> "
+> ```
+
 > **Not yet proven end to end.** The diagnosis above is verified — the missing lead, the stale
-> `lead.pane` record, and the unlabelled-pane fallback were all reproduced against a live
-> session. The two recovery paths are read from `build.sh`'s resume logic, but running them
-> would have destroyed the session being examined, so they have not been exercised in a live
-> lead-loss run. Treat them as the best available recovery, not as a tested guarantee. See
-> `build/BLOCKED.md` for how this class of gap gets closed.
+> `lead.pane` record, and the pane-selection behaviour were all reproduced against a live
+> session. The recovery commands are read from `build.sh`'s resume logic and its refusal path
+> was confirmed live, but running the full recovery would have destroyed the session being
+> examined, so it has not been exercised end to end in a real lead-loss run. Treat it as the
+> best available recovery, not as a tested guarantee. See `build/BLOCKED.md` for how this class
+> of gap gets closed.
 
 **Meanwhile, you are not stuck.** Specialists that cannot reach the lead can still be read and
 driven directly — `herdr agent list` for state, `herdr agent read <pane-id>` for output — and
