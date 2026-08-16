@@ -1,6 +1,6 @@
 # Verification and human gates
 
-Autonomy without verification is just faster mistakes. This is the half of the harness that keeps parallel agents trustworthy.
+Autonomy without verification is just faster mistakes. This is the half of atomic cockpit that keeps parallel agents trustworthy.
 
 ## Independent verification
 
@@ -12,7 +12,7 @@ The pattern — **author/verifier separation** with a fresh-context verifier:
 Author Agent → Implementation → Fresh Verifier → Evidence → Pass / Repair
 ```
 
-The verifier starts with a **clean context**. It does not inherit the author's assumptions, its optimism, or its narrative. It re-derives correctness from evidence. Atomic builds this into its runtime (fresh-context verifiers, `adversarial-verification` workflow); this harness uses it for every user-facing change.
+The verifier starts with a **clean context**. It does not inherit the author's assumptions, its optimism, or its narrative. It re-derives correctness from evidence. Atomic builds this into its runtime (fresh-context verifiers, `adversarial-verification` workflow); atomic cockpit uses it for every user-facing change.
 
 An agent saying **"the implementation is complete"** is **not evidence.**
 

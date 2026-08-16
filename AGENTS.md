@@ -4,7 +4,7 @@ This file is instructions for **any coding agent** (Claude Code, Codex, Atomic, 
 
 ## What this repository is
 
-A **reference harness** — documentation, conventions, Atomic workflow definitions, Herdr conventions, and the scripts (`build.sh`, `scripts/team.sh`) that run them end to end. It is mostly Markdown plus a small amount of TypeScript (Atomic workflows) and shell (scripts). There is no application to build and no test suite to pass. Optimize for **clarity, accuracy, and groundedness**, not for code volume.
+A **reference implementation** — documentation, conventions, Atomic workflow definitions, Herdr conventions, and the scripts (`build.sh`, `scripts/team.sh`) that run them end to end. It is mostly Markdown plus a small amount of TypeScript (Atomic workflows) and shell (scripts). There is no application to build and no test suite to pass. Optimize for **clarity, accuracy, and groundedness**, not for code volume.
 
 ## Ground truth over assumption
 

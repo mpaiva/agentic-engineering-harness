@@ -120,7 +120,7 @@ by **merging two capture streams into one feed file**:
 Union ≈ the whole conversation, each message written once at its source. Residual gaps, stated
 plainly:
 
-- An agent **not** running the extension is invisible on the agent side. In this harness every
+- An agent **not** running the extension is invisible on the agent side. In atomic cockpit every
   teammate is launched with `atomic -e <ext>` (the slot `herdr-state.ts` uses today), so adoption
   is enforceable.
 - A human who bypasses the pane and uses ALT+M in some other session is invisible — a **documented

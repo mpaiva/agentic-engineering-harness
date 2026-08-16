@@ -1,6 +1,6 @@
 # Security and isolation
 
-Autonomous coding agents execute commands with your local user's permissions. More autonomy and more parallel agents mean more commands running without a human reading each one first. Treat the harness as a system that runs untrusted-ish code on your behalf, and design for **least privilege**.
+Autonomous coding agents execute commands with your local user's permissions. More autonomy and more parallel agents mean more commands running without a human reading each one first. Treat atomic cockpit as a system that runs untrusted-ish code on your behalf, and design for **least privilege**.
 
 ## Assume least privilege
 

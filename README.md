@@ -335,7 +335,7 @@ in [docs/case-study-ozymandias.md](docs/case-study-ozymandias.md), including the
 that went wrong.
 
 An earlier run finished too, for the same idea at one verse every 10 seconds. It hired **two**
-agents rather than four — the same harness sizing the team to the job. Its page is kept at
+agents rather than four — the same cockpit sizing the team to the job. Its page is kept at
 [docs/samples/poem-page.html](docs/samples/poem-page.html).
 
 **This works:**

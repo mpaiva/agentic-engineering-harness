@@ -1,6 +1,6 @@
 # Operating model
 
-This is the mental shift the harness is built around.
+This is the mental shift atomic cockpit is built around.
 
 ## Old model → new model
 
@@ -47,7 +47,7 @@ Do not keep retyping *"run the tests, review the code, fix the issues, rerun, co
 Research → Plan → Implement → Test → Accessibility → UX → Code review → Repair → Human approval
 ```
 
-Repeated engineering behavior belongs in the harness, versioned and inspectable — not in a prompt you paste. See [atomic/README.md](../atomic/README.md).
+Repeated engineering behavior belongs in atomic cockpit, versioned and inspectable — not in a prompt you paste. See [atomic/README.md](../atomic/README.md).
 
 ## Parallelize independent work — then synthesize
 
@@ -112,10 +112,10 @@ Adopt in stages. Do not jump to swarms.
 |-------|-------|------------------------|
 | **1** | Engineer → one agent | Operates a single coding agent by hand. |
 | **2** | Engineer → primary agent → subagents | One agent delegates some work. |
-| **3** | Engineer → harness → many agents + verifiers | Supervises multiple independent workstreams. |
+| **3** | Engineer → atomic cockpit → many agents + verifiers | Supervises multiple independent workstreams. |
 | **4** | Engineer → engineering graph | The process itself is an executable graph: research, plan, implementation, testing, UX, a11y, architecture, security, verification, release. |
 
-This harness is built to move a team toward **Levels 3 and 4** — but only as fast as observability and verification can keep up (see the core principle below).
+Atomic cockpit is built to move a team toward **Levels 3 and 4** — but only as fast as observability and verification can keep up (see the core principle below).
 
 ## The core principle
 

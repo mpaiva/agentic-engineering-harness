@@ -1,9 +1,9 @@
 # The kanban board — every card's stage at a glance
 
 `build.sh` opens a tab named `kanban` running [scripts/kanban.sh](../scripts/kanban.sh): a live
-board whose columns are the harness's own workflow stages. Agents and the human put cards on it
-with [scripts/board.sh](../scripts/board.sh). All board state is files under `build/BOARD/` —
-git-ignored run output, like everything else under `build/`.
+board whose columns are atomic cockpit's own workflow stages. Agents and the human put cards
+on it with [scripts/board.sh](../scripts/board.sh). All board state is files under
+`build/BOARD/` — git-ignored run output, like everything else under `build/`.
 
 ## Columns are the workflow stages
 

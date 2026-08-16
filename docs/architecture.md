@@ -1,6 +1,6 @@
 # Architecture
 
-The harness is a **composition of three tools with strictly separated responsibilities**. The separation is the point: each layer is replaceable, and none of them tries to be the others.
+Atomic cockpit is a **composition of three tools with strictly separated responsibilities**. The separation is the point: each layer is replaceable, and none of them tries to be the others.
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐

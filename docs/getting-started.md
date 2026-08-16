@@ -6,7 +6,7 @@ This gets you from nothing to a running, observable multi-agent workspace.
 
 - **macOS or Linux.** (Herdr has a Windows beta; this guide assumes macOS/Linux.)
 - **Node.js ≥ 22.19** for Atomic. Check with `node -v`.
-- **A coding agent CLI.** This harness uses **Claude Code** (`claude`) as the default agent backend; Codex and 14+ others also work under Herdr.
+- **A coding agent CLI.** Atomic cockpit uses **Claude Code** (`claude`) as the default agent backend; Codex and 14+ others also work under Herdr.
 - **git**.
 
 Verified against: Atomic `0.9.13`, Herdr `0.8.0`, Ghostty `1.3.1`, Claude Code `2.1.x`.

@@ -113,4 +113,4 @@ Atomic = engine    (what actually runs and verifies)
 Ghostty = surface  (the terminal it all lives in)
 ```
 
-Building this adapter is the natural next milestone for the harness. It belongs as a thin translator (an Atomic extension or a sidecar reading `herdr api` + `/workflow status`), **not** as a change to either tool's core identity model.
+Building this adapter is the natural next milestone for atomic cockpit. It belongs as a thin translator (an Atomic extension or a sidecar reading `herdr api` + `/workflow status`), **not** as a change to either tool's core identity model.

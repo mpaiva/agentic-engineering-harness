@@ -59,7 +59,7 @@ herdr worktree      # git worktree helpers
 herdr api           # socket API: `herdr api snapshot`, `herdr api schema`
 ```
 
-The `agent` subcommands are the ones the harness leans on:
+The `agent` subcommands are the ones atomic cockpit leans on:
 
 ```bash
 herdr agent list                       # agents + current states

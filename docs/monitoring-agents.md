@@ -1,6 +1,6 @@
 # Monitoring autonomous runs — supervision by exception
 
-The engineer should **not** continuously watch autonomous agents. The harness watches; the human is pulled in only for exceptions and judgment.
+The engineer should **not** continuously watch autonomous agents. Atomic cockpit watches; the human is pulled in only for exceptions and judgment.
 
 ## The wrong question and the right questions
 
@@ -104,7 +104,7 @@ herdr agent wait w1:p5 --until blocked --until done
 > `herdr agent list` (`w1:p5`, …) is what resolves. Scripts should read the pane id out of
 > `herdr agent list` rather than hardcoding role names.
 
-`herdr agent wait --until <state>` is how the harness implements *supervision by exception* in automation: a coordinator waits on many agents and only escalates the ones that reach `blocked`, or that fail their checks.
+`herdr agent wait --until <state>` is how atomic cockpit implements *supervision by exception* in automation: a coordinator waits on many agents and only escalates the ones that reach `blocked`, or that fail their checks.
 
 ## The cockpit you actually want
 
@@ -131,4 +131,4 @@ Today Herdr provides the pane/state cockpit and Atomic provides the stage graph;
 
 ## The principle
 
-> Human attention should be directed to **exceptions** rather than raw activity. Do not make humans monitor agents; make the harness monitor agents and bring humans the decisions that require human judgment.
+> Human attention should be directed to **exceptions** rather than raw activity. Do not make humans monitor agents; make atomic cockpit monitor agents and bring humans the decisions that require human judgment.
