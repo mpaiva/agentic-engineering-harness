@@ -58,7 +58,7 @@ Next:
   claude                          # run once to log in (optional; only if you use Claude Code directly)
   atomic                          # run once, then /login → Claude Pro/Max
   ./build.sh                      # asks what to build, then builds it
-  herdr --session harness         # attach and watch the cockpit
+  herdr --session cockpit         # attach and watch the cockpit
 
 See README.md before your first run (cost, autonomy, isolation).
 EOF

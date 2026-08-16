@@ -121,7 +121,7 @@ This is normal. Leave it open.
 Open a new terminal window. Type this and press Return:
 
 ```bash
-herdr --session harness
+herdr --session cockpit
 ```
 
 **You will see:** a dark screen with a box in the middle. The box asks:
@@ -209,7 +209,7 @@ use `i` in this pane so the message is captured.
 You can stop at any time. Type this in any terminal window and press Return:
 
 ```bash
-herdr --session harness server stop
+herdr --session cockpit server stop
 ```
 
 **You will see:** the agent boxes close. The agents stop. Nothing more is charged to your
@@ -231,7 +231,7 @@ The two runs are kept completely apart. The named run gets:
 - its own files, in a folder called `build-beta` (not `build`)
 - its own team, so the two teams never see or message each other
 
-Your first run keeps using `build` and the name `harness`, and is not touched.
+Your first run keeps using `build` and the name `cockpit`, and is not touched.
 
 To manage the named run:
 
@@ -265,7 +265,7 @@ You can use any name in place of `beta`. Each name is a separate, isolated build
 | Roster | The list of agents chosen for your job, saved as `build/ROSTER.md`. |
 | Role | The job an agent does, such as `designer` or `verifier`. |
 | Pane | One box on the screen. Each agent gets one. |
-| Session | One run of the whole team. This one is named `harness`. |
+| Session | One run of the whole team. This one is named `cockpit`. |
 | Gate | A point where the work stops and waits for your answer. |
 
 ## How it works

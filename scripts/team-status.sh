@@ -2,7 +2,7 @@
 # team-status.sh — a live roster + state board for the team, shown in the 'team' tab.
 #
 #   ./scripts/team-status.sh                 # live view in this pane
-#   HERDR_SESSION=harness ./scripts/team-status.sh
+#   HERDR_SESSION=cockpit ./scripts/team-status.sh
 #
 # It joins three things atomic cockpit already produces: `herdr agent list` (each agent's live
 # state — working/blocked/idle/done), team/ROLES.md (what each role owns + when to hire it),
@@ -19,7 +19,7 @@ set -uo pipefail
 
 HERE="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD="${BUILD_DIR:-$HERE/build}"
-SESSION="${HERDR_SESSION:-harness}"
+SESSION="${HERDR_SESSION:-cockpit}"
 export PATH="$HOME/.local/bin:$PATH"
 herdr(){ command herdr --session "$SESSION" "$@"; }
 

@@ -38,7 +38,7 @@ touch "$FEED"
 ACCENT="${TEAMCHAT_ACCENT_RGB:-138;190;183}"   # body colour = Atomic intercom accent (#8abeb7)
 MARGIN="${TEAMCHAT_MARGIN:-2}"                  # gap from the right edge
 PAL="39 213 46 214 123 208 220 141"            # per-sender chip colours
-GROUP="${ATOMIC_INTERCOM_GROUP:-harness}"      # same default as scripts/team.sh — the broker drops cross-group sends
+GROUP="${ATOMIC_INTERCOM_GROUP:-cockpit}"      # same default as scripts/team.sh — the broker drops cross-group sends
 SEP="$(printf '\037')"
 
 have_jq=0; command -v jq >/dev/null 2>&1 && have_jq=1

@@ -10,23 +10,23 @@ timeout — it waits indefinitely and prints a heartbeat every minute so a long 
 like a hang:
 
 ```text
-[harness] still waiting for your answer in the cockpit (3m elapsed)…
+[cockpit] still waiting for your answer in the cockpit (3m elapsed)…
 ```
 
 If you see that line, the run is fine. Attach and answer:
 
 ```bash
-herdr --session harness
+herdr --session cockpit
 ```
 
 **If you press Ctrl-C before answering**, the script prints recovery steps and exits — the lead
 agent is still alive in its pane, nothing is lost:
 
 ```text
-[harness] Interrupted before you answered. The lead is still live in its pane.
-  Attach with:  herdr --session harness
+[cockpit] Interrupted before you answered. The lead is still live in its pane.
+  Attach with:  herdr --session cockpit
   Answer the question, then re-run: ./build.sh --resume
-  Or stop the run: herdr --session harness server stop
+  Or stop the run: herdr --session cockpit server stop
 ```
 
 Follow those three lines. Don't run `./build.sh` again without `--resume` — that starts a second,
@@ -103,7 +103,7 @@ a new lead. Stop the session and resume — a restart brings the panes back with
 dead, which frees one:
 
 ```bash
-herdr --session harness server stop
+herdr --session cockpit server stop
 ./build.sh --resume
 ```
 

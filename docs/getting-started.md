@@ -84,7 +84,7 @@ This is the primary path. Open Ghostty, then from the repo root in one terminal:
 In a second terminal, attach to the Herdr session to see the interactive popup:
 
 ```bash
-herdr --session harness
+herdr --session cockpit
 ```
 
 `build.sh` starts a Herdr session and boots one Atomic agent — the **lead** — in it. The lead
@@ -99,7 +99,7 @@ Herdr shows a sidebar of the panes it is holding open and their states. As the l
 specialists, the cockpit grows from one pane to N:
 
 ```text
-harness
+cockpit
 
 ● lead              WORKING
 ● architect         DONE

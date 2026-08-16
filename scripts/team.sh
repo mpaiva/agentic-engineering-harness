@@ -14,8 +14,8 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD="${BUILD_DIR:-$HERE/build}"
 LAUNCHDIR="$BUILD/.launch"
-SESSION="${HERDR_SESSION:-harness}"
-GROUP="${ATOMIC_INTERCOM_GROUP:-harness}"
+SESSION="${HERDR_SESSION:-cockpit}"
+GROUP="${ATOMIC_INTERCOM_GROUP:-cockpit}"
 PROVIDER="${ATOMIC_PROVIDER:-anthropic}"
 MODEL="${ATOMIC_MODEL:-claude-sonnet-5}"
 MAX_AGENTS=8

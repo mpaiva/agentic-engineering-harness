@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # cockpit.sh — one command to size up atomic cockpit and pick your next move.
 #
-#   ./cockpit.sh                 # the default 'harness' session
+#   ./cockpit.sh                 # the default 'cockpit' session
 #   ./cockpit.sh beta            # inspect/drive a named concurrent session
 #
 # It reads the current state — is a Herdr cockpit running? does build/ already hold a mission?
@@ -11,9 +11,9 @@
 set -uo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
-SESSION="${1:-harness}"
+SESSION="${1:-cockpit}"
 case "$SESSION" in ""|.|..|*/*) echo "invalid session name: '$SESSION'" >&2; exit 2 ;; esac
-if [ "$SESSION" = "harness" ]; then BUILD="$HERE/build"; else BUILD="$HERE/build-$SESSION"; fi
+if [ "$SESSION" = "cockpit" ]; then BUILD="$HERE/build"; else BUILD="$HERE/build-$SESSION"; fi
 export PATH="$HOME/.local/bin:$PATH"
 herdr(){ command herdr --session "$SESSION" "$@"; }
 
@@ -47,7 +47,7 @@ print('AGENTS=%d;WORKING=%d;BLOCKED=%d'%(len(a),w,b))
 }
 
 summary(){
-  printf '\n%sHARNESS%s  %ssession %s%s\n' "$B" "$R" "$DIM" "$SESSION" "$R"
+  printf '\n%sATOMIC COCKPIT%s  %ssession %s%s\n' "$B" "$R" "$DIM" "$SESSION" "$R"
   if [ "$SERVER_UP" = 1 ]; then
     printf '  cockpit   %s● running%s  ·  %d agent(s)' "$GRN" "$R" "$AGENTS"
     [ "$WORKING" -gt 0 ] && printf ', %d working' "$WORKING"

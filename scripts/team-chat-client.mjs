@@ -12,7 +12,7 @@
 // <agentdir>/intercom/broker.sock, framed as 4-byte big-endian length + JSON. No Atomic imports;
 // only node built-ins. Runs under bun or node. Reconnects if the broker restarts.
 //
-// Env: TEAMCHAT_FEED (feed path), ATOMIC_INTERCOM_GROUP (team group, default "harness"),
+// Env: TEAMCHAT_FEED (feed path), ATOMIC_INTERCOM_GROUP (team group, default "cockpit"),
 //      ATOMIC_CODING_AGENT_DIR (agent dir override), TEAMCHAT_ME (display name, default "you").
 import net from "node:net";
 import fs from "node:fs";
@@ -23,7 +23,7 @@ const AGENT_DIR = process.env.ATOMIC_CODING_AGENT_DIR || process.env.PI_CODING_A
 const SOCK = `${AGENT_DIR}/intercom/broker.sock`;
 const FEED = process.env.TEAMCHAT_FEED || "build/team-chat.log";
 const OUTBOX = `${FEED}.outbox`;
-const GROUP = process.env.ATOMIC_INTERCOM_GROUP || "harness";
+const GROUP = process.env.ATOMIC_INTERCOM_GROUP || "cockpit";
 const ME = process.env.TEAMCHAT_ME || "human";
 const NAME = ME;      // register on the broker under the same name the team sees in the chat
 

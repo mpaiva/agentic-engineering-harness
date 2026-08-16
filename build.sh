@@ -15,7 +15,7 @@
 # Verified against Atomic 0.9.12 and Herdr 0.8.0. Bash 3.2 safe.
 set -euo pipefail
 
-SESSION="harness"
+SESSION="cockpit"
 PROVIDER="anthropic"
 MODEL="claude-sonnet-5"
 MODE="run"
@@ -38,12 +38,12 @@ case "$SESSION" in
 esac
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
-# Session-scoped so several builds can run at once without colliding: the default 'harness'
-# session keeps build/ and intercom group 'harness'; any other --session gets its own
+# Session-scoped so several builds can run at once without colliding: the default 'cockpit'
+# session keeps build/ and intercom group 'cockpit'; any other --session gets its own
 # build-<name>/ dir and its own intercom group, so two teams never share a broker group,
 # an agent name, or a feed. BUILD_DIR / ATOMIC_INTERCOM_GROUP still override if set.
 GROUP="${ATOMIC_INTERCOM_GROUP:-$SESSION}"
-if [ "$SESSION" = "harness" ]; then BUILD="${BUILD_DIR:-$HERE/build}"; else BUILD="${BUILD_DIR:-$HERE/build-$SESSION}"; fi
+if [ "$SESSION" = "cockpit" ]; then BUILD="${BUILD_DIR:-$HERE/build}"; else BUILD="${BUILD_DIR:-$HERE/build-$SESSION}"; fi
 LAUNCHDIR="$BUILD/.launch"
 export PATH="$HOME/.local/bin:$PATH"
 herdr(){ command herdr --session "$SESSION" "$@"; }
@@ -126,9 +126,9 @@ done
 [ "$WORKSPACE_READY" = 1 ] || echo "warning: herdr server did not report workspaces ready within 12s — continuing anyway" >&2
 # Only create a workspace if this session has none. `workspace create` is unconditional
 # otherwise, and on --resume Herdr has already restored the previous run's workspace — so
-# every resume was adding another empty "Harness" workspace beside the real one.
+# every resume was adding another empty "Cockpit" workspace beside the real one.
 if ! herdr workspace list 2>/dev/null | grep -q '"workspace_id"'; then
-  herdr workspace create --label "Harness" >/dev/null 2>&1 || true
+  herdr workspace create --label "Cockpit" >/dev/null 2>&1 || true
 fi
 
 # A Herdr server restart — observed for real when an unrelated `herdr plugin uninstall`
