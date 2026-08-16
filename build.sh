@@ -324,17 +324,30 @@ if [ -f "$BUILD/IDEA.md" ]; then
   #
   # Timing is the whole trick: sent any earlier it is typed into the intake popup and becomes
   # the human's answer. Sent here, it works. Do not move it in either direction.
+  #
+  # Sent TWICE with a gap: a live run reproduced this exact failure a second time (2026-08-16)
+  # with no error surfaced anywhere — the send just silently didn't register. `/name` is
+  # idempotent (re-sending an already-correct name is a no-op), so the second send is free
+  # insurance against a one-off race, not a guaranteed fix — bash has no way to query the
+  # Intercom broker to confirm registration actually took (no CLI exists outside a live Atomic
+  # session), so real verification is also baked into the kickoff message below: the lead's
+  # first action self-checks and self-heals if this still didn't take.
   herdr pane send-text "$LEAD" "/name lead" >/dev/null
   herdr pane send-keys "$LEAD" Enter >/dev/null
   sleep 2
+  herdr pane send-text "$LEAD" "/name lead" >/dev/null
+  herdr pane send-keys "$LEAD" Enter >/dev/null
+  sleep 2
+
+  SELFCHECK="Before anything else: run intercom({action:\"list\"}) and confirm the \"Current session\" entry shows your name as \"lead\", not an anonymous subagent-chat-<uuid> — a known intermittent bug (build.sh's /name registration can silently fail with no visible error). If it shows the anonymous form, self-heal via Bash: herdr pane send-text <your-own-pane-id> \"/name lead\" then herdr pane send-keys <your-own-pane-id> Enter (get your own pane id from herdr pane list, filtering for agent==\"lead\"), then re-check intercom list. Do not skip this — an unregistered lead is unreachable by every teammate and by the human's team-chat pane, silently."
 
   if [ -f "$BUILD/MISSION.md" ]; then
     # A mission already exists — this is a resume. It may already be human-confirmed, so do
     # NOT re-refine IDEA.md or re-run the confirmation gate; that would silently rewrite a
     # mission the human already approved. Just get the lead re-oriented and moving again.
-    herdr pane send-text "$LEAD" "Resume. Re-read $BUILD/MISSION.md and $BUILD/ROSTER.md (if present) to recover context, then continue the mission from where it left off. Do NOT re-refine MISSION.md and do NOT re-run the human confirmation gate — treat the mission as already confirmed. Hire more specialists with scripts/team.sh add <role> only if the mission still needs them." >/dev/null
+    herdr pane send-text "$LEAD" "$SELFCHECK Resume. Re-read $BUILD/MISSION.md and $BUILD/ROSTER.md (if present) to recover context, then continue the mission from where it left off. Do NOT re-refine MISSION.md and do NOT re-run the human confirmation gate — treat the mission as already confirmed. Hire more specialists with scripts/team.sh add <role> only if the mission still needs them." >/dev/null
   else
-    herdr pane send-text "$LEAD" "Begin. Your first action is to run /skill:prompt-engineer (invoke it, do not skip it), then use it to refine $BUILD/IDEA.md into $BUILD/MISSION.md, show me the mission for confirmation, and hire your team with scripts/team.sh add <role>." >/dev/null
+    herdr pane send-text "$LEAD" "$SELFCHECK Begin. Your first action after the check above is to run /skill:prompt-engineer (invoke it, do not skip it), then use it to refine $BUILD/IDEA.md into $BUILD/MISSION.md, show me the mission for confirmation, and hire your team with scripts/team.sh add <role>." >/dev/null
   fi
   herdr pane send-keys "$LEAD" Enter >/dev/null
 else

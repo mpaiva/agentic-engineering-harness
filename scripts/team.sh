@@ -146,11 +146,19 @@ done
 # is safe here: specialists load only herdr-state.ts (not build-intake.ts), and
 # build-intake.ts's session_start handler returns immediately when ATOMIC_ROLE != "lead", so
 # no intake popup is ever open in a specialist pane for this text to land in.
+#
+# Sent TWICE with a gap: build.sh's lead pane hit this exact "/name silently didn't register"
+# failure on a live run (2026-08-16, no error surfaced anywhere) despite the same send-once
+# pattern this script used. `/name` is idempotent, so the second send is free insurance, not a
+# guaranteed fix. The first-action instruction below also tells the specialist to self-check.
+herdr pane send-text "$PANE" "/name $ROLE" >/dev/null
+herdr pane send-keys "$PANE" Enter >/dev/null
+sleep 2
 herdr pane send-text "$PANE" "/name $ROLE" >/dev/null
 herdr pane send-keys "$PANE" Enter >/dev/null
 sleep 2
 
-herdr pane send-text "$PANE" "You are the \"$ROLE\" agent. Read $BUILD/MISSION.md and your role brief. Then your FIRST action must be: intercom send to \"lead\" with the message \"$ROLE ready\" — this registers you with the broker so the lead can reach you. Then wait; the lead will assign your work." >/dev/null
+herdr pane send-text "$PANE" "You are the \"$ROLE\" agent. Before anything else: run intercom({action:\"list\"}) and confirm your \"Current session\" entry shows your name as \"$ROLE\", not an anonymous subagent-chat-<uuid> (a known intermittent /name registration bug). If it shows the anonymous form, self-heal via Bash: herdr pane send-text <your-own-pane-id> \"/name $ROLE\" then herdr pane send-keys <your-own-pane-id> Enter, then re-check. Then read $BUILD/MISSION.md and your role brief. Then your FIRST action must be: intercom send to \"lead\" with the message \"$ROLE ready\" — this registers you with the broker so the lead can reach you. Then wait; the lead will assign your work." >/dev/null
 herdr pane send-keys "$PANE" Enter >/dev/null
 
 if [ ! -f "$BUILD/ROSTER.md" ]; then
