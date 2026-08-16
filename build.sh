@@ -186,13 +186,41 @@ if [ -d "$LAUNCHDIR" ]; then
 fi
 
 # The root shell pane is NOT reliably panes[0]: Herdr plugin panes carry labels ("Sidebar",
-# "Explorer", …) and may register first. Select on the ABSENCE of a label.
+# "Explorer", …) and may register first. Select on the ABSENCE of a label — but an unlabelled
+# pane is not necessarily a FREE pane: a live agent's own pane (e.g. this script's own
+# implementer/docs/researcher panes) carries no label either, and the side tabs opened by
+# _open_side_tab (team-chat, kanban, team, workflows — see below) are also unlabelled and, since
+# they run a viewer script rather than an Atomic agent, report agent_status "unknown" just like
+# a genuinely empty pane would. Observed live: root_pane() picked w1:p2 (the team-chat tab) and
+# would have renamed it 'lead' and started an Atomic lead process inside it.
+#
+# Matching on terminal_title to spot side tabs was tried and dropped: Herdr truncates long
+# titles, and with this repo's path length the "./scripts/kanban.sh" suffix was already cut off
+# in live testing — title matching silently stops working past some path length. tab_id is
+# reliable instead: every _open_side_tab call creates a NEW tab, so side-tab panes always sit in
+# a different tab_id from the main tab where build.sh and every hired agent run. Restrict the
+# search to the main tab (the tab already holding labelled agent panes, or — before anyone is
+# hired — the lowest-numbered tab) and exclude any pane with a live agent.
 root_pane(){
   herdr pane list 2>/dev/null | python3 -c "
 import sys,json
 try: panes=json.load(sys.stdin)['result']['panes']
 except Exception: sys.exit(1)
-shells=[p for p in panes if not p.get('label')]
+def tabnum(p):
+    suf=(p.get('tab_id') or '').rsplit(':',1)[-1]
+    return int(suf[1:]) if suf[:1]=='t' and suf[1:].isdigit() else 0
+labelled_tabs={p['tab_id'] for p in panes if p.get('label')}
+if labelled_tabs:
+    main_tabs=labelled_tabs
+else:
+    mn=min((tabnum(p) for p in panes), default=0)
+    main_tabs={p['tab_id'] for p in panes if tabnum(p)==mn}
+def is_free(p):
+    if p.get('label'): return False
+    if (p.get('agent_status') or 'unknown') != 'unknown': return False
+    if p.get('tab_id') not in main_tabs: return False
+    return True
+shells=[p for p in panes if is_free(p)]
 if not shells: sys.exit(1)
 print(sorted(shells,key=lambda p:p['pane_id'])[0]['pane_id'])
 "
