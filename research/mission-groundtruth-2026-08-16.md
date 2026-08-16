@@ -34,6 +34,20 @@ items (herdrdev/herdr repo slug; Atomic's `/workflow ...` slash commands, which 
 interactive TUI commands not exposed via `--help`) remain unverifiable by non-interactive
 command audit — unchanged status, not a regression.
 
+**Correction (2026-08-16, later same day, flagged by `docs`):** row 4 in this table
+(`herdr agent explain`) and its 08-15 source row both marked VERIFIED on the strength of
+`herdr agent explain --help` succeeding. That only proves the subcommand exists and its
+help text renders — it does not prove the documented invocation (`herdr agent explain
+<agent-name-or-pane-id>`, per `docs/monitoring-agents.md:52`) actually works. `docs`
+ran the real command and found both documented forms fail on Herdr 0.8.0
+(`herdr agent explain <role-name>` → `agent_not_found`; `herdr agent explain <pane-id>`
+→ `agent_explain_unavailable`); same failure pattern for role-name targeting on
+`get`/`read`/`wait`. Full evidence: `build/PRE-RELEASE-CHECK.md` §6. Fixed across 4 docs
+files in commit `c14ea50`. **Methodology lesson for future audits:** for a claim of the
+shape "command X does Y", `--help` proves X *exists*; it does not prove Y *happens*.
+Future audit tables should carry a distinct "invocation verified" column, not just
+"exists verified" folded into one VERIFIED label.
+
 ## 2. DRIFT fix — already applied, confirmed
 
 `atomic/README.md:5` previously read "Verified against Atomic `0.9.12`" while installed
