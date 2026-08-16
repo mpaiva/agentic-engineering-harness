@@ -36,14 +36,22 @@ valid_id(){ case "$1" in ""|*/*|*..*) return 1;; *) return 0;; esac; }
 
 # set_field <file> <key> <value> — rewrite one header line in place. If the key is missing from
 # the header, insert it just before the `---` separator so `move` works on hand-written cards too.
+# A card with NEITHER a `<key>:` line NOR a separator gives awk nowhere to write; exit 3 from the
+# END block turns that into a loud failure instead of a silent success that changed nothing.
 set_field(){
   local f="$1" key="$2" val="$3" tmp="$1.tmp.$$"
-  awk -v k="$key" -v v="$val" '
+  if awk -v k="$key" -v v="$val" '
     body { print; next }
     /^---[ \t\r]*$/ { if (!done) { print k ": " v; done=1 }; body=1; print; next }
     index($0, k ":") == 1 { if (!done) { print k ": " v; done=1 }; next }
     { print }
-  ' "$f" > "$tmp" && mv "$tmp" "$f"
+    END { exit done ? 0 : 3 }
+  ' "$f" > "$tmp"; then
+    mv "$tmp" "$f"
+  else
+    rm -f "$tmp"
+    echo "card has no '$key:' line and no '---' separator — not updated: $f" >&2; exit 1
+  fi
 }
 
 cmd="${1:-}"; [ -n "$cmd" ] || usage; shift

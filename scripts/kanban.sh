@@ -45,7 +45,7 @@ scan_cards(){
   : > "$CARDS"
   set -- "$BOARD"/*.md
   [ -f "${1:-}" ] || return 0
-  awk -v sep="$SEP" '
+  LC_ALL=C awk -v sep="$SEP" '
     function colof(s){ if(s=="plan")return 1; if(s=="implementation")return 2; if(s=="verification")return 3; if(s=="review")return 4; if(s=="done")return 5; return 0 }
     function flush(){ if(fn!=""){ gsub(sep,"",t); print colof(st) sep fn sep ss sep ow sep t } }
     FNR==1 { flush(); fn=FILENAME; st=""; ss=""; ow=""; t=""; body=0 }
@@ -69,10 +69,18 @@ scan_cards(){
 render(){
   local w="$1"
   scan_cards
-  awk -v W="$w" -v margin="$MARGIN" -v sep="$SEP" -v teal="$ACCENT" -v palstr="$PAL" \
+  LC_ALL=C awk -v W="$w" -v margin="$MARGIN" -v sep="$SEP" -v teal="$ACCENT" -v palstr="$PAL" \
       -v selc="${SELC:--1}" -v selr="${SELR:--1}" -v selfile="${SELFILE:-/dev/null}" '
     function ord(ch){ return ORDT[ch]+0 }
     function cwidth(s,   t,i,b,w){ t=s; gsub(reESC,"",t); w=0; for(i=1;i<=length(t);i++){ b=ord(substr(t,i,1)); if(b>=128 && b<192) continue; w++ } return w }
+    # vlen(s,n) — byte length of the first n VISIBLE characters of s, stepping over UTF-8
+    # continuation bytes (0x80-0xBF). Every slice below cuts at vlen, not at the raw count:
+    # substr() counts BYTES (the awks here run under LC_ALL=C), so cutting a multibyte title
+    # at a visible-width offset would split a sequence — macOS awk then aborts mid-render and
+    # the whole board comes out blank, with the error invisible inside the alt screen.
+    function vlen(s,n,   i,L,b){ i=1; L=length(s)
+      while(i<=L && n>0){ i++; while(i<=L){ b=ord(substr(s,i,1)); if(b>=128 && b<192) i++; else break }; n-- }
+      return i-1 }
     function pad(n,   s){ s=""; while(n-- > 0) s=s" "; return s }
     function rule(n,   s){ s=""; while(n-- > 0) s=s"─"; return s }
     function chip(name,   i,su,code){ su=0; for(i=1;i<=length(name);i++) su+=ord(substr(name,i,1)); code=PAL[(su % NP)+1]; return E"[1;38;5;16;48;5;" code "m " name " " R }
@@ -82,7 +90,7 @@ render(){
     function boxline(styled,bord,   v){ v=cwidth(styled); if(v>IN) v=IN; return bord VBAR R " " styled pad(IN-v) " " bord VBAR R }
     function wrap(text,width,arr,   nw,words,i,cur,cnt2){ cnt2=0; cur=""; nw=split(text,words," ");
       for(i=1;i<=nw;i++){ if(cur=="") cur=words[i]; else if(cwidth(cur)+1+cwidth(words[i])<=width) cur=cur" "words[i]; else { arr[++cnt2]=cur; cur=words[i] }
-        while(cwidth(cur)>width){ arr[++cnt2]=substr(cur,1,width); cur=substr(cur,width+1) } }
+        while(cwidth(cur)>width){ k=vlen(cur,width); arr[++cnt2]=substr(cur,1,k); cur=substr(cur,k+1) } }
       if(cur!="") arr[++cnt2]=cur; if(cnt2==0) arr[++cnt2]=""; return cnt2 }
     BEGIN{ E=sprintf("%c",27); R=E"[0m"; DIM=E"[2m"; reESC=E"\\[[0-9;]*m";
       GREY=E"[38;5;240m"; WHITE=E"[1;97m"; TEAL=E"[38;2;" teal "m"; WARN=E"[1;33m"; BAD=E"[1;31m"; OK=E"[32m";
@@ -99,9 +107,9 @@ render(){
       bord = sel ? WHITE : GREY; sc = scolor(ss);
       if(sel) s0=nl[c]+1;                                   # selected card: remember its row span
       put(c, bord "╭" rule(colw-2) "╮" R);
-      n=wrap(t,IN,LN); if(n>2){ n=2; LN[2]=substr(LN[2],1,IN-1) "…" }
+      n=wrap(t,IN,LN); if(n>2){ n=2; LN[2]=substr(LN[2],1,vlen(LN[2],IN-1)) "…" }
       for(i=1;i<=n;i++) put(c, boxline(sc LN[i] R, bord));
-      if(cwidth(ow)>IN-4) ow=substr(ow,1,IN-4);             # keep glyph + chip inside the box
+      if(cwidth(ow)>IN-4) ow=substr(ow,1,vlen(ow,IN-4));    # keep glyph + chip inside the box
       put(c, boxline(sglyph(ss) " " (ow!="" ? chip(ow) : DIM "—" R), bord));
       put(c, bord "╰" rule(colw-2) "╯" R); if(sel) s1=nl[c] }
     END{
