@@ -136,7 +136,8 @@ render(){
   printf '\033[1mTEAM\033[0m  \033[2msession %s\033[0m\n\n' "$SESSION"
   herdr agent list 2>/dev/null | HERE="$HERE" BUILD="$BUILD" COLUMNS="${COLUMNS:-$(tput cols 2>/dev/null || echo 100)}" python3 -c "$ROLLUP"
   printf '\n\033[2m\xe2\x94\x80\xe2\x94\x80 controls \xe2\x94\x80\xe2\x94\x80\033[0m\n'
-  printf '  \033[1mhire\033[0m   scripts/team.sh add <role> --reason "why this mission needs it"\n'
+  printf '  \033[1mhire\033[0m   scripts/team.sh add <role>\n'
+  printf '         --reason "why this mission needs it"\n'
   printf '  \033[1mroles\033[0m  scripts/team.sh roles      \033[1mlist\033[0m  scripts/team.sh list\n'
   printf '\n\033[2mAttend to ! BLOCKED / ? UNKNOWN. \xe2\x97\x8f WORKING needs nothing from you.\033[0m\n'
 }
