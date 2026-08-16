@@ -248,7 +248,11 @@ show_detail(){
 }
 
 refresh_cache
-TOTAL="$(grep -c "^RUN$SEP" "$CACHE" 2>/dev/null || echo 0)"
+# NOT `$(grep -c … || echo 0)`. With no matching lines grep -c prints 0 AND exits 1, so the
+# fallback fires too and TOTAL becomes "0\n0" — which every later `[ "$TOTAL" -gt 0 ]` rejects
+# with "integer expected", printed straight into the tab. Only visible when no runs are
+# registered, which is exactly what a first-time reader sees. Assign, then correct on failure.
+TOTAL="$(grep -c "^RUN$SEP" "$CACHE" 2>/dev/null)" || TOTAL=0
 
 cleanup(){ rm -f "$CACHE"; }
 trap cleanup EXIT
@@ -289,7 +293,7 @@ while :; do
   key=""; IFS= read -rsn1 -t 3600 key </dev/tty || true
   case "$key" in
     q|Q) break ;;
-    r|R) refresh_cache; TOTAL="$(grep -c "^RUN$SEP" "$CACHE" 2>/dev/null || echo 0)"; paint ;;
+    r|R) refresh_cache; TOTAL="$(grep -c "^RUN$SEP" "$CACHE" 2>/dev/null)" || TOTAL=0; paint ;;
     j) [ "$SEL" -lt "$TOTAL" ] && SEL=$((SEL+1)); paint ;;
     k) [ "$SEL" -gt 1 ] && SEL=$((SEL-1)); paint ;;
     "$(printf '\033')")

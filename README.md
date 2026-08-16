@@ -23,16 +23,15 @@ Then:
 
 <figure>
   <img src="docs/media/build-demo.gif" width="1200"
-       alt="A 40-second animation of one real run. It moves through eight stages: a single terminal pane asking what to build; the typed answer; a written plan with seven checks; a dialog that halts everything until a person approves; four agents hired one at a time as the window splits from one pane into five; the team working; a separate agent reporting all seven checks pass; and a browser showing the finished page, a poem revealed line by line, ending with the author's signature." />
+       alt="A 46-second animation of one real run. It moves through ten stages: a single terminal pane asking what to build; the typed answer; a written plan with nine checks; a dialog that halts everything until a person approves; four agents hired one at a time as the window splits from one pane into five; the team working; three side tabs showing the agents' messages to each other, a card board, and the roster; a separate agent reporting all nine checks pass; and a browser showing the finished page, a poem revealed line by line, ending with the author's signature." />
   <figcaption>
     <em>Not a drawing and not a re-creation: these are screenshots of the screen, taken every
-    two seconds while this actually happened on 14 August 2026. That predates the rename, so
-    the terminal chrome in these frames still reads the old repository name. The run
-    finished — all 7 checks passed, proved by an agent that did not write the code, then
-    watched by a person. It cost $4.21. It also turned up four things that were wrong, one of
-    which needed a human to work around it mid-run. Every stage above is described in words,
-    with still pictures, in
-    <a href="https://mpaiva.github.io/atomic-cockpit/docs/case-study-ozymandias.html">the
+    two seconds while this actually happened on 16 August 2026. The run finished — all 9
+    checks passed, checked twice by an agent that did not write the code, then watched by a
+    person. It took fourteen minutes from approval to proof, and cost $1.98. It also turned up
+    a bug in one of the cockpit's own tabs. Every stage above is described in words, with
+    still pictures, in
+    <a href="https://mpaiva.github.io/atomic-cockpit/docs/case-study-road-not-taken.html">the
     case study</a>.</em>
   </figcaption>
 </figure>
@@ -193,6 +192,16 @@ agent boxes. It shows every message the agents send each other as one running co
 each in a box with the sender's name, the kind of message (SEND, ASK, REPLY), and the time.
 The first sentence is bold so you can skim.
 
+<figure>
+  <img src="docs/media/steps/09-the-team-chat-tab.png" width="1200"
+       alt="The team-chat tab during a real run. Messages are stacked as boxes, each headed by a coloured badge for the sender — accessibility, lead, verifier — a second badge reading SEND, ASK or REPLY, and a timestamp, with a bold one-line summary and the full message underneath. One box is headed by a pink badge reading human, with the message 'human asked lead: any blockers?', and the lead's reply sits directly below it." />
+  <figcaption>
+    <em>The team-chat tab from the run at the top of this page. The pink <code>human</code>
+    badge is a question typed into this pane with <code>i</code> during the run; the reply
+    came back into the same feed nine seconds later.</em>
+  </figcaption>
+</figure>
+
 You can:
 
 - **Scroll** with `j`/`k` or the arrow keys (`Space`/`b` for a page, `g`/`G` for top/bottom).
@@ -300,7 +309,7 @@ These pages have more detail. They are written for people who want the full pict
 
 - [docs/getting-started.md](docs/getting-started.md) — setup, with every step spelled out
 - [docs/troubleshooting.md](docs/troubleshooting.md) — intake timeouts, stuck panes, unclear agent state, reading `build/BLOCKED.md`
-- [docs/case-study-ozymandias.md](docs/case-study-ozymandias.md) — a real run, screenshot by screenshot, including what broke
+- [docs/case-study-road-not-taken.md](docs/case-study-road-not-taken.md) — a real run, screenshot by screenshot, including what broke
 - [docs/architecture.md](docs/architecture.md) — how the three tools fit together
 - [docs/monitoring-agents.md](docs/monitoring-agents.md) — how to watch a team without reading everything
 - [docs/operating-model.md](docs/operating-model.md) — the mental shift: how to supervise instead of type
@@ -314,27 +323,29 @@ These pages have more detail. They are written for people who want the full pict
 
 **A full build has worked, start to finish — twice, with a different sized team each time.**
 
-The run this page shows was asked for on 14 August 2026: *"a single HTML landing page that
+The run this page shows was asked for on 16 August 2026: *"a single HTML landing page that
 reveals one line of a public-domain poem every 2 seconds until the whole poem is shown, ending
 with the author signature."* The lead hired **four** agents, because that mission put
-presentation and readability in its checks. All 7 checks passed, proved by an agent that did
-not write the code, and then watched by a person. It cost $4.21 in total.
+presentation and readability in its checks. All 9 checks passed — checked twice by an agent
+that did not write the code, before and after the last patches landed — and then watched by a
+person. It took fourteen minutes from approval to sign-off, and cost $1.98 in total.
 
 <figure>
-  <img src="docs/media/steps/11-the-page-itself.png" width="1200"
-       alt="A finished web page on a near-black background. The heading OZYMANDIAS in gold small capitals, then all fourteen lines of the sonnet in a cream serif, from 'I met a traveller from an antique land' to 'The lone and level sands stretch far away.' Underneath, right-aligned in gold italics, the signature 'Percy Bysshe Shelley'." />
+  <img src="docs/media/steps/16-the-page-itself.png" width="1200"
+       alt="A finished web page on a warm off-white background. The closing stanzas of 'The Road Not Taken' in a dark serif, ending 'And that has made all the difference.' Underneath, right-aligned in italics, the signature 'Robert Frost', and below that a small grey line citing Mountain Interval, 1916, public domain." />
   <figcaption>
     <em>The page this run built, photographed from the screen the moment the reveal
     finished and the timer stopped.
-    <a href="https://mpaiva.github.io/atomic-cockpit/docs/samples/ozymandias.html">Watch
-    it run</a> — it takes about 30 seconds, and there is a Pause button while it goes. The file
-    itself is <a href="docs/samples/ozymandias.html">docs/samples/ozymandias.html</a>.</em>
+    <a href="https://mpaiva.github.io/atomic-cockpit/docs/samples/road-not-taken.html">Watch
+    it run</a> — it takes about forty seconds. The file itself is
+    <a href="docs/samples/road-not-taken.html">docs/samples/road-not-taken.html</a>, 4,238
+    bytes, exactly as the agents produced it.</em>
   </figcaption>
 </figure>
 
 That run is the picture at the top of this page, and it is written up screenshot by screenshot
-in [docs/case-study-ozymandias.md](docs/case-study-ozymandias.md), including the four things
-that went wrong.
+in [docs/case-study-road-not-taken.md](docs/case-study-road-not-taken.md), including what went
+wrong.
 
 An earlier run finished too, for the same idea at one verse every 10 seconds. It hired **two**
 agents rather than four — the same cockpit sizing the team to the job. Its page is kept at

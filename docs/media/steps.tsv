@@ -1,26 +1,42 @@
-# steps.tsv — the stills used by docs/case-study-ozymandias.md.
+# steps.tsv — the stills used by docs/case-study-road-not-taken.md.
 #
-#   ./scripts/assemble-demo.sh --frames .captures/run --edit docs/media/steps.tsv \
-#       --stills docs/media/steps --crop 2936x1835+2+75 --width 1400
+#   ./scripts/assemble-demo.sh --frames .captures/run-2 --edit docs/media/steps.tsv \
+#       --stills docs/media/steps --crop 2940x1779+0+74 --width 1400
 #
 # Columns: <frame file>  <output basename>  [crop geometry | # note]
 #
-# A third field that looks like a geometry crops that row instead of --crop. Only one row
-# needs it: the finished page is worth showing without the browser's toolbar wrapped
-# around it, the way the earlier run's outcome shot is framed.
+# A third field that looks like a geometry crops that row instead of --crop. Three rows
+# need it. The two page shots start at +130 rather than +74, because the finished page
+# opened in its own Chrome window with a second Chrome window's tab strip above it on the
+# display — starting lower keeps other people's tabs out of the picture. The last row is
+# tighter still: the page on its own, without any browser chrome around it, framed the way
+# a reader would want to see the thing that was built.
 #
-# Same capture, same crop, same run as docs/media/build-demo.edit.tsv — these are the
-# beats that needed to be looked at rather than watched. Nothing here is staged, retaken,
-# or composed: each one is the whole cockpit window as it stood at that second.
+# Same capture, same run, same crop as docs/media/build-demo.edit.tsv — these are the beats
+# that needed to be looked at rather than watched. Nothing here is staged, retaken, or
+# composed: each one is the whole cockpit window as it stood at that second.
+#
+# Row 12, the 'workflows' tab, is the one still here that shows something broken. That tab was
+# empty for this run — the lead hired directly rather than launching a named Atomic workflow —
+# and with no runs to list it printed a shell error instead of its empty state. The bug is
+# real, it was found by taking this picture, and it is fixed now in scripts/workflow-tab.sh.
+# The frame is kept as it was taken rather than replaced with a clean one from after the fix:
+# the case study cites it as evidence, and a screenshot that quietly post-dates its own run is
+# exactly the kind of thing the rest of this file exists to prevent.
 
-frame-00120.png	01-the-question	# one pane, one question, and an answer waiting on Enter
-frame-00168.png	02-answer-captured	# IDEA.md written, the lead starts refining
-frame-00184.png	03-the-mission	# the mission comes back as something checkable
-frame-00189.png	04-the-gate	# nothing is hired until a person picks an option here
-frame-00198.png	05-hiring	# four roles named, and why each one
-frame-00216.png	06-team-of-five	# the cockpit has grown from one pane to five
-frame-00423.png	07-the-team-working	# five agents, talking to each other over Intercom
-frame-00576.png	08-the-verdict	# all 7 criteria PASS, proven by the agent that did not build it
-frame-00590.png	09-page-revealing	# the deliverable, four lines in
-frame-00599.png	10-page-complete	# fourteen lines, the signature, and a stopped timer
-frame-00599.png	11-the-page-itself	2900x1555+18+292
+frame-00100.png	01-the-question	# one pane, one tab, one question, and an answer waiting on Enter
+frame-00105.png	02-answer-captured	# IDEA.md written, the lead starts refining
+frame-00117.png	03-the-mission	# the mission comes back as something checkable, a beat before the gate opens
+frame-00122.png	04-the-gate	# nothing is hired until a person picks an option here
+frame-00144.png	05-hiring	# confirmed, and the first hire goes out
+frame-00150.png	06-the-roles-and-why	# four roles named, and the reason for each written next to it
+frame-00166.png	07-team-of-five	# the cockpit has grown from one pane to five
+frame-00291.png	08-the-team-working	# five agents, talking to each other over Intercom
+frame-00298.png	09-the-team-chat-tab	# every message the agents sent each other, in one feed
+frame-00301.png	10-the-kanban-tab	# cards by stage, each one owned by a named agent
+frame-00303.png	11-the-team-tab	# who is hired, what they are doing, and who could still be hired
+frame-00306.png	12-the-workflows-tab	# empty for this run — and printing a shell error, which is how the bug was found
+frame-00321.png	13-the-verdict	# 9 of 9 criteria PASS, proven by the agent that did not build it
+frame-00328.png	14-page-revealing	2940x1779+0+130	# the deliverable, nine lines in
+frame-00340.png	15-page-complete	2940x1779+0+130	# twenty lines, the signature, the citation, a stopped timer
+frame-00340.png	16-the-page-itself	2900x1500+18+345	# the page on its own, without the browser around it

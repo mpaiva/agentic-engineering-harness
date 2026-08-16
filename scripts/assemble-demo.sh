@@ -3,14 +3,14 @@
 #
 # The exact command that produced the committed GIF:
 #
-#   ./scripts/assemble-demo.sh --frames .captures/run \
-#       --edit docs/media/build-demo.edit.tsv --crop 2936x1835+2+75
+#   ./scripts/assemble-demo.sh --frames .captures/run-2 \
+#       --edit docs/media/build-demo.edit.tsv --crop 2940x1779+0+74
 #
-# …and the stills on docs/case-study-ozymandias.md:
+# …and the stills on docs/case-study-road-not-taken.md:
 #
-#   ./scripts/assemble-demo.sh --frames .captures/run \
+#   ./scripts/assemble-demo.sh --frames .captures/run-2 \
 #       --edit docs/media/steps.tsv --stills docs/media/steps \
-#       --crop 2936x1835+2+75 --width 1400
+#       --crop 2940x1779+0+74 --width 1400
 #
 # The other half of scripts/capture-demo.sh. That one photographs the screen during a run;
 # this one crops, scales, orders and times the frames into the GIF (or into PNGs, with
@@ -24,8 +24,16 @@
 # frames to use and how long to hold each one, so the cut is a reviewable file in git
 # rather than a decision buried in a script.
 #
-#   edit TSV:  <frame filename>  <hold seconds>  [# comment]
+#   edit TSV:  <frame filename>  <hold seconds>  [crop geometry | # comment]
+#              --stills reads the same shape, with an output basename in place of the hold
 #              blank lines and lines starting with # are ignored
+#
+# A third field that looks like an ImageMagick geometry crops that row instead of --crop, in
+# both modes. It is there for a set that spans two windows — the cockpit for most of a run
+# and a browser at the end, which do not sit at the same place on the display. In GIF mode
+# every prepared frame must still come out the SAME WIDTH AND HEIGHT, because the concat
+# demuxer will not scale mismatched inputs; a per-row geometry is for moving the crop, not
+# resizing it, and the script stops with the offending sizes if that rule is broken.
 #
 # With no --edit, every frame in the manifest is used at --default-hold seconds each,
 # which is the right thing for a first look at what you captured.
@@ -117,15 +125,21 @@ PLAN="$TMPDIR/plan.tsv"
 : > "$PLAN"
 if [ -n "$EDIT" ]; then
   [ -f "$EDIT" ] || { echo "assemble-demo.sh: no such edit list: $EDIT" >&2; exit 2; }
-  # Strip comments and blanks; keep the first two fields.
+  # Strip comments and blanks; keep frame, hold, and an optional per-row crop.
   # Same rule as stills mode: a row counts only if its first field names a frame. Comment
   # and prose lines in the edit list are then impossible to mistake for filenames.
+  #
+  # Field 3 is passed through so a single row can be framed differently from the rest —
+  # stills mode has always allowed this, and the GIF needs it for the same reason a still
+  # does: the browser frames at the end sit in a different window from the cockpit ones,
+  # so one --crop cannot serve both. Anything in field 3 that is not a geometry (a `#`
+  # note, say) is ignored below, exactly as in stills mode.
   awk -F'\t' '$1 ~ /^frame-/ {
-        hold = ($2 == "" ? "'"$DEFAULT_HOLD"'" : $2); print $1 "\t" hold }' "$EDIT" > "$PLAN"
+        hold = ($2 == "" ? "'"$DEFAULT_HOLD"'" : $2); print $1 "\t" hold "\t" $3 }' "$EDIT" > "$PLAN"
 else
   MANIFEST="$FRAMES/manifest.tsv"
   [ -f "$MANIFEST" ] || { echo "assemble-demo.sh: $MANIFEST is missing — was this directory written by capture-demo.sh?" >&2; exit 2; }
-  awk -F'\t' 'NR > 1 && $1 != "" { print $1 "\t'"$DEFAULT_HOLD"'" }' "$MANIFEST" > "$PLAN"
+  awk -F'\t' 'NR > 1 && $1 != "" { print $1 "\t'"$DEFAULT_HOLD"'\t" }' "$MANIFEST" > "$PLAN"
 fi
 
 COUNT="$(wc -l < "$PLAN" | tr -d ' ')"
@@ -140,12 +154,18 @@ i=0
 CONCAT="$TMPDIR/concat.txt"
 : > "$CONCAT"
 LAST_PREPARED=""
-while IFS=$'\t' read -r NAME HOLD; do
+while IFS=$'\t' read -r NAME HOLD THIRD; do
   SRC="$FRAMES/$NAME"
   [ -f "$SRC" ] || { echo "assemble-demo.sh: missing frame $SRC (named in the running order)" >&2; exit 2; }
   DST="$(printf '%s/prep-%05d.png' "$TMPDIR" "$i")"
-  if [ -n "$CROP" ]; then
-    magick "$SRC" -crop "$CROP" +repage "$DST"
+  # Same rule as stills mode: a third field that looks like a geometry replaces --crop for
+  # this row only. Every prepared frame must still come out the same size, or the concat
+  # demuxer scales them against each other — so a per-row geometry is expected to differ in
+  # OFFSET, not in width and height. Checked below once all frames are prepared.
+  ROW_CROP="$CROP"
+  case "$THIRD" in [0-9]*x[0-9]*[+-][0-9]*[+-][0-9]*) ROW_CROP="${THIRD%%[!0-9x+-]*}" ;; esac
+  if [ -n "$ROW_CROP" ]; then
+    magick "$SRC" -crop "$ROW_CROP" +repage "$DST"
   else
     cp "$SRC" "$DST"
   fi
@@ -153,6 +173,19 @@ while IFS=$'\t' read -r NAME HOLD; do
   LAST_PREPARED="$DST"
   i=$((i + 1))
 done < "$PLAN"
+
+# Every prepared frame must be identical in size. ffmpeg's concat demuxer does not scale
+# mismatched inputs — it takes the first frame's dimensions and then either fails or
+# silently produces a corrupt stream, and a GIF that is subtly wrong is worse than one that
+# refuses to build. A per-row crop is for moving the window, not resizing it.
+SIZES="$(for f in "$TMPDIR"/prep-*.png; do magick "$f" -format '%wx%h\n' info:; done | sort -u)"
+if [ "$(printf '%s\n' "$SIZES" | wc -l | tr -d ' ')" -gt 1 ]; then
+  echo "assemble-demo.sh: prepared frames are not all the same size:" >&2
+  printf '%s\n' "$SIZES" | sed 's/^/  /' >&2
+  echo "  A per-row crop in the edit list must keep the same WIDTHxHEIGHT as --crop and" >&2
+  echo "  change only the +x+y offset." >&2
+  exit 2
+fi
 
 # ffmpeg's concat demuxer ignores the last entry's duration unless the file is repeated
 # once more without one.
