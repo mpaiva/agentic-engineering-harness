@@ -48,13 +48,28 @@ herdr agent wait planner   --until done --until blocked --timeout 900000
 
 ## The gap (be honest about it)
 
-A single command surface that projects Atomic's *stage graph* into the Herdr *sidebar* does **not** exist in Atomic `0.9.12` or Herdr `0.8.0`. Concretely, missing today:
+Atomic already ships its own graph overlay for a running workflow — `/workflow status <run-id>`, `F2`, or `/workflow connect <run-id>` all open it (see `atomic/docs/workflows.md:116`). What does **not** exist in Atomic `0.9.13` or Herdr `0.8.0` is a bridge that projects that stage graph into the Herdr *sidebar*. Concretely, missing today:
 
 - Atomic does not emit Herdr pane/agent state for each stage.
 - Herdr cannot read Atomic run state (`/workflow status`) and render stage names.
 - So the cockpit in the next section is assembled by convention + scripts, not by a built-in bridge.
 
 `scripts/status.sh` approximates the rollup by formatting `herdr agent list`. Treat the adapter below as a **design target**, not a shipped feature.
+
+## Watching a workflow graph today
+
+1. Attach to the Herdr session holding the agent (`herdr --session <SESSION>`) and switch to
+   that agent's own pane — the recipe only works inside the pane actually running the
+   workflow.
+2. Once there, either press **F2**, or run `/workflow connect <run-id>`, or run
+   `/workflow status <run-id>` for a text summary instead of the interactive overlay.
+
+The run id appears in that agent's own turn output right after it starts the workflow
+(the `workflow({ action: "run", ... })` tool call returns it). This opens Atomic's own graph
+overlay (`atomic/docs/workflows.md:116`, `atomic/docs/quickstart.md:148`) — it shows that
+one agent's stage graph, in that agent's own pane. It does **not** appear in the Herdr
+sidebar across panes; that cross-pane rollup is the adapter described below, and it does not
+exist yet.
 
 ## Future: an Atomic ↔ Herdr adapter
 

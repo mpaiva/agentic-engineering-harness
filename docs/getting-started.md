@@ -9,7 +9,7 @@ This gets you from nothing to a running, observable multi-agent workspace.
 - **A coding agent CLI.** This harness uses **Claude Code** (`claude`) as the default agent backend; Codex and 14+ others also work under Herdr.
 - **git**.
 
-Verified against: Atomic `0.9.12`, Herdr `0.8.0`, Ghostty `1.3.1`, Claude Code `2.1.x`.
+Verified against: Atomic `0.9.13`, Herdr `0.8.0`, Ghostty `1.3.1`, Claude Code `2.1.x`.
 
 ## 1. Install the three layers
 
@@ -35,7 +35,7 @@ export PATH="$HOME/.local/bin:$PATH"   # add to ~/.zshrc to persist
 Verify:
 
 ```bash
-atomic --version   # 0.9.12
+atomic --version   # 0.9.13
 herdr --version    # herdr 0.8.0
 claude --version   # 2.1.x
 ```

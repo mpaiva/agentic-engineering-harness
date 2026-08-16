@@ -29,6 +29,13 @@ gets the two messages that move it, and `--resume` restarts the server, discardi
 typed answer. Fix is a shell change: wait effectively indefinitely (with heartbeats)
 for IDEA.md rather than capping at 600s. Correctness-shaped -> `debugger`.
 
+**Status: CLOSED.** Fixed in commit `6797834` ("build.sh: remove intake-wait timeout and
+guide the user on interrupt") — `build.sh` now waits unbounded for `IDEA.md` with a 60s
+heartbeat and a Ctrl-C/SIGTERM trap that prints reattach guidance instead of dying silently.
+Reviewed in `research/review-2026-08-14-g1-intake-fix.md`. Verified 2026-08-15: `bash -n
+build.sh` passes; `git log -S"seq 1 600" -- build.sh` shows the capped loop only in earlier
+commits, absent from HEAD.
+
 ### G2 — --resume finishing genuinely unfinished work (NOT autonomously closable)
 README: resume has only been proven to re-attach an already-complete run; picking up
 half-done work is unproven. Requires a real interrupted run to validate. Needs human +
@@ -44,6 +51,17 @@ Largest job tried so far was stopped early. Requires live paid runs. Needs human
   remain, and README:272-274 still cites poem-page as an "earlier run." This may be
   intentional (keep the artifact, drop the writeup). Not treated as a defect without a
   human decision.
+
+**Decision (2026-08-15, implementer): keep the artifact, drop the standalone case study —
+confirmed as the deliberate outcome, not a defect.** Commit 431bee1 removed
+`docs/case-study-poem-page.md` on purpose (no screenshots were ever captured for that run,
+so it could never match the Ozymandias write-up's evidence) while keeping `poem-page.html`
+as a byte-identical artifact (checksum verified against `docs/samples/README.md:71`) plus a
+condensed inline write-up in `docs/samples/README.md:39-71`. Verified 2026-08-15: `git show
+431bee1 -- docs/samples/README.md` shows the section was rewritten in place, not left
+dangling — it dropped only the dead link to the removed case-study file, not the content.
+No reference in the repo (`README.md:319-321`, `docs/samples/README.md`) points at a
+missing file. No action needed; this was already resolved, just under-documented here.
 
 ## Recommendation
 

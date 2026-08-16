@@ -230,6 +230,25 @@ fi
 herdr pane rename "$LEAD" lead >/dev/null 2>&1 || true
 echo "$LEAD" > "$LAUNCHDIR/lead.pane"
 
+# Give tab 1 an explicit label so it doesn't read as a bare "1" in the tab bar, ambiguous
+# next to the 'team' roster tab (UX finding 2, build/UX-REVIEW-2.md). Idempotent: skip if a
+# tab already carries the 'crew' label (e.g. on --resume). Best-effort — never fails the run.
+if ! herdr tab list 2>/dev/null | python3 -c "
+import sys, json
+try: tabs = json.load(sys.stdin)['result']['tabs']
+except Exception: sys.exit(1)
+sys.exit(0 if any(t.get('label') == 'crew' for t in tabs) else 1)
+"; then
+  LEAD_TAB="$(herdr pane list 2>/dev/null | python3 -c "
+import sys, json
+try: panes = json.load(sys.stdin)['result']['panes']
+except Exception: sys.exit(1)
+p = [x for x in panes if x['pane_id'] == '$LEAD']
+print(p[0]['tab_id'] if p else '')
+" 2>/dev/null || true)"
+  [ -n "$LEAD_TAB" ] && herdr tab rename "$LEAD_TAB" crew >/dev/null 2>&1 || true
+fi
+
 herdr pane send-text "$LEAD" "bash $LAUNCHDIR/lead.sh" >/dev/null
 herdr pane send-keys "$LEAD" Enter >/dev/null
 
@@ -268,7 +287,7 @@ echo
 if [ "$MODE" = "resume" ]; then
   echo "Re-attaching the lead to the existing mission…"
 else
-  echo "Waiting for your answer in the attached cockpit…"
+  echo "Waiting for your answer — attach the cockpit with the command above, then answer the popup in it…"
 fi
 # Wait for the human to answer the intake popup. There is deliberately NO timeout here.
 # The popup keeps the lead agent alive with the question on screen, and the two kickoff
@@ -327,26 +346,47 @@ else
   echo "answer the question, then re-run: ./build.sh --resume" >&2
 fi
 
-# Open a read-only "team chat" pane beside the lead so the human can watch the whole intercom
-# conversation as one feed (intercom-bridge.ts writes it — see
-# specs/2026-08-14-intercom-team-chat-pane.md). Idempotent: skip if a team-chat pane already
-# exists (e.g. on --resume). Best-effort: a failure here must never fail the run, so every
-# herdr call swallows its error.
-if ! herdr pane list 2>/dev/null | python3 -c "
+# Open a read-only "team chat" tab so the human can watch the whole intercom conversation as
+# one feed (intercom-bridge.ts writes it — see specs/2026-08-14-intercom-team-chat-pane.md).
+# Idempotent: skip if a team-chat tab already exists (e.g. on --resume). Best-effort: a
+# failure here must never fail the run, so every herdr call swallows its error. Same pattern
+# as the kanban/team tabs below: label-idempotent `herdr tab create`, and deliberately NO
+# $LAUNCHDIR/*.pane record — scripts/team.sh hires by splitting the newest
+# $LAUNCHDIR/*.pane file, and a team-chat.pane entry would make every hire land in this tab
+# (and count against the agent cap) instead of splitting from the lead/hire grid.
+if ! herdr tab list 2>/dev/null | python3 -c "
 import sys, json
-try: panes = json.load(sys.stdin)['result']['panes']
+def labelled(o):
+    if isinstance(o, dict):
+        return o.get('label') == 'team-chat' or any(labelled(v) for v in o.values())
+    if isinstance(o, list):
+        return any(labelled(v) for v in o)
+    return False
+try: sys.exit(0 if labelled(json.load(sys.stdin)) else 1)
 except Exception: sys.exit(1)
-sys.exit(0 if any(p.get('label') == 'team-chat' for p in panes) else 1)
 "; then
-  CHATPANE="$(herdr pane split "$LEAD" --direction right --ratio 0.35 --no-focus --cwd "$HERE" 2>/dev/null \
-    | python3 -c "import sys,json;print(json.load(sys.stdin)['result']['pane']['pane_id'])" 2>/dev/null || true)"
+  CHATPANE="$(herdr tab create --label team-chat --cwd "$HERE" --no-focus 2>/dev/null \
+    | python3 -c "
+import sys, json
+def find(o):
+    if isinstance(o, dict):
+        if 'pane_id' in o: return o['pane_id']
+        for v in o.values():
+            r = find(v)
+            if r: return r
+    if isinstance(o, list):
+        for v in o:
+            r = find(v)
+            if r: return r
+    return None
+try: print(find(json.load(sys.stdin)) or '')
+except Exception: pass
+" 2>/dev/null || true)"
   if [ -n "$CHATPANE" ]; then
-    herdr pane rename "$CHATPANE" team-chat >/dev/null 2>&1 || true
-    echo "$CHATPANE" > "$LAUNCHDIR/team-chat.pane"
-    # Pass the feed and the team's intercom group so the viewer's "chat" peer joins the same group
-    # as the agents (otherwise the human could not message them).
-    herdr pane send-text "$CHATPANE" "TEAMCHAT_FEED=$BUILD/team-chat.log ATOMIC_INTERCOM_GROUP=$GROUP ./scripts/team-chat.sh" >/dev/null 2>&1 || true
-    herdr pane send-keys "$CHATPANE" Enter >/dev/null 2>&1 || true
+    # Pass the feed and the team's intercom group so the viewer's "chat" peer joins the same
+    # group as the agents (otherwise the human could not message them). BUILD_DIR-derived
+    # path means --session beta watches build-beta/team-chat.log.
+    herdr pane run "$CHATPANE" env "TEAMCHAT_FEED=$BUILD/team-chat.log" "ATOMIC_INTERCOM_GROUP=$GROUP" ./scripts/team-chat.sh >/dev/null 2>&1 || true
   fi
 fi
 
@@ -445,7 +485,7 @@ $HEADLINE
  ROSTER:   cat $BUILD/ROSTER.md
  MISSION:  cat $BUILD/MISSION.md
  STOP:     herdr --session $SESSION server stop
- CHAT:     opens automatically in the 'team-chat' pane · reopen: ./scripts/team-chat.sh
+ CHAT:     opens in the 'team-chat' tab · reopen: ./scripts/team-chat.sh
  BOARD:    opens in the 'kanban' tab · add cards: ./scripts/board.sh · reopen: ./scripts/kanban.sh
  TEAM:     live roster in the 'team' tab · reopen: ./scripts/team-status.sh
 

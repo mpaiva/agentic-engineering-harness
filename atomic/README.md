@@ -2,7 +2,7 @@
 
 [Atomic](https://github.com/bastani-inc/atomic) (`@bastani/atomic`) is the orchestration and verification engine. This directory holds the **workflow definitions** that encode our engineering process as explicit, versioned, resumable graphs.
 
-> Verified against Atomic `0.9.12`. Command surfaces here are copied from the installed binary (`atomic --help`) and Atomic's bundled workflow docs (`$(npm root -g)/@bastani/atomic/docs/workflows.md`).
+> Verified against Atomic `0.9.13`. Command surfaces here are copied from the installed binary (`atomic --help`) and Atomic's bundled workflow docs (`$(npm root -g)/@bastani/atomic/docs/workflows.md`).
 
 ## Mental model
 
@@ -87,3 +87,16 @@ Atomic ships composable built-ins — prefer them before hand-rolling:
 | `loop-until-done` | Iterate against a durable ledger until done or bound exhausted. |
 
 [`workflows/feature-development.ts`](workflows/feature-development.ts) is a **teaching reference** that shows the full research → gate → implement → verify → repair → gate → PR shape explicitly. In production you would often express the implementation core with `goal` or `ralph` and keep only the gates and fan-out around them.
+
+## Extensions
+
+[`extensions/`](extensions/) holds Atomic extensions — TypeScript modules that hook the
+agent lifecycle, separate from workflows (which define tracked stage graphs). `build.sh`
+and `scripts/team.sh` load these into Atomic sessions as part of the primary build flow
+(see their `-e` flags) — nothing to run by hand.
+
+| Extension | Loaded for | What it does |
+|-----------|------------|---------------|
+| [`extensions/build-intake.ts`](extensions/build-intake.ts) | lead only | Asks the human what to build, once, at the start of a run; writes the raw answer to `$BUILD_DIR/IDEA.md` before any tokens are spent, so the opening question can't be skipped. |
+| [`extensions/herdr-state.ts`](extensions/herdr-state.ts) | every teammate | Projects an Atomic session's live lifecycle state (working/blocked/done) into the Herdr sidebar, since Herdr doesn't natively detect Atomic as an agent CLI. |
+| [`extensions/intercom-bridge.ts`](extensions/intercom-bridge.ts) | every teammate | Mirrors a session's outbound intercom `send`/`ask`/`reply` calls into a shared team-chat feed file, so the whole team's traffic is visible in one place. |
