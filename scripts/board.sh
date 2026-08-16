@@ -36,21 +36,27 @@ valid_id(){ case "$1" in ""|*/*|*..*) return 1;; *) return 0;; esac; }
 
 # set_field <file> <key> <value> — rewrite one header line in place. If the key is missing from
 # the header, insert it just before the `---` separator so `move` works on hand-written cards too.
-# A card with NEITHER a `<key>:` line NOR a separator gives awk nowhere to write; exit 3 from the
-# END block turns that into a loud failure instead of a silent success that changed nothing.
+# Two distinct loud failures: awk's END block exits 3 when the card has NEITHER a `<key>:` line
+# NOR a separator (malformed card), while any other non-zero status means the rewrite itself
+# failed (e.g. an unwritable directory) — the card format is fine and saying otherwise would
+# send the caller chasing the wrong problem. The file is untouched in both cases.
 set_field(){
-  local f="$1" key="$2" val="$3" tmp="$1.tmp.$$"
-  if awk -v k="$key" -v v="$val" '
+  local f="$1" key="$2" val="$3" tmp="$1.tmp.$$" rc=0
+  awk -v k="$key" -v v="$val" '
     body { print; next }
     /^---[ \t\r]*$/ { if (!done) { print k ": " v; done=1 }; body=1; print; next }
     index($0, k ":") == 1 { if (!done) { print k ": " v; done=1 }; next }
     { print }
     END { exit done ? 0 : 3 }
-  ' "$f" > "$tmp"; then
+  ' "$f" > "$tmp" || rc=$?
+  if [ "$rc" -eq 0 ]; then
     mv "$tmp" "$f"
-  else
+  elif [ "$rc" -eq 3 ]; then
     rm -f "$tmp"
     echo "card has no '$key:' line and no '---' separator — not updated: $f" >&2; exit 1
+  else
+    rm -f "$tmp" 2>/dev/null || true
+    echo "could not rewrite $f (filesystem error above, the card format is fine) — not updated" >&2; exit 1
   fi
 }
 

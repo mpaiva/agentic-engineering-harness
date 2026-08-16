@@ -384,7 +384,9 @@ try: print(find(json.load(sys.stdin)) or '')
 except Exception: pass
 " 2>/dev/null || true)"
   if [ -n "$KANBANPANE" ]; then
-    echo "$KANBANPANE" > "$LAUNCHDIR/kanban.pane" 2>/dev/null || true
+    # No pane record is written for this tab: scripts/team.sh hires by splitting the NEWEST
+    # $LAUNCHDIR/*.pane record, and a kanban.pane entry would make every hire land in this
+    # tab (and count against the agent cap). The board pane is find-by-label only.
     # BUILD_DIR points the viewer at THIS run's board, so --session beta watches build-beta/.
     herdr pane run "$KANBANPANE" env "BUILD_DIR=$BUILD" ./scripts/kanban.sh >/dev/null 2>&1 || true
   fi
