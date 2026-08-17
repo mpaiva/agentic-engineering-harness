@@ -43,7 +43,7 @@ b=sum(1 for x in a if x.get('agent_status') in ('blocked','unknown'))
 print('AGENTS=%d;WORKING=%d;BLOCKED=%d'%(len(a),w,b))
 " 2>/dev/null || echo 'AGENTS=0;WORKING=0;BLOCKED=0')"
   fi
-  ARCHIVES=$(ls -d "$HERE"/build.prev-* 2>/dev/null | wc -l | tr -d ' ')
+  ARCHIVES=$(ls -d "$HERE"/runs/*/ 2>/dev/null | wc -l | tr -d ' ')
 }
 
 summary(){
@@ -66,7 +66,7 @@ summary(){
   else
     printf '  mission   %s○ none in %s%s\n' "$GREY" "${BUILD#$HERE/}" "$R"
   fi
-  [ "$ARCHIVES" -gt 0 ] && printf '  archived  %s%d previous run(s) (build.prev-*)%s\n' "$DIM" "$ARCHIVES" "$R"
+  [ "$ARCHIVES" -gt 0 ] && printf '  archived  %s%d previous run(s) in runs/%s\n' "$DIM" "$ARCHIVES" "$R"
   printf '\n'
 }
 

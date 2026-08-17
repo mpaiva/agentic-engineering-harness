@@ -75,8 +75,9 @@ if ! atomic auth print-bearer-token --model "$MODEL" --provider "$PROVIDER" >/de
 fi
 
 if [ "$MODE" = "run" ] && [ -f "$BUILD/IDEA.md" ]; then
-  echo "build/ already holds a run (IDEA.md exists)." >&2
-  echo "Use --resume to continue it, or move build/ aside to start fresh." >&2
+  echo "${BUILD#$HERE/}/ already holds a run (IDEA.md exists)." >&2
+  echo "Use --resume to continue it, or archive it and start fresh:" >&2
+  echo "  mv ${BUILD#$HERE/} runs/\$(date +%Y%m%d-%H%M%S)" >&2
   exit 1
 fi
 
