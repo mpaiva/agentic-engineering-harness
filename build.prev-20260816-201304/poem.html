@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Road Not Taken</title>
+<style>
+  :root {
+    color-scheme: light;
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: #f7f4ee;
+  }
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: clamp(2rem, 6vw, 5rem) 1rem;
+    box-sizing: border-box;
+    font-family: Georgia, "Times New Roman", serif;
+    color: #2b2620;
+  }
+  main {
+    width: 100%;
+    max-width: 700px;
+    box-sizing: border-box;
+  }
+  h1 {
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+    font-weight: normal;
+    text-align: center;
+    margin: 0 0 2rem 0;
+    letter-spacing: 0.02em;
+  }
+  .stanza {
+    margin: 0 0 1.5rem 0;
+  }
+  .line {
+    display: inline-block;
+    font-size: clamp(1rem, 2.2vw, 1.25rem);
+    line-height: 1.8;
+    margin: 0;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .line.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .signature {
+    margin-top: 2.5rem;
+    font-style: italic;
+    font-size: clamp(0.85rem, 1.8vw, 1rem);
+    text-align: right;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .signature.revealed {
+    opacity: 1;
+  }
+  .credit {
+    margin-top: 3rem;
+    font-size: 0.75rem;
+    color: #6b6459;
+    text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .line, .signature, .credit {
+      transition: none;
+      transform: none;
+    }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>The Road Not Taken</h1>
+
+  <p class="stanza">
+    <span class="line" data-i="1">Two roads diverged in a yellow wood,</span><br>
+    <span class="line" data-i="2">And sorry I could not travel both</span><br>
+    <span class="line" data-i="3">And be one traveler, long I stood</span><br>
+    <span class="line" data-i="4">And looked down one as far as I could</span><br>
+    <span class="line" data-i="5">To where it bent in the undergrowth;</span>
+  </p>
+
+  <p class="stanza">
+    <span class="line" data-i="6">Then took the other, as just as fair,</span><br>
+    <span class="line" data-i="7">And having perhaps the better claim,</span><br>
+    <span class="line" data-i="8">Because it was grassy and wanted wear;</span><br>
+    <span class="line" data-i="9">Though as for that the passing there</span><br>
+    <span class="line" data-i="10">Had worn them really about the same,</span>
+  </p>
+
+  <p class="stanza">
+    <span class="line" data-i="11">And both that morning equally lay</span><br>
+    <span class="line" data-i="12">In leaves no step had trodden black.</span><br>
+    <span class="line" data-i="13">Oh, I kept the first for another day!</span><br>
+    <span class="line" data-i="14">Yet knowing how way leads on to way,</span><br>
+    <span class="line" data-i="15">I doubted if I should ever come back.</span>
+  </p>
+
+  <p class="stanza">
+    <span class="line" data-i="16">I shall be telling this with a sigh</span><br>
+    <span class="line" data-i="17">Somewhere ages and ages hence:</span><br>
+    <span class="line" data-i="18">Two roads diverged in a wood, and I&mdash;</span><br>
+    <span class="line" data-i="19">I took the one less traveled by,</span><br>
+    <span class="line" data-i="20">And that has made all the difference.</span>
+  </p>
+
+  <p class="signature" data-i="21">&mdash; Robert Frost</p>
+
+  <p class="credit">"The Road Not Taken" by Robert Frost, first published in <em>Mountain Interval</em>, 1916. Public domain (US, pre-1929 publication).</p>
+</main>
+
+<script>
+(function () {
+  var reveal = document.querySelectorAll('.line, .signature');
+  var total = reveal.length;
+  var idx = 0;
+  var intervalMs = 2000;
+
+  function revealNext() {
+    if (idx >= total) return;
+    var el = reveal[idx];
+    el.classList.add('revealed');
+    el.setAttribute('data-revealed-at', Date.now());
+    console.log('revealed', el.getAttribute('data-i'), Date.now());
+    idx += 1;
+    if (idx >= total) {
+      clearInterval(timer);
+    }
+  }
+
+  // Tick 0: reveal line 1 immediately on load.
+  revealNext();
+
+  var timer = setInterval(revealNext, intervalMs);
+})();
+</script>
+</body>
+</html>
