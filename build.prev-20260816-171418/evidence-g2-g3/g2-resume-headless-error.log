@@ -1,0 +1,2 @@
+{"type":"session","version":3,"id":"01a0094a-f1c2-7c02-a3a0-d5e582d91ec6","timestamp":"2026-08-16T06:38:21.634Z","cwd":"/private/tmp/g2-scratch-1786862073/project"}
+Extension error (command:workflow): DBOS workflow durability is not ready. Await initializeDurableBackend() before accessing workflows.
